@@ -259,20 +259,25 @@ export default function BookReader() {
         {/* Right Side: Settings Button */}
         <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', position: 'relative' }} ref={settingsRef}>
           <button 
-            onClick={() => setShowSettings(!showSettings)}
+            onClick={() => {
+              if (!isAutoScrolling) setShowSettings(!showSettings);
+            }}
+            disabled={isAutoScrolling}
             style={{ 
               background: showSettings ? 'var(--gold-primary)' : 'transparent',
               color: showSettings ? '#000' : currentTheme.text,
               border: `1px solid ${showSettings ? 'var(--gold-primary)' : currentTheme.border}`,
               padding: '8px 16px',
               borderRadius: '20px',
-              cursor: 'pointer',
+              cursor: isAutoScrolling ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
               fontFamily: 'sans-serif',
               fontWeight: '600',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              opacity: isAutoScrolling ? 0.3 : 1,
+              pointerEvents: isAutoScrolling ? 'none' : 'auto'
             }}
           >
             <Type size={18} />

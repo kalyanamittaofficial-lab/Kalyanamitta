@@ -22,7 +22,7 @@ export default function FooterBar() {
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="hide-scrollbar"
+      className="nav-scrollbar"
       style={{
         width: '100%',
         background: 'linear-gradient(to top, rgba(16,18,22,0.95) 0%, rgba(20, 22, 26, 0.8) 100%)',
@@ -38,8 +38,8 @@ export default function FooterBar() {
         overflowX: 'auto',
         overflowY: 'hidden',
         WebkitOverflowScrolling: 'touch',
-        scrollbarWidth: 'none',
-        msOverflowStyle: 'none'
+        scrollbarWidth: 'thin',
+        scrollbarColor: 'rgba(196, 152, 79, 0.4) transparent'
       }}
     >
       {navItems.map((item, index) => {

@@ -133,10 +133,10 @@ export default function DharmaDhana() {
                 }
               `}</style>
 
-              {/* Minimal Cover Image */}
+              {/* Cover Image */}
               <div style={{
                 position: 'relative',
-                paddingTop: '130%', /* Taller ratio for elegant books */
+                paddingTop: '100%',
                 overflow: 'hidden',
                 background: '#0a0c10',
                 borderBottom: '1px solid rgba(255,255,255,0.05)'
@@ -250,7 +250,7 @@ export default function DharmaDhana() {
               {/* Cover Image */}
               <div style={{
                 position: 'relative',
-                paddingTop: '130%',
+                paddingTop: '100%',
                 overflow: 'hidden',
                 background: '#0a0c10',
                 borderBottom: '1px solid rgba(255,255,255,0.05)'

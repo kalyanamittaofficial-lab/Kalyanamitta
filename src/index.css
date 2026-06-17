@@ -58,6 +58,21 @@ h1, h2, h3, h4, .serif-title {
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+.nav-scrollbar::-webkit-scrollbar {
+  height: 4px;
+}
+.nav-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+.nav-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(196, 152, 79, 0.4);
+  border-radius: 4px;
+}
+.nav-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(196, 152, 79, 0.8);
+}
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
