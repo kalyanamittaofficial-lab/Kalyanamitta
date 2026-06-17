@@ -1,0 +1,114 @@
+:root {
+  --gold-primary: #c4984f;
+  --gold-hover: #d4a373;
+  --text-main: #f0ebd8;
+  --text-muted: #a39e8c;
+  --text-secondary: #e2d9cc;
+  
+  --glass-bg: rgba(15, 15, 15, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-blur: 24px;
+  
+  --font-sinhala: 'Noto Sans Sinhala', sans-serif;
+  --font-serif: 'Abhaya Libre', serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sinhala);
+  background-color: #060709;
+  color: var(--text-main);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, .serif-title {
+  font-family: var(--font-serif);
+  font-weight: 600;
+}
+
+/* Cinematic Video Background */
+.ambient-background-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+/* Overlay hidden to keep video completely clear */
+.ambient-overlay {
+  display: none;
+}
+
+/* Attempt to hide Gemini floating icon overlay */
+[id*="gemini"], [class*="gemini"], [class*="Gemini"] {
+  display: none !important;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Layout Utilities */
+.relative-layer {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hide on Desktop */
+@media (min-width: 769px) {
+  .mobile-only {
+    display: none !important;
+  }
+}
+
+/* Mobile Responsiveness Rules */
+@media (max-width: 768px) {
+  .hide-on-mobile {
+    display: none !important;
+  }
+  
+  .stack-on-mobile {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 20px !important;
+  }
+
+  .mobile-footer-padding {
+    padding-bottom: 120px !important;
+  }
+  
+  .text-center-mobile {
+    text-align: center !important;
+    align-items: center !important;
+  }
+  
+  /* Scale down the massive typography on small screens */
+  h1 {
+    font-size: clamp(2.5rem, 10vw, 4rem) !important;
+  }
+  
+  /* Make padded containers full width */
+  .mobile-padding {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+}
