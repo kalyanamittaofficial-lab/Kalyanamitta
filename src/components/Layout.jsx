@@ -30,7 +30,7 @@ export default function Layout() {
 
       {/* Persistent Footer - ONLY visible on Mobile */}
       <div className="mobile-only" style={{ position: 'fixed', bottom: 0, left: 0, width: '100%', zIndex: 50, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
-        <div style={{ width: '100%', maxWidth: '1200px', padding: '0 24px 24px 24px', pointerEvents: 'auto' }}>
+        <div style={{ width: '100%', maxWidth: '1200px', padding: '0 12px 20px 12px', pointerEvents: 'auto' }}>
           <FooterBar />
         </div>
       </div>

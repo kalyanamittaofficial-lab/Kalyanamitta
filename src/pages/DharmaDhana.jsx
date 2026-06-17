@@ -95,12 +95,8 @@ export default function DharmaDhana() {
         {/* Currently Available Books */}
         <motion.div 
           initial="hidden" animate="visible" variants={staggerContainer}
-          style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', 
-            gap: '30px',
-            marginBottom: '80px'
-          }}
+          className="book-grid-responsive"
+          style={{ marginBottom: '80px' }}
         >
           {booksData.map((book) => (
             <motion.div 
@@ -209,10 +205,8 @@ export default function DharmaDhana() {
         {/* Coming Soon Books */}
         <motion.div 
           initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} variants={staggerContainer}
+          className="book-grid-responsive"
           style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', 
-            gap: '30px',
             opacity: 0.8
           }}
         >

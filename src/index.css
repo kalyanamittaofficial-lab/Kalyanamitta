@@ -106,9 +106,22 @@ h1, h2, h3, h4, .serif-title {
     font-size: clamp(2.5rem, 10vw, 4rem) !important;
   }
   
-  /* Make padded containers full width */
   .mobile-padding {
     padding-left: 20px !important;
     padding-right: 20px !important;
+  }
+}
+
+/* Responsive Book Grid */
+.book-grid-responsive {
+  display: grid;
+  gap: 30px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+@media (max-width: 768px) {
+  .book-grid-responsive {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
   }
 }
