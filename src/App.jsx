@@ -11,6 +11,7 @@ import Community from './pages/Community';
 import Profile from './pages/Profile';
 import DharmaDhana from './pages/DharmaDhana';
 import BookReader from './components/BookReader';
+import OtherChantings from './pages/OtherChantings';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="community" element={<Community />} />
           <Route path="dharmadhana" element={<DharmaDhana />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="other-chantings" element={<OtherChantings />} />
           {/* Fallback */}
           <Route path="*" element={<Home />} />
         </Route>

@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Moon, Sun, BookOpen, Settings, Check, Type, Play, Pause, Minus, Plus } from 'lucide-react';
 import { booksData } from '../data/books';
 
 export default function BookReader() {
   const { bookId } = useParams();
+  const navigate = useNavigate();
   const [book, setBook] = useState(null);
   
   // Reader Settings State
@@ -28,6 +29,8 @@ export default function BookReader() {
   // Interactive Options State
   const [selectedOptions, setSelectedOptions] = useState({});
   const [pirithSelections, setPirithSelections] = useState({});
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmData, setConfirmData] = useState({ url: '', type: 'external' });
   const interactiveRefs = useRef({});
 
   const handleOptionToggle = (sectionId, optionId) => {
@@ -566,11 +569,11 @@ export default function BookReader() {
                           >
                             <h3 style={{ textAlign: 'center', color: 'var(--gold-primary)', marginBottom: '40px', fontSize: `${fontSize * 1.3}rem`, fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
                               <span style={{ opacity: 0.5 }}>✧</span>
-                              {section.commonComponent.title}
+                              {section.options.find(o => o.id === currentSelection)?.component?.title}
                               <span style={{ opacity: 0.5 }}>✧</span>
                             </h3>
                             
-                            {section.commonComponent.items.map((item, i) => renderContentItem(item, i, 'devatha-'))}
+                            {section.options.find(o => o.id === currentSelection)?.component?.items.map((item, i) => renderContentItem(item, i, 'devatha-'))}
                             
                             {/* Final Redirect Button */}
                             <div style={{ textAlign: 'center', marginTop: '50px' }}>
@@ -580,7 +583,12 @@ export default function BookReader() {
                                 onClick={() => {
                                   const selectedOpt = section.options.find(o => o.id === currentSelection);
                                   if (selectedOpt && selectedOpt.externalLink) {
-                                    window.open(selectedOpt.externalLink, '_blank');
+                                    if (selectedOpt.externalLink.startsWith('http')) {
+                                      setConfirmData({ url: selectedOpt.externalLink, type: 'external' });
+                                      setShowConfirmModal(true);
+                                    } else {
+                                      navigate(selectedOpt.externalLink);
+                                    }
                                   }
                                 }}
                                 style={{
@@ -906,6 +914,104 @@ export default function BookReader() {
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '100px', opacity: 0.2 }}>
             <div style={{ width: '40px', height: '1px', background: currentTheme.text }}></div>
           </div>
+          
+          {/* Confirmation Modal */}
+          <AnimatePresence>
+            {showConfirmModal && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                style={{
+                  position: 'fixed',
+                  top: 0, left: 0, right: 0, bottom: 0,
+                  background: 'rgba(0,0,0,0.8)',
+                  backdropFilter: 'blur(10px)',
+                  zIndex: 9999,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '20px'
+                }}
+              >
+                <motion.div
+                  initial={{ scale: 0.9, y: 20 }}
+                  animate={{ scale: 1, y: 0 }}
+                  exit={{ scale: 0.9, y: 20 }}
+                  style={{
+                    background: 'rgba(20,20,20,0.95)',
+                    border: '1px solid rgba(196,152,79,0.3)',
+                    borderRadius: '24px',
+                    padding: '40px',
+                    maxWidth: '450px',
+                    width: '100%',
+                    textAlign: 'center',
+                    boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
+                  }}
+                >
+                  <div style={{ 
+                    width: '60px', height: '60px', 
+                    borderRadius: '50%', 
+                    background: 'rgba(196,152,79,0.1)', 
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    margin: '0 auto 24px',
+                    color: 'var(--gold-primary)'
+                  }}>
+                    <BookOpen size={28} />
+                  </div>
+                  
+                  <h3 style={{ fontSize: '1.5rem', color: 'var(--gold-primary)', marginBottom: '16px', fontFamily: 'var(--font-sinhala)' }}>
+                    {confirmData.type === 'external' ? 'කල්‍යාණමිත්ත Google Drive' : 'බාහිර වෙබ් අඩවියක්'}
+                  </h3>
+                  
+                  <p style={{ color: '#fff', opacity: 0.8, fontSize: '1.1rem', marginBottom: '32px', fontFamily: 'var(--font-sinhala)', lineHeight: '1.6' }}>
+                    {confirmData.type === 'external' 
+                      ? 'ඔබව Kalyanamitta Pirith Google Folder එක වෙත රැගෙන යාමට සූදානම්. ඔබට එය විවෘත කිරීමට අවශ්‍යද?' 
+                      : 'ඔබ මෙම පිටුවෙන් ඉවත් වී බාහිර වෙබ් අඩවියකට ගමන් කිරීමට සූදානම්. ඔබට ඉදිරියට යාමට අවශ්‍යද?'}
+                  </p>
+                  
+                  <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+                    <button
+                      onClick={() => setShowConfirmModal(false)}
+                      style={{
+                        padding: '12px 24px',
+                        borderRadius: '12px',
+                        background: 'transparent',
+                        border: '1px solid rgba(255,255,255,0.2)',
+                        color: '#fff',
+                        fontFamily: 'var(--font-sinhala)',
+                        fontSize: '1.1rem',
+                        cursor: 'pointer',
+                        flex: 1
+                      }}
+                    >
+                      අවලංගු කරන්න (Cancel)
+                    </button>
+                    <button
+                      onClick={() => {
+                        window.open(confirmData.url, '_blank');
+                        setShowConfirmModal(false);
+                      }}
+                      style={{
+                        padding: '12px 24px',
+                        borderRadius: '12px',
+                        background: 'linear-gradient(135deg, var(--gold-primary), #D4AF37)',
+                        border: 'none',
+                        color: '#000',
+                        fontFamily: 'var(--font-sinhala)',
+                        fontSize: '1.1rem',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        flex: 1
+                      }}
+                    >
+                      විවෘත කරන්න (Confirm)
+                    </button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </article>
       </div>
     </motion.div>
