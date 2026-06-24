@@ -223,7 +223,7 @@ export default function BookReader() {
         {/* Left Side: Back Button */}
         <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start' }}>
           <button 
-            onClick={() => window.close()} 
+            onClick={() => navigate('/dharmadhana')} 
             style={{ background: 'none', border: 'none', color: currentTheme.text, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.8 }}
           >
             <ArrowLeft size={20} />

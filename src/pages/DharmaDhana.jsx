@@ -41,11 +41,7 @@ export default function DharmaDhana() {
   ];
 
   const handleBookClick = (book) => {
-    setPreviewBook(book);
-    setTimeout(() => {
-      setPreviewBook(null);
-      navigate(`/read/${book.id}`);
-    }, 3000);
+    navigate(`/read/${book.id}`);
   };
 
   return (
@@ -280,66 +276,7 @@ export default function DharmaDhana() {
           ))}
         </motion.div>
 
-        {/* Splash Preview Modal */}
-        <AnimatePresence>
-          {previewBook && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              style={{
-                position: 'fixed',
-                top: 0, left: 0, right: 0, bottom: 0,
-                background: '#000',
-                zIndex: 9999,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden'
-              }}
-            >
-              <motion.img 
-                initial={{ scale: 1.1, opacity: 0 }}
-                animate={{ scale: 1, opacity: 0.8 }}
-                exit={{ scale: 1.05, opacity: 0 }}
-                transition={{ duration: 1.5, ease: 'easeOut' }}
-                src={previewBook.coverImage} 
-                alt={previewBook.title}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover'
-                }}
-              />
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, duration: 1 }}
-                style={{
-                  position: 'absolute',
-                  bottom: '15%',
-                  textAlign: 'center',
-                  color: '#fff',
-                  fontFamily: 'var(--font-sinhala)',
-                  textShadow: '0 2px 20px rgba(0,0,0,0.8)'
-                }}
-              >
-                <div style={{ 
-                  width: '40px', height: '40px', 
-                  border: '3px solid rgba(255,255,255,0.2)', 
-                  borderTopColor: 'var(--gold-primary)', 
-                  borderRadius: '50%', 
-                  animation: 'spin 1s linear infinite', 
-                  margin: '0 auto 20px' 
-                }} />
-                <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
-                <p style={{ fontSize: '1.2rem', letterSpacing: '0.05em', color: 'var(--gold-primary)' }}>
-                  ග්‍රන්ථය විවෘත වෙමින් පවතී...
-                </p>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+
 
       </div>
     </motion.div>
