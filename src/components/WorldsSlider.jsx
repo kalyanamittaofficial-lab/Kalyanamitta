@@ -1,13 +1,25 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
+import React from 'react';
+import { Compass, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
+const fadeUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15
+    }
+  }
+};
+
 export default function WorldsSlider() {
   const navigate = useNavigate();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
-  const containerRef = useRef(null);
   
   const cards = [
     { title: 'බුදු වදන්', subtitle: 'දේශිත බුදු වදන් සහ අර්ථය', image: '/bhawana-page/dhammaPage.png', path: '/words' },
@@ -18,132 +30,163 @@ export default function WorldsSlider() {
     { title: 'කල්‍යාණ මිත්‍රත්වය', subtitle: 'ඉදිරියේදී බලාපොරොත්තු වන්න...', image: '/abhidhamma_pitaka.png', path: null },
   ];
 
-  // Number of cards to scroll at a time (1 by 1)
-  // Max index is calculated so we don't scroll into empty space.
-  // Assuming a standard screen fits about 3-4 cards. 
-  // We'll calculate maxIndex based on total cards. Let's say we leave 3 cards visible at the end.
-  const maxIndex = Math.max(0, cards.length - 3);
-
-  useEffect(() => {
-    if (isHovered) return;
-    
-    const timer = setInterval(() => {
-      setCurrentIndex((prev) => {
-        if (prev >= maxIndex) return 0; // Rewind to start smoothly
-        return prev + 1;
-      });
-    }, 4000);
-    
-    return () => clearInterval(timer);
-  }, [isHovered, maxIndex]);
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
-  };
-
-  const handlePrev = () => {
-    setCurrentIndex((prev) => (prev <= 0 ? maxIndex : prev - 1));
-  };
-
   return (
-    <div className="mobile-padding"
-      style={{ padding: '0 48px', marginTop: '60px', width: '100%', maxWidth: '1600px', margin: '60px auto 0 auto' }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ color: 'var(--gold-primary)' }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 22C12 22 4 16 4 10C4 6 7 2 12 2C17 2 20 6 20 10C20 16 12 22 12 22ZM12 18C15 14 17 10 17 8C17 5.5 15 4 12 4C9 4 7 5.5 7 8C7 10 9 14 12 18Z" opacity="0.3"/>
-              <path d="M12 22C12 22 8 16 8 11C8 8 9.5 6 12 6C14.5 6 16 8 16 11C16 16 12 22 12 22Z"/>
-            </svg>
-          </div>
-          <h3 style={{ fontSize: '1.2rem', color: 'var(--text-main)', fontWeight: '400', fontFamily: 'var(--font-serif)' }}>ධර්ම ලෝකයන්</h3>
+    <div className="mobile-padding" style={{ padding: '0 5vw', width: '100%', maxWidth: '1600px', margin: '80px auto 40px auto' }}>
+      
+      {/* Section Header */}
+      <motion.div 
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        variants={fadeUp}
+        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '48px', textAlign: 'center' }}
+      >
+        <div style={{ color: 'var(--gold-primary)', marginBottom: '16px', opacity: 0.8 }}>
+          <Compass size={32} strokeWidth={1.5} />
         </div>
-        
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <button onClick={handlePrev} style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }}>
-            <ChevronLeft size={16} />
-          </button>
-          <button onClick={handleNext} style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }}>
-            <ChevronRight size={16} />
-          </button>
-        </div>
-      </div>
+        <h2 style={{ fontSize: 'clamp(2rem, 4vw, 2.5rem)', color: 'var(--text-main)', fontWeight: '500', fontFamily: 'var(--font-sinhala)', letterSpacing: '-0.02em', marginBottom: '12px' }}>
+          දහම් පිවිසුම
+        </h2>
+        <div style={{ width: '60px', height: '2px', background: 'linear-gradient(90deg, transparent, var(--gold-primary), transparent)' }}></div>
+      </motion.div>
 
-      {/* Overflow container for the track */}
-      <motion.div ref={containerRef} style={{ width: '100%', overflow: 'hidden', paddingBottom: '20px', cursor: 'grab' }} whileTap={{ cursor: 'grabbing' }}>
-        <motion.div
-          drag="x"
-          dragConstraints={containerRef}
-          onDragEnd={(e, { offset, velocity }) => {
-            const swipe = Math.abs(offset.x) * velocity.x;
-            if (swipe < -10000) handleNext();
-            else if (swipe > 10000) handlePrev();
-          }}
-          animate={{ x: -(currentIndex * 260) }} // 240px width + 20px gap
-          transition={{ type: 'tween', ease: 'easeInOut', duration: 0.6 }}
-          style={{ display: 'flex', gap: '20px', width: 'max-content' }}
-        >
-          {cards.map((card, idx) => (
-            <motion.div
-              key={idx}
-              whileHover={{ y: -5 }}
-              onClick={() => card.path && navigate(card.path)}
-              style={{
-                width: '240px',
-                height: '280px',
-                borderRadius: '20px',
-                border: '1px solid rgba(255,255,255,0.1)',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'flex-end',
-                padding: '24px',
-                cursor: 'pointer',
-                position: 'relative',
-                overflow: 'hidden',
-                background: '#11141a' // fallback
-              }}
-              className="carousel-card"
-            >
-              {/* Background Image Layer */}
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                backgroundImage: `url(${card.image})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                transition: 'transform 0.5s ease'
-              }} className="card-bg-img" />
+      {/* Grid Layout */}
+      <motion.div 
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-50px" }}
+        variants={staggerContainer}
+        className="portal-grid"
+      >
+        <style>{`
+          .portal-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+          }
+          @media (max-width: 1024px) {
+            .portal-grid {
+              grid-template-columns: repeat(2, 1fr);
+              gap: 24px;
+            }
+          }
+          @media (max-width: 640px) {
+            .portal-grid {
+              grid-template-columns: 1fr;
+              gap: 20px;
+            }
+          }
+          
+          .portal-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.05);
+            background: #0a0c10;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            /* Aspect ratio approx 4:5 for elegance */
+            padding-top: 125%; 
+          }
+          
+          .portal-card:hover {
+            border-color: rgba(196,152,79,0.3);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 30px rgba(196,152,79,0.05);
+          }
 
-              {/* Gradient Overlay for Text Readability */}
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.9) 100%)',
-                zIndex: 1
-              }} />
+          .portal-bg-img {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-size: cover;
+            background-position: center;
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0.6;
+            filter: grayscale(20%);
+          }
+          
+          .portal-card:hover .portal-bg-img {
+            transform: scale(1.08);
+            opacity: 0.8;
+            filter: grayscale(0%);
+          }
 
-              <div style={{ position: 'relative', zIndex: 2 }}>
-                <h4 style={{ color: 'var(--text-main)', fontSize: '1.2rem', fontWeight: '400', marginBottom: '8px', fontFamily: 'var(--font-serif)' }}>{card.title}</h4>
-                <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginBottom: '16px', lineHeight: '1.4' }}>{card.subtitle}</p>
-                <div style={{ 
-                  width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)',
-                  display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'var(--text-main)', backdropFilter: 'blur(4px)'
-                }}>
-                  <ChevronRight size={16} />
-                </div>
+          .portal-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to top, rgba(6,7,9,1) 0%, rgba(6,7,9,0.4) 50%, rgba(6,7,9,0.1) 100%);
+            transition: background 0.5s ease;
+          }
+          
+          .portal-card:hover .portal-overlay {
+            background: linear-gradient(to top, rgba(6,7,9,0.95) 0%, rgba(6,7,9,0.2) 60%, transparent 100%);
+          }
+          
+          .portal-content {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+
+          .portal-card:hover .portal-content {
+            transform: translateY(-5px);
+          }
+
+          .portal-arrow {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--gold-primary);
+            font-size: 0.9rem;
+            font-family: var(--font-sinhala);
+            margin-top: 16px;
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+
+          .portal-card:hover .portal-arrow {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        `}</style>
+
+        {cards.map((card, idx) => (
+          <motion.div
+            key={idx}
+            variants={fadeUp}
+            onClick={() => card.path && navigate(card.path)}
+            className="portal-card"
+          >
+            {/* Background Image Layer */}
+            <div 
+              className="portal-bg-img"
+              style={{ backgroundImage: `url(${card.image})` }} 
+            />
+
+            {/* Gradient Overlay for Text Readability */}
+            <div className="portal-overlay" />
+
+            {/* Content Layer */}
+            <div className="portal-content">
+              <h4 style={{ color: '#fff', fontSize: '1.6rem', fontWeight: '500', marginBottom: '8px', fontFamily: 'var(--font-sinhala)', letterSpacing: '0.02em' }}>
+                {card.title}
+              </h4>
+              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.95rem', lineHeight: '1.5', fontFamily: 'var(--font-sinhala)' }}>
+                {card.subtitle}
+              </p>
+              
+              {/* Arrow Indicator on Hover */}
+              <div className="portal-arrow">
+                පිවිසෙන්න <ArrowRight size={16} />
               </div>
-            </motion.div>
-          ))}
-        </motion.div>
+            </div>
+          </motion.div>
+        ))}
       </motion.div>
     </div>
   );
