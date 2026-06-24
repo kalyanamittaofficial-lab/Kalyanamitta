@@ -15,6 +15,14 @@ export default function Layout() {
 
   return (
     <>
+      {/* Portal Banner */}
+      <div style={{ backgroundColor: '#800000', color: '#fdfdfc', textAlign: 'center', padding: '12px', fontSize: '14px', fontFamily: '"Noto Sans Sinhala", sans-serif', position: 'relative', zIndex: 100 }}>
+        අලුත්ම Kalyanamitta සාමාජික පුවරුව දැන් විවෘතයි! {' '}
+        <a href="http://localhost:3000/login" target="_blank" rel="noopener noreferrer" style={{ color: '#c4984f', fontWeight: 'bold', textDecoration: 'underline', marginLeft: '8px' }}>
+          මෙහි පිවිසෙන්න
+        </a>
+      </div>
+
       {/* Persistent Navigation */}
       <Header />
       

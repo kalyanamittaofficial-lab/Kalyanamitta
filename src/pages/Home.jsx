@@ -21,7 +21,12 @@ export default function Home() {
         autoPlay 
         loop 
         muted 
+        defaultMuted
         playsInline 
+        webkit-playsinline="true"
+        controls={false}
+        disablePictureInPicture
+        disableRemotePlayback
         className="ambient-background-video"
       >
         <source src="/herovideo.mp4" type="video/mp4" />

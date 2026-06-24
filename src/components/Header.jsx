@@ -129,17 +129,17 @@ export default function Header() {
           })}
         </nav>
 
-          {/* Action Icons (Desktop) & Hamburger (Mobile) */}
+        {/* Action Icons (Always visible on mobile & desktop) */}
         <div style={{ display: 'flex', gap: '16px' }}>
-          <div onClick={showComingSoonToast} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--glass-bg)', backdropFilter: 'blur(var(--glass-blur))', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-main)' }}>
+          <a href="http://localhost:3000/search" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--glass-bg)', backdropFilter: 'blur(var(--glass-blur))', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-main)', textDecoration: 'none' }}>
             <Search size={18} strokeWidth={1.5} />
-          </div>
-          <div onClick={showComingSoonToast} className="hide-on-mobile" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--glass-bg)', backdropFilter: 'blur(var(--glass-blur))', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-main)' }}>
+          </a>
+          <a href="http://localhost:3000/dashboard" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--glass-bg)', backdropFilter: 'blur(var(--glass-blur))', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-main)', textDecoration: 'none' }}>
             <Bell size={18} strokeWidth={1.5} />
-          </div>
-          <div onClick={showComingSoonToast} className="hide-on-mobile" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--glass-bg)', backdropFilter: 'blur(var(--glass-blur))', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-main)' }}>
+          </a>
+          <a href="http://localhost:3000/login" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--glass-bg)', backdropFilter: 'blur(var(--glass-blur))', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-main)', textDecoration: 'none' }}>
             <User size={18} strokeWidth={1.5} />
-          </div>
+          </a>
         </div>
       </header>
 
