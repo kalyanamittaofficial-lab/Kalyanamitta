@@ -9,6 +9,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState({ text: '', type: '' });
+  const [focusedInput, setFocusedInput] = useState(null);
 
   const handleAuth = async (e) => {
     e.preventDefault();
@@ -51,95 +52,123 @@ export default function Login() {
   };
 
   return (
-    <div className="flex-center" style={{ minHeight: 'calc(100vh - 100px)', padding: '24px' }}>
-      <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '32px', textAlign: 'center' }}>
-        <h1 style={{ marginBottom: '8px', fontSize: '2rem', fontWeight: 'bold', color: 'var(--primary)', fontFamily: 'var(--font-serif)' }}>
+    <div className="flex-center" style={{ minHeight: 'calc(100vh - 100px)', padding: '24px', background: 'radial-gradient(circle at top, var(--bg-secondary) 0%, var(--bg-main) 100%)' }}>
+      <div 
+        className="glass-panel" 
+        style={{ 
+          width: '100%', 
+          maxWidth: '420px', 
+          padding: '48px 40px', 
+          textAlign: 'center',
+          boxShadow: '0 20px 40px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05)',
+          borderRadius: '24px',
+          transition: 'transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)'
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+        onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+      >
+        <h1 style={{ marginBottom: '12px', fontSize: '2.25rem', fontWeight: '800', color: 'var(--primary)', fontFamily: 'var(--font-serif)', letterSpacing: '-0.02em' }}>
           Kalyanamitta
         </h1>
-        <p style={{ marginBottom: '32px', color: 'var(--text-muted)' }}>
+        <p style={{ marginBottom: '36px', color: 'var(--text-muted)', fontSize: '0.95rem', fontFamily: 'var(--font-sinhala)' }}>
           {isSignUp ? 'නව ගිණුමක් සාදන්න' : 'ඔබගේ ගිණුමට පිවිසෙන්න'}
         </p>
         
         {message.text && (
           <div style={{
-            marginBottom: '16px',
-            padding: '12px',
-            borderRadius: '6px',
+            marginBottom: '20px',
+            padding: '14px',
+            borderRadius: '12px',
             fontSize: '0.85rem',
-            background: message.type === 'error' ? '#fef2f2' : '#f0fdf4',
-            color: message.type === 'error' ? '#991b1b' : '#166534',
-            border: `1px solid ${message.type === 'error' ? '#fecaca' : '#bbf7d0'}`
+            fontFamily: 'var(--font-sinhala)',
+            background: message.type === 'error' ? '#fff1f2' : '#f0fdf4',
+            color: message.type === 'error' ? '#9f1239' : '#166534',
+            border: `1px solid ${message.type === 'error' ? '#fecdd3' : '#bbf7d0'}`,
+            animation: 'fadeIn 0.3s ease-out'
           }}>
             {message.text}
           </div>
         )}
 
-        <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
-          <input
-            type="email"
-            placeholder="විද්‍යුත් තැපෑල (Email)"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{
-              width: '100%',
-              padding: '12px 16px',
-              borderRadius: '6px',
-              border: '1px solid rgba(0,0,0,0.1)',
-              fontFamily: 'var(--font-sinhala)',
-              outline: 'none',
-              transition: 'border-color 0.2s',
-              background: '#fff',
-              color: 'var(--text-main)'
-            }}
-            onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
-            onBlur={(e) => e.target.style.borderColor = 'rgba(0,0,0,0.1)'}
-          />
-          <input
-            type="password"
-            placeholder="මුරපදය (Password)"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{
-              width: '100%',
-              padding: '12px 16px',
-              borderRadius: '6px',
-              border: '1px solid rgba(0,0,0,0.1)',
-              fontFamily: 'var(--font-sinhala)',
-              outline: 'none',
-              transition: 'border-color 0.2s',
-              background: '#fff',
-              color: 'var(--text-main)'
-            }}
-            onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
-            onBlur={(e) => e.target.style.borderColor = 'rgba(0,0,0,0.1)'}
-          />
+        <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '28px' }}>
+          <div style={{ position: 'relative' }}>
+            <input
+              type="email"
+              placeholder="විද්‍යුත් තැපෑල (Email)"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              style={{
+                width: '100%',
+                padding: '14px 18px',
+                borderRadius: '12px',
+                border: `2px solid ${focusedInput === 'email' ? 'var(--primary)' : 'var(--glass-border)'}`,
+                fontFamily: 'var(--font-sinhala)',
+                fontSize: '0.95rem',
+                outline: 'none',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                background: focusedInput === 'email' ? '#fff' : 'rgba(255, 255, 255, 0.5)',
+                color: 'var(--text-main)',
+                boxShadow: focusedInput === 'email' ? '0 4px 12px rgba(153, 27, 27, 0.1)' : 'none'
+              }}
+              onFocus={() => setFocusedInput('email')}
+              onBlur={() => setFocusedInput(null)}
+            />
+          </div>
+          <div style={{ position: 'relative' }}>
+            <input
+              type="password"
+              placeholder="මුරපදය (Password)"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              style={{
+                width: '100%',
+                padding: '14px 18px',
+                borderRadius: '12px',
+                border: `2px solid ${focusedInput === 'password' ? 'var(--primary)' : 'var(--glass-border)'}`,
+                fontFamily: 'var(--font-sinhala)',
+                fontSize: '0.95rem',
+                outline: 'none',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                background: focusedInput === 'password' ? '#fff' : 'rgba(255, 255, 255, 0.5)',
+                color: 'var(--text-main)',
+                boxShadow: focusedInput === 'password' ? '0 4px 12px rgba(153, 27, 27, 0.1)' : 'none'
+              }}
+              onFocus={() => setFocusedInput('password')}
+              onBlur={() => setFocusedInput(null)}
+            />
+          </div>
           <button
             type="submit"
             disabled={isLoading}
             style={{
               width: '100%',
-              padding: '12px',
-              borderRadius: '6px',
+              padding: '14px',
+              marginTop: '4px',
+              borderRadius: '12px',
               background: 'var(--primary)',
               color: '#fff',
               fontFamily: 'var(--font-sinhala)',
+              fontSize: '1rem',
               fontWeight: '600',
               border: 'none',
               cursor: isLoading ? 'not-allowed' : 'pointer',
               opacity: isLoading ? 0.7 : 1,
-              transition: 'all 0.2s'
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: '0 8px 20px rgba(153, 27, 27, 0.25)'
             }}
+            onMouseEnter={(e) => { if(!isLoading) e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 24px rgba(153, 27, 27, 0.35)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 20px rgba(153, 27, 27, 0.25)'; }}
           >
             {isLoading ? 'කරුණාකර රැඳී සිටින්න...' : (isSignUp ? 'ලියාපදිංචි වන්න' : 'ඇතුල් වන්න')}
           </button>
         </form>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-          <div style={{ flex: 1, height: '1px', background: 'rgba(0,0,0,0.1)' }}></div>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Or</span>
-          <div style={{ flex: 1, height: '1px', background: 'rgba(0,0,0,0.1)' }}></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '28px' }}>
+          <div style={{ flex: 1, height: '1px', background: 'var(--glass-border)' }}></div>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: '500' }}>Or continue with</span>
+          <div style={{ flex: 1, height: '1px', background: 'var(--glass-border)' }}></div>
         </div>
 
         <button
@@ -152,21 +181,23 @@ export default function Login() {
             alignItems: 'center',
             justifyContent: 'center',
             gap: '12px',
-            borderRadius: '6px',
+            borderRadius: '12px',
             background: '#fff',
-            padding: '12px',
-            fontSize: '0.85rem',
-            fontWeight: '500',
-            border: '1px solid rgba(0,0,0,0.1)',
+            padding: '14px',
+            fontSize: '0.95rem',
+            fontFamily: 'var(--font-sinhala)',
+            fontWeight: '600',
+            border: '2px solid var(--glass-border)',
             cursor: isLoading ? 'not-allowed' : 'pointer',
             opacity: isLoading ? 0.7 : 1,
             color: 'var(--text-main)',
-            transition: 'background 0.2s'
+            transition: 'all 0.3s ease',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
           }}
-          onMouseEnter={(e) => { if(!isLoading) e.currentTarget.style.background = '#f9fafb' }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = '#fff' }}
+          onMouseEnter={(e) => { if(!isLoading) { e.currentTarget.style.background = '#f9fafb'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.1)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = 'var(--glass-border)'; e.currentTarget.style.transform = 'translateY(0)'; }}
         >
-          <svg viewBox="0 0 24 24" style={{ height: '20px', width: '20px' }}>
+          <svg viewBox="0 0 24 24" style={{ height: '22px', width: '22px' }}>
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
@@ -175,7 +206,7 @@ export default function Login() {
           Google හරහා පිවිසෙන්න
         </button>
 
-        <p style={{ marginTop: '32px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+        <p style={{ marginTop: '36px', fontSize: '0.9rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)' }}>
           {isSignUp ? 'දැනටමත් ගිණුමක් තිබේද?' : 'නව ගිණුමක් අවශ්‍යද?'}
           <button 
             onClick={() => setIsSignUp(!isSignUp)} 
@@ -186,10 +217,12 @@ export default function Login() {
               color: 'var(--primary)',
               fontWeight: '600',
               cursor: 'pointer',
-              textDecoration: 'none'
+              textDecoration: 'none',
+              transition: 'color 0.2s',
+              fontFamily: 'var(--font-sinhala)'
             }}
-            onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
-            onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
+            onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline'; e.currentTarget.style.color = 'var(--primary-hover)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none'; e.currentTarget.style.color = 'var(--primary)'; }}
           >
             {isSignUp ? 'ඇතුල් වන්න' : 'ලියාපදිංචි වන්න'}
           </button>
