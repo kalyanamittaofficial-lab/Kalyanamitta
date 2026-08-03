@@ -45,93 +45,66 @@ export default function DharmaDhana() {
   };
 
   return (
-    <motion.div
-      key="dharmadhana"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.8 }}
-      style={{ position: 'relative', minHeight: '100vh', width: '100%', overflowX: 'hidden' }}
+    <div
+      style={{ position: 'relative', minHeight: '100vh', width: '100%', overflowX: 'hidden', background: 'var(--bg-main)' }}
     >
-      {/* Dynamic Background */}
-      <div style={{
-        position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-        background: 'radial-gradient(circle at 50% 0%, rgba(30, 25, 15, 0.4) 0%, rgba(5, 5, 5, 1) 70%)',
-        zIndex: 0,
-        pointerEvents: 'none'
-      }}></div>
-
-      <div style={{
-        position: 'absolute', top: '-20%', left: '-10%', width: '50%', height: '50%',
-        background: 'radial-gradient(circle, rgba(196,152,79,0.05) 0%, transparent 70%)',
-        filter: 'blur(80px)',
-        zIndex: 0
-      }}></div>
-
       {/* Main Content Wrapper */}
       <div className="mobile-padding" style={{ position: 'relative', zIndex: 10, paddingTop: '150px', paddingBottom: '120px', maxWidth: '1400px', margin: '0 auto', paddingLeft: '5vw', paddingRight: '5vw' }}>
         
         {/* Hero Text */}
-        <motion.div 
-          initial="hidden" animate="visible" variants={fadeUp}
+        <div 
           className="text-center-mobile" style={{ maxWidth: '800px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', margin: '0 auto 60px auto' }}
         >
-          <div style={{ color: 'var(--gold-primary)', marginBottom: '12px', opacity: 0.8 }}>
-            <BookOpen size={28} />
+          <div style={{ color: 'var(--primary)', marginBottom: '12px' }}>
+            <BookOpen size={32} strokeWidth={1.5} />
           </div>
           <h1 style={{
-            fontSize: 'clamp(2.2rem, 4vw, 3.5rem)', fontWeight: '500',
-            background: 'linear-gradient(to bottom, #fff, #a0a0a0)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            fontFamily: 'var(--font-sinhala)',
-            marginBottom: '12px', letterSpacing: '-0.02em',
-            textShadow: '0 10px 30px rgba(255,255,255,0.05)'
+            fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: '700',
+            color: 'var(--primary)',
+            fontFamily: 'var(--font-serif)',
+            marginBottom: '12px', letterSpacing: '-0.02em'
           }}>ධර්ම දානය</h1>
           
-          <p style={{ fontSize: '1rem', color: 'var(--gold-primary)', marginBottom: '20px', letterSpacing: '0.1em', fontWeight: '400', textTransform: 'uppercase' }}>
+          <p style={{ fontSize: '1rem', color: 'var(--primary)', marginBottom: '20px', letterSpacing: '0.1em', fontWeight: '600', textTransform: 'uppercase' }}>
             කල්‍යාණමිත්ත ප්‍රකාශන
           </p>
-          <p style={{ fontSize: '1rem', color: '#a0a0a0', lineHeight: '1.6', maxWidth: '600px' }}>
+          <p style={{ fontSize: '1.1rem', color: 'var(--text-muted)', lineHeight: '1.6', maxWidth: '600px', fontFamily: 'var(--font-sinhala)' }}>
             අප විසින් සම්පාදනය කරන ලද ධර්ම ග්‍රන්ථ සහ අත්පොත් මෙහිදී ඔබට කියවිය හැක.
           </p>
-        </motion.div>
+        </div>
 
         {/* Currently Available Books */}
-        <motion.div 
-          initial="hidden" animate="visible" variants={staggerContainer}
+        <div 
           className="book-grid-responsive"
           style={{ marginBottom: '80px' }}
         >
           {booksData.map((book) => (
-            <motion.div 
-              variants={fadeUp}
+            <div 
               key={book.id} 
               onClick={() => handleBookClick(book)}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
-                background: 'rgba(20, 20, 22, 0.6)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(196,152,79,0.15)',
-                borderRadius: '24px',
+                background: 'var(--bg-secondary)',
+                border: '1px solid rgba(0,0,0,0.05)',
+                borderRadius: '4px',
                 overflow: 'hidden',
                 cursor: 'pointer',
-                transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-                position: 'relative'
+                transition: 'all 0.3s ease',
+                position: 'relative',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.02)'
               }}
               className="book-card-hover"
             >
               <style>{`
                 .book-card-hover:hover {
-                  transform: translateY(-12px);
-                  border-color: rgba(196,152,79,0.4) !important;
-                  box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 0 40px rgba(196,152,79,0.1);
+                  transform: translateY(-8px);
+                  border-color: var(--primary) !important;
+                  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
                 }
                 .book-card-hover:hover .read-btn {
-                  background: var(--gold-primary) !important;
-                  color: #000 !important;
+                  background: var(--primary) !important;
+                  color: #fff !important;
                 }
               `}</style>
 
@@ -140,8 +113,8 @@ export default function DharmaDhana() {
                 position: 'relative',
                 paddingTop: '100%',
                 overflow: 'hidden',
-                background: 'linear-gradient(135deg, #1a1510 0%, #0a0c10 100%)',
-                borderBottom: '1px solid rgba(196,152,79,0.2)'
+                background: 'var(--glass-bg)',
+                borderBottom: '1px solid rgba(0,0,0,0.05)'
               }}>
                 <div style={{
                   position: 'absolute',
@@ -150,71 +123,64 @@ export default function DharmaDhana() {
                   padding: '20px',
                   textAlign: 'center'
                 }}>
-                  <BookOpen size={48} color="rgba(196,152,79,0.3)" style={{ marginBottom: '20px' }} strokeWidth={1} />
-                  <h3 style={{ fontSize: '1.8rem', fontFamily: 'var(--font-sinhala)', color: 'var(--gold-primary)', marginBottom: '8px', fontWeight: '500', lineHeight: '1.3' }}>
+                  <BookOpen size={48} color="rgba(140, 21, 21, 0.2)" style={{ marginBottom: '20px' }} strokeWidth={1} />
+                  <h3 style={{ fontSize: '1.8rem', fontFamily: 'var(--font-serif)', color: 'var(--text-main)', marginBottom: '8px', fontWeight: '700', lineHeight: '1.3' }}>
                     {book.title}
                   </h3>
-                  <div style={{ width: '40px', height: '1px', background: 'rgba(196,152,79,0.3)', marginTop: '16px' }}></div>
+                  <div style={{ width: '40px', height: '2px', background: 'var(--primary)', marginTop: '16px', opacity: 0.3 }}></div>
                 </div>
               </div>
 
               {/* Typography Meta */}
               <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', flexGrow: 1, zIndex: 2 }}>
-                <p style={{ fontSize: '0.8rem', color: 'var(--gold-primary)', marginBottom: '12px', letterSpacing: '0.05em' }}>
+                <p style={{ fontSize: '0.85rem', color: 'var(--primary)', marginBottom: '12px', letterSpacing: '0.05em', fontWeight: '600' }}>
                   {book.author}
                 </p>
-                <p style={{ fontSize: '0.9rem', color: '#909090', lineHeight: '1.5', marginBottom: '24px', flexGrow: 1, fontFamily: 'var(--font-sinhala)' }}>
+                <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', lineHeight: '1.5', marginBottom: '24px', flexGrow: 1, fontFamily: 'var(--font-sinhala)' }}>
                   {book.description}
                 </p>
                 
                 <div className="read-btn" style={{ 
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', 
-                  color: '#fff', fontSize: '0.9rem', fontWeight: '500',
-                  padding: '10px 20px', borderRadius: '12px',
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: 'var(--text-main)', fontSize: '0.9rem', fontWeight: '600',
+                  padding: '10px 20px', borderRadius: '4px',
+                  background: 'transparent',
+                  border: '1px solid rgba(0,0,0,0.1)',
                   transition: 'all 0.3s ease',
                   fontFamily: 'var(--font-sinhala)'
                 }}>
                   කියවන්න <span style={{ fontSize: '1.1rem', lineHeight: '1' }}>→</span>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
-        </motion.div>
+        </div>
 
         {/* Coming Soon Divider */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
+        <div 
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '24px', marginBottom: '60px' }}
         >
-          <div style={{ height: '1px', flex: 1, background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.1))' }}></div>
-          <h2 style={{ fontSize: '1.5rem', color: '#888', fontFamily: 'var(--font-sinhala)', fontWeight: '400' }}>ඉදිරියේදී බලාපොරොත්තු වන්න</h2>
-          <div style={{ height: '1px', flex: 1, background: 'linear-gradient(to left, transparent, rgba(255,255,255,0.1))' }}></div>
-        </motion.div>
+          <div style={{ height: '1px', flex: 1, background: 'var(--glass-border)' }}></div>
+          <h2 style={{ fontSize: '1.5rem', color: 'var(--text-muted)', fontFamily: 'var(--font-serif)', fontWeight: '700' }}>ඉදිරියේදී බලාපොරොත්තු වන්න</h2>
+          <div style={{ height: '1px', flex: 1, background: 'var(--glass-border)' }}></div>
+        </div>
 
         {/* Coming Soon Books */}
-        <motion.div 
-          initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} variants={staggerContainer}
+        <div 
           className="book-grid-responsive"
           style={{ 
-            opacity: 0.8
+            opacity: 0.7
           }}
         >
           {upcomingBooks.map((book) => (
-            <motion.div 
-              variants={fadeUp}
+            <div 
               key={book.id} 
               style={{
                 display: 'flex',
                 flexDirection: 'column',
-                background: 'rgba(10, 10, 10, 0.4)',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255,255,255,0.05)',
-                borderRadius: '24px',
+                background: 'var(--bg-secondary)',
+                border: '1px solid rgba(0,0,0,0.05)',
+                borderRadius: '4px',
                 overflow: 'hidden',
                 position: 'relative'
               }}
@@ -222,19 +188,18 @@ export default function DharmaDhana() {
               {/* Coming Soon Badge Overlay */}
               <div style={{
                 position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-                background: 'rgba(0,0,0,0.5)', zIndex: 10,
+                background: 'rgba(255,255,255,0.7)', zIndex: 10,
                 display: 'flex', alignItems: 'center', justifyContent: 'center'
               }}>
                 <div style={{
-                  background: 'rgba(20,20,20,0.8)',
-                  backdropFilter: 'blur(10px)',
+                  background: 'var(--primary)',
                   padding: '8px 24px',
                   borderRadius: '30px',
-                  border: '1px solid rgba(255,255,255,0.1)',
                   color: '#fff',
                   fontFamily: 'var(--font-sinhala)',
                   fontSize: '0.9rem',
-                  letterSpacing: '0.05em'
+                  letterSpacing: '0.05em',
+                  fontWeight: '600'
                 }}>
                   ඉදිරියේදී
                 </div>
@@ -245,8 +210,8 @@ export default function DharmaDhana() {
                 position: 'relative',
                 paddingTop: '100%',
                 overflow: 'hidden',
-                background: 'linear-gradient(135deg, #111 0%, #0a0c10 100%)',
-                borderBottom: '1px solid rgba(255,255,255,0.05)'
+                background: 'var(--glass-bg)',
+                borderBottom: '1px solid rgba(0,0,0,0.05)'
               }}>
                 <div style={{
                   position: 'absolute',
@@ -255,8 +220,8 @@ export default function DharmaDhana() {
                   padding: '20px',
                   textAlign: 'center'
                 }}>
-                  <BookOpen size={48} color="rgba(255,255,255,0.1)" style={{ marginBottom: '20px' }} strokeWidth={1} />
-                  <h3 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-sinhala)', color: '#666', marginBottom: '8px', fontWeight: '500', lineHeight: '1.3' }}>
+                  <BookOpen size={48} color="rgba(0,0,0,0.1)" style={{ marginBottom: '20px' }} strokeWidth={1} />
+                  <h3 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-serif)', color: 'var(--text-muted)', marginBottom: '8px', fontWeight: '700', lineHeight: '1.3' }}>
                     {book.title}
                   </h3>
                 </div>
@@ -264,21 +229,19 @@ export default function DharmaDhana() {
 
               {/* Typography Meta */}
               <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                <p style={{ fontSize: '0.8rem', color: 'rgba(196,152,79,0.5)', marginBottom: '16px', letterSpacing: '0.05em' }}>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '16px', letterSpacing: '0.05em' }}>
                   {book.author}
                 </p>
-                <div style={{ width: '30px', height: '1px', background: 'rgba(255,255,255,0.1)', marginBottom: '16px' }}></div>
-                <p style={{ fontSize: '0.9rem', color: '#666', lineHeight: '1.5', flexGrow: 1, fontFamily: 'var(--font-sinhala)' }}>
+                <div style={{ width: '30px', height: '1px', background: 'rgba(0,0,0,0.1)', marginBottom: '16px' }}></div>
+                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.5', flexGrow: 1, fontFamily: 'var(--font-sinhala)' }}>
                   {book.description}
                 </p>
               </div>
-            </motion.div>
+            </div>
           ))}
-        </motion.div>
-
-
+        </div>
 
       </div>
-    </motion.div>
+    </div>
   );
 }

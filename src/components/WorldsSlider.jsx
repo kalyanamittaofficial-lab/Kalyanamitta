@@ -31,43 +31,30 @@ export default function WorldsSlider() {
   ];
 
   return (
-    <div className="mobile-padding" style={{ padding: '0 5vw', width: '100%', maxWidth: '1600px', margin: '80px auto 40px auto' }}>
+    <div className="mobile-padding" style={{ padding: '0 5vw', width: '100%', maxWidth: '1400px', margin: '80px auto 40px auto' }}>
       
       {/* Section Header */}
-      <motion.div 
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        variants={fadeUp}
-        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '48px', textAlign: 'center' }}
-      >
-        <div style={{ color: 'var(--gold-primary)', marginBottom: '16px', opacity: 0.8 }}>
-          <Compass size={32} strokeWidth={1.5} />
-        </div>
-        <h2 style={{ fontSize: 'clamp(2rem, 4vw, 2.5rem)', color: 'var(--text-main)', fontWeight: '500', fontFamily: 'var(--font-sinhala)', letterSpacing: '-0.02em', marginBottom: '12px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginBottom: '40px', borderBottom: '1px solid rgba(0,0,0,0.1)', paddingBottom: '20px' }}>
+        <h2 style={{ fontSize: 'clamp(2rem, 3vw, 2.5rem)', color: 'var(--primary)', fontWeight: '700', fontFamily: 'var(--font-serif)', letterSpacing: '-0.02em', marginBottom: '8px' }}>
           දහම් පිවිසුම
         </h2>
-        <div style={{ width: '60px', height: '2px', background: 'linear-gradient(90deg, transparent, var(--gold-primary), transparent)' }}></div>
-      </motion.div>
+        <div style={{ color: 'var(--text-muted)', fontSize: '1.1rem', fontFamily: 'var(--font-sinhala)' }}>
+          ධර්ම මාර්ගයේ විවිධ පැතිකඩයන් ගවේෂණය කරන්න
+        </div>
+      </div>
 
       {/* Grid Layout */}
-      <motion.div 
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-50px" }}
-        variants={staggerContainer}
-        className="portal-grid"
-      >
+      <div className="portal-grid">
         <style>{`
           .portal-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
+            gap: 40px;
           }
           @media (max-width: 1024px) {
             .portal-grid {
               grid-template-columns: repeat(2, 1fr);
-              gap: 24px;
+              gap: 30px;
             }
           }
           @media (max-width: 640px) {
@@ -78,21 +65,30 @@ export default function WorldsSlider() {
           }
           
           .portal-card {
-            position: relative;
-            overflow: hidden;
-            border-radius: 24px;
-            border: 1px solid rgba(255,255,255,0.05);
-            background: #0a0c10;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-main);
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 4px; /* Minimalistic rounded corners */
             cursor: pointer;
-            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-            /* Aspect ratio approx 4:5 for elegance */
-            padding-top: 125%; 
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            overflow: hidden;
+            position: relative;
           }
           
           .portal-card:hover {
-            border-color: rgba(196,152,79,0.3);
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 30px rgba(196,152,79,0.05);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+            border-color: var(--primary);
+          }
+
+          .portal-img-container {
+            width: 100%;
+            padding-top: 60%; /* 5:3 Aspect Ratio */
+            position: relative;
+            background: var(--bg-secondary);
+            overflow: hidden;
           }
 
           .portal-bg-img {
@@ -100,94 +96,71 @@ export default function WorldsSlider() {
             top: 0; left: 0; right: 0; bottom: 0;
             background-size: cover;
             background-position: center;
-            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-            opacity: 0.6;
-            filter: grayscale(20%);
+            transition: transform 0.5s ease;
+            filter: grayscale(10%);
           }
           
           .portal-card:hover .portal-bg-img {
-            transform: scale(1.08);
-            opacity: 0.8;
+            transform: scale(1.05);
             filter: grayscale(0%);
-          }
-
-          .portal-overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(to top, rgba(6,7,9,1) 0%, rgba(6,7,9,0.4) 50%, rgba(6,7,9,0.1) 100%);
-            transition: background 0.5s ease;
-          }
-          
-          .portal-card:hover .portal-overlay {
-            background: linear-gradient(to top, rgba(6,7,9,0.95) 0%, rgba(6,7,9,0.2) 60%, transparent 100%);
           }
           
           .portal-content {
-            position: absolute;
-            bottom: 0; left: 0; right: 0;
-            padding: 30px;
+            padding: 24px;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
-            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-          }
-
-          .portal-card:hover .portal-content {
-            transform: translateY(-5px);
+            flex-grow: 1;
           }
 
           .portal-arrow {
             display: flex;
             align-items: center;
             gap: 8px;
-            color: var(--gold-primary);
-            font-size: 0.9rem;
+            color: var(--primary);
+            font-size: 0.95rem;
+            font-weight: 600;
             font-family: var(--font-sinhala);
-            margin-top: 16px;
-            opacity: 0;
-            transform: translateX(-10px);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            margin-top: auto;
+            padding-top: 16px;
+            transition: gap 0.3s ease;
           }
 
           .portal-card:hover .portal-arrow {
-            opacity: 1;
-            transform: translateX(0);
+            gap: 12px;
           }
         `}</style>
 
         {cards.map((card, idx) => (
-          <motion.div
+          <div
             key={idx}
-            variants={fadeUp}
             onClick={() => card.path && navigate(card.path)}
             className="portal-card"
           >
-            {/* Background Image Layer */}
-            <div 
-              className="portal-bg-img"
-              style={{ backgroundImage: `url(${card.image})` }} 
-            />
-
-            {/* Gradient Overlay for Text Readability */}
-            <div className="portal-overlay" />
+            {/* Image Layer */}
+            <div className="portal-img-container">
+              <div 
+                className="portal-bg-img"
+                style={{ backgroundImage: `url(${card.image})` }} 
+              />
+            </div>
 
             {/* Content Layer */}
             <div className="portal-content">
-              <h4 style={{ color: '#fff', fontSize: '1.6rem', fontWeight: '500', marginBottom: '8px', fontFamily: 'var(--font-sinhala)', letterSpacing: '0.02em' }}>
+              <h4 style={{ color: 'var(--text-main)', fontSize: '1.4rem', fontWeight: '700', marginBottom: '8px', fontFamily: 'var(--font-serif)' }}>
                 {card.title}
               </h4>
-              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.95rem', lineHeight: '1.5', fontFamily: 'var(--font-sinhala)' }}>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: '1.6', fontFamily: 'var(--font-sinhala)' }}>
                 {card.subtitle}
               </p>
               
-              {/* Arrow Indicator on Hover */}
+              {/* Arrow Indicator */}
               <div className="portal-arrow">
                 පිවිසෙන්න <ArrowRight size={16} />
               </div>
             </div>
-          </motion.div>
+          </div>
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 }

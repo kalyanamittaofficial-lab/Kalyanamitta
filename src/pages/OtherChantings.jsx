@@ -29,32 +29,30 @@ export default function OtherChantings() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(to bottom, #000000, #111111)',
-      color: '#ffffff',
-      paddingTop: '100px',
-      paddingBottom: '50px'
+      background: 'var(--bg-main)',
+      color: 'var(--text-main)',
+      paddingTop: '150px',
+      paddingBottom: '120px'
     }}>
-      <div className="container" style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 20px' }}>
+      <div className="mobile-padding" style={{ maxWidth: '1200px', margin: '0 auto' }}>
         
         {/* Header */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+        <div 
           style={{ textAlign: 'center', marginBottom: '60px' }}
         >
-          <div style={{ color: 'var(--gold-primary)', marginBottom: '16px' }}>✧ ✧ ✧</div>
+          <div style={{ color: 'var(--primary)', marginBottom: '16px' }}>✧ ✧ ✧</div>
           <h1 style={{ 
-            fontSize: '2.5rem', 
-            color: 'var(--gold-primary)', 
+            fontSize: 'clamp(2.5rem, 5vw, 4rem)', 
+            color: 'var(--primary)', 
             marginBottom: '20px', 
-            fontFamily: 'var(--font-sinhala)',
-            fontWeight: '600' 
+            fontFamily: 'var(--font-serif)',
+            fontWeight: '700' 
           }}>
             වෙනත් සජ්ඣායනයන්
           </h1>
           <p style={{ 
             fontSize: '1.2rem', 
-            opacity: 0.8, 
+            color: 'var(--text-muted)',
             fontFamily: 'var(--font-sinhala)', 
             maxWidth: '600px', 
             margin: '0 auto',
@@ -62,7 +60,7 @@ export default function OtherChantings() {
           }}>
             පහත දැක්වෙන සූත්‍ර දේශනාවන්ගෙන් ඔබට අවශ්‍ය සජ්ඣායනාව තෝරාගන්න.
           </p>
-        </motion.div>
+        </div>
 
         {/* Chantings Grid */}
         <div style={{
@@ -71,231 +69,211 @@ export default function OtherChantings() {
           gap: '24px'
         }}>
           {chantings.map((chanting, index) => (
-            <motion.button
+            <button
               key={chanting.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-              whileHover={{ scale: 1.03, y: -5 }}
-              whileTap={{ scale: 0.98 }}
               onClick={() => handleChantingClick(chanting)}
               style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(196,152,79,0.2)',
-                borderRadius: '16px',
+                background: 'var(--bg-secondary)',
+                border: '1px solid rgba(0,0,0,0.05)',
+                borderRadius: '4px',
                 padding: '30px 20px',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 gap: '16px',
                 cursor: 'pointer',
-                backdropFilter: 'blur(10px)',
                 transition: 'all 0.3s ease',
-                color: '#fff',
+                color: 'var(--text-main)',
                 fontFamily: 'var(--font-sinhala)',
                 position: 'relative',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.02)'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(196,152,79,0.1)';
-                e.currentTarget.style.border = '1px solid rgba(196,152,79,0.5)';
-                e.currentTarget.style.boxShadow = '0 10px 30px rgba(196,152,79,0.15)';
+                e.currentTarget.style.transform = 'translateY(-4px)';
+                e.currentTarget.style.borderColor = 'var(--primary)';
+                e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,0,0,0.08)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
-                e.currentTarget.style.border = '1px solid rgba(196,152,79,0.2)';
-                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.borderColor = 'rgba(0,0,0,0.05)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.02)';
               }}
             >
-              <BookOpen size={32} color={chanting.isReady ? "var(--gold-primary)" : "rgba(255,255,255,0.4)"} style={{ opacity: 0.8 }} />
-              <span style={{ fontSize: '1.2rem', fontWeight: '500', opacity: chanting.isReady ? 1 : 0.6 }}>{chanting.name}</span>
+              <BookOpen size={32} color={chanting.isReady ? "var(--primary)" : "rgba(0,0,0,0.2)"} />
+              <span style={{ fontSize: '1.2rem', fontWeight: '600', opacity: chanting.isReady ? 1 : 0.6 }}>{chanting.name}</span>
               
               {!chanting.isReady && (
                 <div style={{
                   position: 'absolute',
                   top: '12px',
                   right: '12px',
-                  background: 'rgba(255,255,255,0.1)',
-                  padding: '4px 8px',
-                  borderRadius: '10px',
+                  background: 'rgba(0,0,0,0.05)',
+                  padding: '4px 12px',
+                  borderRadius: '30px',
                   fontSize: '0.75rem',
-                  color: 'rgba(255,255,255,0.6)'
+                  color: 'var(--text-muted)'
                 }}>
                   ඉදිරියේදී
                 </div>
               )}
-            </motion.button>
+            </button>
           ))}
         </div>
 
         {/* External Link Confirmation Modal */}
-        <AnimatePresence>
-          {showConfirmModal && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+        {showConfirmModal && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(0,0,0,0.4)',
+              backdropFilter: 'blur(4px)',
+              zIndex: 9999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px'
+            }}
+          >
+            <div
               style={{
-                position: 'fixed',
-                top: 0, left: 0, right: 0, bottom: 0,
-                background: 'rgba(0,0,0,0.8)',
-                backdropFilter: 'blur(10px)',
-                zIndex: 9999,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '20px'
+                background: 'var(--bg-main)',
+                border: '1px solid rgba(0,0,0,0.1)',
+                borderRadius: '8px',
+                padding: '40px',
+                maxWidth: '450px',
+                width: '100%',
+                textAlign: 'center',
+                boxShadow: '0 20px 50px rgba(0,0,0,0.1)'
               }}
             >
-              <motion.div
-                initial={{ scale: 0.9, y: 20 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.9, y: 20 }}
-                style={{
-                  background: 'rgba(20,20,20,0.95)',
-                  border: '1px solid rgba(196,152,79,0.3)',
-                  borderRadius: '24px',
-                  padding: '40px',
-                  maxWidth: '450px',
-                  width: '100%',
-                  textAlign: 'center',
-                  boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
-                }}
-              >
-                <div style={{ 
-                  width: '60px', height: '60px', 
-                  borderRadius: '50%', 
-                  background: 'rgba(196,152,79,0.1)', 
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  margin: '0 auto 24px',
-                  color: 'var(--gold-primary)'
-                }}>
-                  <BookOpen size={28} />
-                </div>
-                
-                <h3 style={{ fontSize: '1.5rem', color: 'var(--gold-primary)', marginBottom: '16px', fontFamily: 'var(--font-sinhala)' }}>
-                  බාහිර වෙබ් අඩවියක්
-                </h3>
-                
-                <p style={{ color: '#fff', opacity: 0.8, fontSize: '1.1rem', marginBottom: '32px', fontFamily: 'var(--font-sinhala)', lineHeight: '1.6' }}>
-                  මෙය කල්‍යාණමිත්ත වෙබ් අඩවියෙන් පරිබාහිර වෙබ් අඩවියකි. ඔබට මෙය නව පිටුවක විවෘත කිරීමට අවශ්‍යද?
-                </p>
-                
-                <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
-                  <button
-                    onClick={() => setShowConfirmModal(false)}
-                    style={{
-                      padding: '12px 24px',
-                      borderRadius: '12px',
-                      background: 'transparent',
-                      border: '1px solid rgba(255,255,255,0.2)',
-                      color: '#fff',
-                      fontFamily: 'var(--font-sinhala)',
-                      fontSize: '1.1rem',
-                      cursor: 'pointer',
-                      flex: 1
-                    }}
-                  >
-                    අවලංගු කරන්න (Cancel)
-                  </button>
-                  <button
-                    onClick={() => {
-                      window.open(confirmUrl, '_blank');
-                      setShowConfirmModal(false);
-                    }}
-                    style={{
-                      padding: '12px 24px',
-                      borderRadius: '12px',
-                      background: 'linear-gradient(135deg, var(--gold-primary), #D4AF37)',
-                      border: 'none',
-                      color: '#000',
-                      fontFamily: 'var(--font-sinhala)',
-                      fontSize: '1.1rem',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      flex: 1
-                    }}
-                  >
-                    විවෘත කරන්න (Confirm)
-                  </button>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Coming Soon Modal */}
-        <AnimatePresence>
-          {showComingSoonModal && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              style={{
-                position: 'fixed',
-                top: 0, left: 0, right: 0, bottom: 0,
-                background: 'rgba(0,0,0,0.8)',
-                backdropFilter: 'blur(10px)',
-                zIndex: 9999,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '20px'
-              }}
-            >
-              <motion.div
-                initial={{ scale: 0.9, y: 20 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.9, y: 20 }}
-                style={{
-                  background: 'rgba(20,20,20,0.95)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '24px',
-                  padding: '40px',
-                  maxWidth: '450px',
-                  width: '100%',
-                  textAlign: 'center',
-                  boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
-                }}
-              >
-                <div style={{ 
-                  width: '60px', height: '60px', 
-                  borderRadius: '50%', 
-                  background: 'rgba(255,255,255,0.05)', 
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  margin: '0 auto 24px',
-                  color: 'rgba(255,255,255,0.8)'
-                }}>
-                  <Info size={28} />
-                </div>
-                
-                <h3 style={{ fontSize: '1.5rem', color: '#fff', marginBottom: '16px', fontFamily: 'var(--font-sinhala)' }}>
-                  ඉදිරියේදී බලාපොරොත්තු වන්න
-                </h3>
-                
-                <p style={{ color: '#fff', opacity: 0.7, fontSize: '1.1rem', marginBottom: '32px', fontFamily: 'var(--font-sinhala)', lineHeight: '1.6' }}>
-                  මෙම සූත්‍ර දේශනාව තවමත් අපගේ පද්ධතියට එක් කරමින් පවතී. කරුණාකර පසුව නැවත උත්සාහ කරන්න.
-                </p>
-                
+              <div style={{ 
+                width: '60px', height: '60px', 
+                borderRadius: '50%', 
+                background: 'rgba(140,21,21,0.05)', 
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 24px',
+                color: 'var(--primary)'
+              }}>
+                <BookOpen size={28} />
+              </div>
+              
+              <h3 style={{ fontSize: '1.5rem', color: 'var(--primary)', marginBottom: '16px', fontFamily: 'var(--font-serif)', fontWeight: '700' }}>
+                බාහිර වෙබ් අඩවියක්
+              </h3>
+              
+              <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', marginBottom: '32px', fontFamily: 'var(--font-sinhala)', lineHeight: '1.6' }}>
+                මෙය කල්‍යාණමිත්ත වෙබ් අඩවියෙන් පරිබාහිර වෙබ් අඩවියකි. ඔබට මෙය නව පිටුවක විවෘත කිරීමට අවශ්‍යද?
+              </p>
+              
+              <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
                 <button
-                  onClick={() => setShowComingSoonModal(false)}
+                  onClick={() => setShowConfirmModal(false)}
                   style={{
-                    padding: '12px 40px',
-                    borderRadius: '12px',
-                    background: 'rgba(255,255,255,0.1)',
-                    border: '1px solid rgba(255,255,255,0.2)',
+                    padding: '12px 24px',
+                    borderRadius: '4px',
+                    background: 'transparent',
+                    border: '1px solid rgba(0,0,0,0.2)',
+                    color: 'var(--text-main)',
+                    fontFamily: 'var(--font-sinhala)',
+                    fontSize: '1.1rem',
+                    cursor: 'pointer',
+                    flex: 1
+                  }}
+                >
+                  අවලංගු කරන්න
+                </button>
+                <button
+                  onClick={() => {
+                    window.open(confirmUrl, '_blank');
+                    setShowConfirmModal(false);
+                  }}
+                  style={{
+                    padding: '12px 24px',
+                    borderRadius: '4px',
+                    background: 'var(--primary)',
+                    border: 'none',
                     color: '#fff',
                     fontFamily: 'var(--font-sinhala)',
                     fontSize: '1.1rem',
-                    cursor: 'pointer'
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    flex: 1
                   }}
                 >
-                  හරි (OK)
+                  විවෘත කරන්න
                 </button>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Coming Soon Modal */}
+        {showComingSoonModal && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(0,0,0,0.4)',
+              backdropFilter: 'blur(4px)',
+              zIndex: 9999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px'
+            }}
+          >
+            <div
+              style={{
+                background: 'var(--bg-main)',
+                border: '1px solid rgba(0,0,0,0.1)',
+                borderRadius: '8px',
+                padding: '40px',
+                maxWidth: '450px',
+                width: '100%',
+                textAlign: 'center',
+                boxShadow: '0 20px 50px rgba(0,0,0,0.1)'
+              }}
+            >
+              <div style={{ 
+                width: '60px', height: '60px', 
+                borderRadius: '50%', 
+                background: 'rgba(0,0,0,0.05)', 
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 24px',
+                color: 'var(--text-muted)'
+              }}>
+                <Info size={28} />
+              </div>
+              
+              <h3 style={{ fontSize: '1.5rem', color: 'var(--text-main)', marginBottom: '16px', fontFamily: 'var(--font-serif)', fontWeight: '700' }}>
+                ඉදිරියේදී බලාපොරොත්තු වන්න
+              </h3>
+              
+              <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', marginBottom: '32px', fontFamily: 'var(--font-sinhala)', lineHeight: '1.6' }}>
+                මෙම සූත්‍ර දේශනාව තවමත් අපගේ පද්ධතියට එක් කරමින් පවතී. කරුණාකර පසුව නැවත උත්සාහ කරන්න.
+              </p>
+              
+              <button
+                onClick={() => setShowComingSoonModal(false)}
+                style={{
+                  padding: '12px 40px',
+                  borderRadius: '4px',
+                  background: 'var(--primary)',
+                  border: 'none',
+                  color: '#fff',
+                  fontFamily: 'var(--font-sinhala)',
+                  fontSize: '1.1rem',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                හරි
+              </button>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

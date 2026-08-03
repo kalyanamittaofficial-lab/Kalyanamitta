@@ -1,16 +1,22 @@
 :root {
-  --gold-primary: #c4984f;
-  --gold-hover: #d4a373;
-  --text-main: #f0ebd8;
-  --text-muted: #a39e8c;
-  --text-secondary: #e2d9cc;
+  /* Elite Academic Theme */
+  --primary: #8C1515; /* Stanford Red / Crimson */
+  --primary-hover: #A31C1C;
+  --accent-gold: #c4984f;
   
-  --glass-bg: rgba(15, 15, 15, 0.4);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-blur: 24px;
+  --bg-main: #FFFFFF;
+  --bg-secondary: #F8F9FA;
+  
+  --text-main: #1C1D1E;
+  --text-muted: #6C757D;
+  --text-inverse: #FFFFFF;
+  
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-blur: 16px;
   
   --font-sinhala: 'Noto Sans Sinhala', sans-serif;
-  --font-serif: 'Abhaya Libre', serif;
+  --font-serif: 'Abhaya Libre', 'Georgia', serif;
 }
 
 * {
@@ -21,7 +27,7 @@
 
 body {
   font-family: var(--font-sinhala);
-  background-color: #060709;
+  background-color: var(--bg-main);
   color: var(--text-main);
   overflow-x: hidden;
   overflow-y: scroll;

@@ -6,17 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
-
-  const showComingSoonToast = () => {
-    setToastMessage('මෙම පහසුකම තවමත් ගොඩනැගෙමින් පවතී');
-    setTimeout(() => {
-      setToastMessage('');
-    }, 3000);
-  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -44,29 +35,28 @@ export default function Header() {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: isScrolled ? '16px 48px' : '24px 48px',
+        padding: isScrolled ? '12px 48px' : '24px 48px',
         width: '100%',
         position: 'fixed',
         top: 0,
         left: 0,
         zIndex: 50,
-        background: isScrolled ? 'rgba(6, 7, 9, 0.8)' : 'transparent',
+        background: isScrolled ? 'rgba(255, 255, 255, 0.95)' : 'var(--bg-main)',
         backdropFilter: isScrolled ? 'blur(20px)' : 'none',
-        borderBottom: isScrolled ? '1px solid rgba(255,255,255,0.05)' : '1px solid transparent',
-        transition: 'all 0.3s ease'
+        borderBottom: '1px solid var(--glass-border)',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        boxShadow: isScrolled ? '0 4px 20px rgba(0,0,0,0.03)' : 'none'
       }}>
         {/* Logo Area */}
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '24px', textDecoration: 'none' }}>
-          <motion.img 
+        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '16px', textDecoration: 'none' }}>
+          <img 
             src="/kalyanamitta-logo.png" 
             alt="Kalyanamitta Logo" 
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            style={{ height: '70px', width: 'auto', objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(196,152,79,0.5))' }} 
+            style={{ height: isScrolled ? '45px' : '60px', width: 'auto', objectFit: 'contain', transition: 'height 0.3s ease' }} 
           />
           <div className="hide-on-mobile">
-            <div style={{ fontSize: '1.5rem', fontWeight: '400', color: 'var(--gold-primary)', letterSpacing: '0.05em', fontFamily: 'var(--font-serif)' }}>Kalyanamitta</div>
-            <div style={{ fontSize: '0.9rem', color: 'var(--text-main)', letterSpacing: '0.1em' }}>කල්‍යාණමිත්ත</div>
+            <div style={{ fontSize: '1.4rem', fontWeight: '700', color: 'var(--primary)', letterSpacing: '0.02em', fontFamily: 'var(--font-serif)' }}>Kalyanamitta</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', letterSpacing: '0.05em' }}>කල්‍යාණමිත්ත</div>
           </div>
         </Link>
 
@@ -74,12 +64,7 @@ export default function Header() {
         <nav className="hide-on-mobile" style={{
           display: 'flex',
           alignItems: 'center',
-          background: 'var(--glass-bg)',
-          backdropFilter: 'blur(var(--glass-blur))',
-          border: '1px solid var(--glass-border)',
-          borderRadius: '40px',
-          padding: '8px 8px',
-          gap: '8px'
+          gap: '24px'
         }}>
           {allNavItems.map(item => {
             const isActive = location.pathname === item.path;
@@ -91,114 +76,130 @@ export default function Header() {
                   position: 'relative',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  padding: '8px 16px',
-                  fontSize: '0.9rem', 
-                  color: isActive ? 'var(--gold-primary)' : 'var(--text-main)', 
+                  fontSize: '0.95rem',
+                  fontWeight: isActive ? '700' : '500',
+                  color: isActive ? 'var(--primary)' : 'var(--text-main)', 
                   cursor: 'pointer',
-                  opacity: isActive ? 1 : 0.7,
-                  transition: 'opacity 0.3s, color 0.3s',
+                  transition: 'color 0.2s ease',
                   textDecoration: 'none',
-                  borderRadius: '20px'
+                  fontFamily: 'var(--font-sinhala)'
                 }} 
-                onMouseEnter={(e) => { e.currentTarget.style.opacity = 1; e.currentTarget.style.color = 'var(--gold-primary)'; }}
-                onMouseLeave={(e) => { 
-                  if (!isActive) { e.currentTarget.style.opacity = 0.7; e.currentTarget.style.color = 'var(--text-main)'; }
-                }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--primary)'; }}
+                onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.color = 'var(--text-main)'; }}
               >
                 {isActive && (
                   <motion.div
-                    layoutId="desktop-nav-active"
+                    layoutId="desktop-nav-underline"
                     style={{
                       position: 'absolute',
-                      top: 0,
+                      bottom: '-4px',
                       left: 0,
                       width: '100%',
-                      height: '100%',
-                      background: 'rgba(196, 152, 79, 0.1)',
-                      borderRadius: '20px',
-                      zIndex: -1
+                      height: '2px',
+                      background: 'var(--primary)',
+                      borderRadius: '2px'
                     }}
-                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
-                {item.icon && <span>{item.icon}</span>}
                 <span>{item.name}</span>
               </Link>
             );
           })}
         </nav>
 
-        {/* Action Icons (Always visible on mobile & desktop) */}
-        <div style={{ display: 'flex', gap: '16px' }}>
-          <a href="http://localhost:3000/search" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--glass-bg)', backdropFilter: 'blur(var(--glass-blur))', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-main)', textDecoration: 'none' }}>
-            <Search size={18} strokeWidth={1.5} />
-          </a>
-          <a href="http://localhost:3000/dashboard" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--glass-bg)', backdropFilter: 'blur(var(--glass-blur))', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-main)', textDecoration: 'none' }}>
-            <Bell size={18} strokeWidth={1.5} />
-          </a>
-          <a href="http://localhost:3000/login" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--glass-bg)', backdropFilter: 'blur(var(--glass-blur))', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-main)', textDecoration: 'none' }}>
-            <User size={18} strokeWidth={1.5} />
-          </a>
+        {/* Action Icons & Mobile Toggle */}
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <Link 
+            to="/login"
+            style={{ 
+              background: 'var(--primary)', 
+              color: '#fff', 
+              padding: '8px 24px', 
+              borderRadius: '4px', 
+              fontSize: '0.9rem', 
+              fontWeight: '600', 
+              textDecoration: 'none',
+              fontFamily: 'var(--font-sinhala)',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.15)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)'; }}
+          >
+            ගිණුමට පිවිසෙන්න
+          </Link>
+          
+          <button 
+            className="show-on-mobile"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--primary)',
+              cursor: 'pointer',
+              display: 'none' // Controlled by CSS .show-on-mobile
+            }}
+          >
+            {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
+          </button>
         </div>
       </header>
 
-      {/* Toast Notification */}
+      {/* Mobile Menu Overlay */}
       <AnimatePresence>
-        {toastMessage && (
+        {isMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -50, scale: 0.9, x: '-50%' }}
-            animate={{ opacity: 1, y: 0, scale: 1, x: '-50%' }}
-            exit={{ opacity: 0, y: -50, scale: 0.9, x: '-50%' }}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
             style={{
               position: 'fixed',
-              top: '90px',
-              left: '50%',
-              zIndex: 1000,
-              background: 'rgba(20, 20, 20, 0.95)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid var(--gold-primary)',
-              padding: '12px 24px',
-              borderRadius: '30px',
-              color: 'var(--gold-primary)',
-              boxShadow: '0 10px 40px rgba(0,0,0,0.6)',
+              top: '80px',
+              left: 0,
+              width: '100%',
+              height: 'calc(100vh - 80px)',
+              background: 'var(--bg-main)',
+              zIndex: 49,
               display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              fontSize: '0.95rem'
+              flexDirection: 'column',
+              padding: '24px 48px',
+              overflowY: 'auto'
             }}
           >
-            <Bell size={16} /> {toastMessage}
+            <nav style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {allNavItems.map(item => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link 
+                    to={item.path} 
+                    key={item.name} 
+                    onClick={() => setIsMenuOpen(false)}
+                    style={{ 
+                      fontSize: '1.2rem',
+                      fontWeight: isActive ? '700' : '500',
+                      color: isActive ? 'var(--primary)' : 'var(--text-main)', 
+                      textDecoration: 'none',
+                      fontFamily: 'var(--font-sinhala)',
+                      padding: '12px 0',
+                      borderBottom: '1px solid rgba(0,0,0,0.05)'
+                    }} 
+                  >
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </nav>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Fullscreen Search Overlay */}
-      <AnimatePresence>
-        {isSearchOpen && (
-          <motion.div
-            initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
-            animate={{ opacity: 1, backdropFilter: 'blur(40px)' }}
-            exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
-            style={{
-              position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-              zIndex: 100, background: 'rgba(0,0,0,0.6)', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '20vh'
-            }}
-          >
-            <div style={{ position: 'absolute', top: '40px', right: '48px', cursor: 'pointer', color: 'var(--text-muted)' }} onClick={() => setIsSearchOpen(false)}>
-              <X size={32} />
-            </div>
-            <h2 style={{ color: 'var(--gold-primary)', fontSize: '2rem', marginBottom: '40px', fontFamily: 'var(--font-serif)' }}>සොයන්න</h2>
-            <div style={{ position: 'relative', width: '600px', maxWidth: '90%' }}>
-              <input 
-                autoFocus type="text" placeholder="දේශනා, ලිපි, කතා..." 
-                style={{ width: '100%', background: 'transparent', border: 'none', borderBottom: '2px solid var(--gold-primary)', color: 'white', fontSize: '2rem', padding: '16px 0', outline: 'none', fontFamily: 'var(--font-sinhala)' }}
-              />
-              <Search size={32} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <style>{`
+        @media (max-width: 768px) {
+          .show-on-mobile {
+            display: block !important;
+          }
+        }
+      `}</style>
     </>
   );
 }

@@ -17,70 +17,46 @@ const fadeUp = {
 
 export default function Words() {
   return (
-    <motion.div
-      key="words"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.8 }}
-      style={{ position: 'relative', minHeight: '100vh', width: '100%', overflowX: 'hidden' }}
+    <div
+      style={{ position: 'relative', minHeight: '100vh', width: '100%', overflowX: 'hidden', background: 'var(--bg-main)' }}
     >
-      {/* 1. Cinematic Hero Section */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0, width: '100%', height: '80vh',
-        backgroundImage: 'url("/bhawana-page/dhammaPage.png")',
-        backgroundSize: 'cover', backgroundPosition: 'top center', zIndex: 0
-      }}>
-        {/* Base top-to-bottom gradient */}
-        <div style={{
-          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-          background: 'linear-gradient(to bottom, rgba(6,7,9,0.2) 0%, rgba(6,7,9,0.7) 70%, #060709 100%)'
-        }}></div>
-        {/* Strong left-to-right gradient for text readability */}
-        <div style={{
-          position: 'absolute', top: 0, left: 0, width: '80%', height: '100%',
-          background: 'linear-gradient(to right, rgba(6,7,9,0.95) 0%, rgba(6,7,9,0.7) 40%, rgba(6,7,9,0) 100%)'
-        }}></div>
-      </div>
-
       {/* Main Content Wrapper */}
-      <div className="mobile-padding" style={{ position: 'relative', zIndex: 10, padding: '20vh 48px 120px 48px', maxWidth: '1400px', margin: '0 auto' }}>
+      <div className="mobile-padding" style={{ position: 'relative', zIndex: 10, padding: '15vh 48px 120px 48px', maxWidth: '1400px', margin: '0 auto' }}>
         
         {/* Hero Text */}
-        <motion.div 
-          initial="hidden" animate="visible" variants={fadeUp}
-          className="text-center-mobile" style={{ maxWidth: '700px', marginBottom: '15vh', display: 'flex', flexDirection: 'column' }}
+        <div 
+          className="text-center-mobile" style={{ maxWidth: '700px', marginBottom: '10vh', display: 'flex', flexDirection: 'column', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '40px' }}
         >
           <h1 style={{
-            fontSize: 'clamp(4rem, 7vw, 6.5rem)', fontWeight: '400',
-            color: 'var(--gold-primary)', fontFamily: 'var(--font-serif)',
-            marginBottom: '16px', letterSpacing: '-0.02em', textShadow: '0 4px 20px rgba(0,0,0,0.5)'
+            fontSize: 'clamp(3rem, 5vw, 5rem)', fontWeight: '700',
+            color: 'var(--primary)', fontFamily: 'var(--font-serif)',
+            marginBottom: '16px', letterSpacing: '-0.02em'
           }}>බුදු වදන්</h1>
           
-          <p style={{ fontSize: '1.2rem', color: 'var(--text-main)', marginBottom: '32px', letterSpacing: '0.05em', fontWeight: '300' }}>
+          <p style={{ fontSize: '1.2rem', color: 'var(--text-main)', marginBottom: '32px', letterSpacing: '0.05em', fontWeight: '600', fontFamily: 'var(--font-sinhala)' }}>
             ශ්‍රී සද්ධර්මයේ පිරිසිදුම උල්පත.
           </p>
 
-          <div style={{ display: 'flex', gap: '16px', color: 'var(--text-secondary)', marginBottom: '40px', fontSize: '1.05rem', lineHeight: '1.8' }}>
+          <div style={{ display: 'flex', gap: '16px', color: 'var(--text-muted)', fontSize: '1.05rem', lineHeight: '1.8', fontFamily: 'var(--font-sinhala)' }}>
             <p>
               ගෞතම බුදුරජාණන් වහන්සේගේ ශ්‍රී මුවින් දේශනා කළ, කිසිදු වෙනසකට ලක් නොවූ 
               පිරිසිදු ත්‍රිපිටක ධර්මය සහ පැරණි අටුවා ග්‍රන්ථ වෙත පිවිසෙන මණ්ඩපය.
             </p>
           </div>
-        </motion.div>
+        </div>
 
         {/* Coming Soon Section */}
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '40vh', textAlign: 'center', background: 'var(--glass-bg)', backdropFilter: 'blur(var(--glass-blur))', border: '1px solid var(--glass-border)', borderRadius: '24px', padding: '60px 24px', marginBottom: '100px' }}>
-          <div style={{ color: 'var(--gold-primary)', marginBottom: '24px', transform: 'scale(1.5)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '30vh', textAlign: 'center', background: 'var(--bg-secondary)', border: '1px solid rgba(0,0,0,0.05)', borderRadius: '4px', padding: '60px 24px', marginBottom: '100px', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
+          <div style={{ color: 'var(--primary)', marginBottom: '24px', transform: 'scale(1.5)' }}>
             <BookIcon />
           </div>
-          <h2 style={{ color: 'var(--text-main)', fontSize: '2rem', fontFamily: 'var(--font-serif)', marginBottom: '16px' }}>ඉදිරියේදී බලාපොරොත්තු වන්න</h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '500px', lineHeight: '1.6' }}>
+          <h2 style={{ color: 'var(--text-main)', fontSize: '2rem', fontFamily: 'var(--font-serif)', fontWeight: '700', marginBottom: '16px' }}>ඉදිරියේදී බලාපොරොත්තු වන්න</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '500px', lineHeight: '1.6', fontFamily: 'var(--font-sinhala)' }}>
             මෙම පිටුවේ අන්තර්ගතය මේ දිනවල සකස් වෙමින් පවතී. ඉතා ඉක්මනින් සම්පූර්ණ ධර්ම කරුණු මෙහි යාවත්කාලීන කරනු ඇත.
           </p>
-        </motion.div>
+        </div>
 
       </div>
-    </motion.div>
+    </div>
   );
 }
