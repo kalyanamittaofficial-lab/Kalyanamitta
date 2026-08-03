@@ -110,8 +110,8 @@ export default function Header() {
 
         {/* Action Icons & Mobile Toggle */}
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-          <a 
-            href={import.meta.env.VITE_PORTAL_URL ? `${import.meta.env.VITE_PORTAL_URL}/login` : 'http://localhost:3000/login'}
+          <Link 
+            to="/login"
             style={{ 
               background: 'var(--primary)', 
               color: '#fff', 
@@ -128,7 +128,7 @@ export default function Header() {
             onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)'; }}
           >
             ගිණුමට පිවිසෙන්න
-          </a>
+          </Link>
           
           <button 
             className="show-on-mobile"

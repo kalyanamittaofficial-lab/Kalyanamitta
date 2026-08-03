@@ -1,5 +1,6 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { supabase } from './utils/supabase';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Meditation from './pages/Meditation';
@@ -12,6 +13,27 @@ import Profile from './pages/Profile';
 import DharmaDhana from './pages/DharmaDhana';
 import BookReader from './components/BookReader';
 import OtherChantings from './pages/OtherChantings';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+
+function ProtectedRoute({ children }) {
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (isAuthenticated === null) return <div className="flex-center" style={{minHeight: '100vh'}}>Loading...</div>;
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+}
 
 function App() {
   return (
@@ -28,6 +50,15 @@ function App() {
           <Route path="dharmadhana" element={<DharmaDhana />} />
           <Route path="profile" element={<Profile />} />
           <Route path="other-chantings" element={<OtherChantings />} />
+          <Route path="login" element={<Login />} />
+          <Route 
+            path="dashboard" 
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
           {/* Fallback */}
           <Route path="*" element={<Home />} />
         </Route>
