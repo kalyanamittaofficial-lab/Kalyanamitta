@@ -2,19 +2,35 @@ import React, { useState, useEffect } from 'react';
 import { Search, Bell, User, Home, X, Menu } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '../utils/supabase';
 
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [session, setSession] = useState(null);
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      subscription.unsubscribe();
+    };
   }, []);
   
   // Mapping nav items to their routes for future-proofing
@@ -110,25 +126,47 @@ export default function Header() {
 
         {/* Action Icons & Mobile Toggle */}
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-          <Link 
-            to="/login"
-            style={{ 
-              background: 'var(--primary)', 
-              color: '#fff', 
-              padding: '8px 24px', 
-              borderRadius: '4px', 
-              fontSize: '0.9rem', 
-              fontWeight: '600', 
-              textDecoration: 'none',
-              fontFamily: 'var(--font-sinhala)',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.15)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)'; }}
-          >
-            ගිණුමට පිවිසෙන්න
-          </Link>
+          {session ? (
+            <Link 
+              to="/dashboard"
+              style={{ 
+                background: 'var(--primary)', 
+                color: '#fff', 
+                padding: '8px 24px', 
+                borderRadius: '4px', 
+                fontSize: '0.9rem', 
+                fontWeight: '600', 
+                textDecoration: 'none',
+                fontFamily: 'var(--font-sinhala)',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.15)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)'; }}
+            >
+              ගිණුම (Dashboard)
+            </Link>
+          ) : (
+            <Link 
+              to="/login"
+              style={{ 
+                background: 'var(--primary)', 
+                color: '#fff', 
+                padding: '8px 24px', 
+                borderRadius: '4px', 
+                fontSize: '0.9rem', 
+                fontWeight: '600', 
+                textDecoration: 'none',
+                fontFamily: 'var(--font-sinhala)',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.15)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)'; }}
+            >
+              ගිණුමට පිවිසෙන්න
+            </Link>
+          )}
           
           <button 
             className="show-on-mobile"
