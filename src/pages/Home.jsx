@@ -8,12 +8,8 @@ import UpcomingEvents from '../components/UpcomingEvents';
 
 export default function Home() {
   return (
-    <motion.div
-      key="home"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
+    <div
+      className="fade-in"
       style={{ background: 'var(--bg-main)', minHeight: '100vh' }}
     >
       {/* Main Content (Scrollable) */}
@@ -24,6 +20,6 @@ export default function Home() {
         <FeaturedArticle />
         <UpcomingEvents />
       </div>
-    </motion.div>
+    </div>
   );
 }
