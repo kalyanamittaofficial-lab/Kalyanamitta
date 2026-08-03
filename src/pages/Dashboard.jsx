@@ -10,6 +10,17 @@ export default function Dashboard() {
   const [activeTasks, setActiveTasks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isHoveringLogout, setIsHoveringLogout] = useState(false);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
+  
+  // Onboarding Form State
+  const [formData, setFormData] = useState({
+    name: '',
+    phone_number: '',
+    district: '',
+    age: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [onboardingError, setOnboardingError] = useState('');
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -32,6 +43,17 @@ export default function Dashboard() {
         
         if (profileData) {
           setProfile(profileData);
+          
+          // Check if onboarding is needed
+          if (!profileData.name || !profileData.phone_number || !profileData.district || !profileData.age) {
+            setNeedsOnboarding(true);
+            setFormData({
+              name: profileData.name || '',
+              phone_number: profileData.phone_number || '',
+              district: profileData.district || '',
+              age: profileData.age || ''
+            });
+          }
         }
 
         const { data: tasksData } = await supabase
@@ -56,6 +78,35 @@ export default function Dashboard() {
     fetchUserData();
   }, [navigate]);
 
+  const handleOnboardingSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setOnboardingError('');
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          name: formData.name,
+          phone_number: formData.phone_number,
+          district: formData.district,
+          age: parseInt(formData.age, 10)
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      // Update local state to dismiss onboarding
+      setProfile({ ...profile, ...formData, age: parseInt(formData.age, 10) });
+      setNeedsOnboarding(false);
+    } catch (err) {
+      console.error(err);
+      setOnboardingError('තොරතුරු යාවත්කාලීන කිරීමේදී දෝෂයක් මතු විය. කරුණාකර නැවත උත්සාහ කරන්න.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex-center" style={{ minHeight: 'calc(100vh - 100px)', padding: '24px', background: 'var(--bg-main)' }}>
@@ -63,6 +114,59 @@ export default function Dashboard() {
           <div style={{ height: '40px', width: '200px', background: 'var(--bg-secondary)', borderRadius: '8px', animation: 'pulse 1.5s infinite ease-in-out' }}></div>
           <div style={{ height: '24px', width: '300px', background: 'var(--bg-secondary)', borderRadius: '6px', animation: 'pulse 1.5s infinite ease-in-out', animationDelay: '0.2s' }}></div>
           <div style={{ height: '200px', width: '100%', background: 'var(--bg-secondary)', borderRadius: '16px', marginTop: '32px', animation: 'pulse 1.5s infinite ease-in-out', animationDelay: '0.4s' }}></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (needsOnboarding) {
+    return (
+      <div className="flex-center" style={{ minHeight: 'calc(100vh - 100px)', padding: '24px', background: 'radial-gradient(circle at top, var(--bg-secondary) 0%, var(--bg-main) 100%)' }}>
+        <div className="glass-panel" style={{ width: '100%', maxWidth: '500px', padding: '48px 40px', borderRadius: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.08)', animation: 'fadeInUp 0.6s ease-out' }}>
+          <h2 style={{ fontSize: '2rem', fontFamily: 'var(--font-serif)', color: 'var(--primary)', marginBottom: '16px', textAlign: 'center' }}>
+            සාදරයෙන් පිළිගනිමු!
+          </h2>
+          <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', fontSize: '0.95rem', marginBottom: '32px', textAlign: 'center', lineHeight: '1.6' }}>
+            කරුණාකර ඔබගේ ගිණුම සම්පූර්ණ කිරීම සඳහා පහත තොරතුරු ලබා දෙන්න.
+          </p>
+
+          {onboardingError && (
+            <div style={{ marginBottom: '24px', padding: '14px', borderRadius: '12px', background: '#fff1f2', color: '#9f1239', border: '1px solid #fecdd3', fontSize: '0.85rem', fontFamily: 'var(--font-sinhala)' }}>
+              {onboardingError}
+            </div>
+          )}
+
+          <form onSubmit={handleOnboardingSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', fontWeight: '600' }}>විද්‍යුත් තැපෑල (Email)</label>
+              <input type="email" value={user.email} disabled style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid var(--glass-border)', background: 'rgba(0,0,0,0.02)', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', outline: 'none' }} />
+            </div>
+            
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', fontWeight: '600' }}>සම්පූර්ණ නම</label>
+              <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="උදා: කසුන් පෙරේරා" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '2px solid var(--glass-border)', background: '#fff', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', outline: 'none' }} />
+            </div>
+
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', fontWeight: '600' }}>දුරකථන අංකය</label>
+                <input required type="tel" value={formData.phone_number} onChange={e => setFormData({...formData, phone_number: e.target.value})} placeholder="07XXXXXXXX" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '2px solid var(--glass-border)', background: '#fff', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', outline: 'none' }} />
+              </div>
+              <div style={{ width: '100px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', fontWeight: '600' }}>වයස</label>
+                <input required type="number" min="10" max="120" value={formData.age} onChange={e => setFormData({...formData, age: e.target.value})} placeholder="25" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '2px solid var(--glass-border)', background: '#fff', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', outline: 'none' }} />
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', fontWeight: '600' }}>දිස්ත්‍රික්කය</label>
+              <input required type="text" value={formData.district} onChange={e => setFormData({...formData, district: e.target.value})} placeholder="උදා: කොළඹ" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '2px solid var(--glass-border)', background: '#fff', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', outline: 'none' }} />
+            </div>
+
+            <button type="submit" disabled={isSubmitting} style={{ width: '100%', padding: '16px', marginTop: '12px', borderRadius: '12px', background: 'var(--primary)', color: '#fff', fontFamily: 'var(--font-sinhala)', fontSize: '1.05rem', fontWeight: '600', border: 'none', cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: isSubmitting ? 0.7 : 1, transition: 'all 0.3s ease', boxShadow: '0 8px 20px rgba(153, 27, 27, 0.2)' }}>
+              {isSubmitting ? 'සුරකිමින් පවතී...' : 'ඉදිරියට යන්න'}
+            </button>
+          </form>
         </div>
       </div>
     );
