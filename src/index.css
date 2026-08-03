@@ -321,6 +321,7 @@ h1, h2, h3, h4, .serif-title {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
 }
 
 .glass-panel {
