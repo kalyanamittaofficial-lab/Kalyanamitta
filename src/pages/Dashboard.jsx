@@ -173,135 +173,104 @@ export default function Dashboard() {
   }
 
   return (
-    <div style={{ padding: '40px 24px', maxWidth: '1100px', margin: '0 auto', width: '100%', minHeight: 'calc(100vh - 100px)' }}>
-      {/* Top Navbar */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginBottom: '48px' }}>
-        {[Search, Bell, User].map((Icon, idx) => (
-          <div 
-            key={idx}
-            style={{ 
-              width: '44px', height: '44px', 
-              borderRadius: '50%', 
-              background: '#fff', 
-              border: '1px solid var(--glass-border)', 
-              display: 'flex', alignItems: 'center', justifyContent: 'center', 
-              cursor: 'pointer',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 12px rgba(0,0,0,0.08)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)'; }}
-          >
-            <Icon size={20} strokeWidth={1.5} color="var(--text-main)" />
-          </div>
-        ))}
-      </div>
-
-      {/* Greeting Header */}
-      <div style={{ marginBottom: '48px', animation: 'fadeInUp 0.6s ease-out' }}>
-        <h2 style={{ fontSize: '2.5rem', fontFamily: 'var(--font-serif)', fontWeight: '800', color: 'var(--primary)', marginBottom: '12px', letterSpacing: '-0.02em' }}>
-          ආයුබෝවන්, {profile?.name?.split(' ')[0] || 'මිත්‍රයා'}
-        </h2>
-        <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', fontSize: '1.1rem', maxWidth: '600px', lineHeight: '1.6' }}>
-          ඔබගේ අධ්‍යාත්මික ගමනේ නවතම ප්‍රගතිය සහ සතියේ ප්‍රධාන කාර්යයන් පහතින් දැක්වේ.
+    <div style={{ padding: '40px 24px', maxWidth: '1000px', margin: '0 auto', width: '100%', minHeight: 'calc(100vh - 100px)' }}>
+      
+      {/* Daily Dhamma Quote */}
+      <div style={{ marginBottom: '48px', textAlign: 'center', animation: 'fadeInUp 0.6s ease-out' }}>
+        <p style={{ color: 'var(--primary)', fontFamily: 'var(--font-serif)', fontSize: '1.4rem', fontStyle: 'italic', maxWidth: '800px', margin: '0 auto 12px auto', lineHeight: '1.6' }}>
+          "යෝ ච වස්සසතං ජීවේ දුස්සීලෝ අසමාහිතෝ, ඒකාහං ජීවිතං සෙය්‍යෝ සීලවන්තස්ස ඣායිනෝ."
+        </p>
+        <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', fontSize: '0.95rem' }}>
+          (දුස්සීලව, නොසන්සුන් සිතින් යුතුව අවුරුදු සීයක් ජීවත් වෙනවාට වඩා, සිල්වත්ව, ධ්‍යාන වඩමින් එක දවසක් ජීවත් වීම උතුම් ය.)
         </p>
       </div>
 
-      {/* Quick Stats Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginBottom: '48px', animation: 'fadeInUp 0.6s ease-out', animationDelay: '0.1s', animationFillMode: 'both' }}>
-        {[
-          { title: 'භාවනා කාලය', value: 'පැය 4 යි', icon: Activity, color: '#f59e0b' },
-          { title: 'කියවූ පොත්', value: '2', icon: BookOpen, color: '#3b82f6' },
-          { title: 'සතිපතා දිනපොත', value: 'යාවත්කාලීනයි', icon: Calendar, color: '#10b981' }
-        ].map((stat, idx) => (
-          <div key={idx} className="glass-panel" style={{ padding: '24px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '20px', transition: 'transform 0.3s ease', cursor: 'default' }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-          >
-            <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: `${stat.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <stat.icon size={24} color={stat.color} />
-            </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
+        
+        {/* Account Information Card */}
+        <div className="glass-panel" style={{ padding: '40px', borderRadius: '24px', animation: 'fadeInUp 0.6s ease-out', animationDelay: '0.1s', animationFillMode: 'both', borderTop: '4px solid var(--primary)' }}>
+          <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', fontFamily: 'var(--font-sinhala)', color: 'var(--text-main)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <User size={24} color="var(--primary)" /> ඔබගේ ගිණුමේ තොරතුරු
+          </h3>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div>
-              <h4 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '4px', fontFamily: 'var(--font-sinhala)' }}>{stat.title}</h4>
-              <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)' }}>{stat.value}</p>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Kalyanamitta ID</span>
+              <div style={{ fontSize: '1.2rem', color: 'var(--primary)', fontFamily: 'var(--font-serif)', fontWeight: 'bold' }}>{profile?.kalyanamitta_id || 'Generating...'}</div>
+            </div>
+            <div style={{ height: '1px', background: 'var(--glass-border)', width: '100%' }}></div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+              <div>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)' }}>සම්පූර්ණ නම</span>
+                <div style={{ fontSize: '1.05rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', fontWeight: '500' }}>{profile?.name}</div>
+              </div>
+              <div>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)' }}>වයස</span>
+                <div style={{ fontSize: '1.05rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', fontWeight: '500' }}>{profile?.age}</div>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+              <div>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)' }}>දුරකථන අංකය</span>
+                <div style={{ fontSize: '1.05rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', fontWeight: '500' }}>{profile?.phone_number}</div>
+              </div>
+              <div>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)' }}>දිස්ත්‍රික්කය</span>
+                <div style={{ fontSize: '1.05rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', fontWeight: '500' }}>{profile?.district}</div>
+              </div>
+            </div>
+
+            <div>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)' }}>විද්‍යුත් තැපෑල (Email)</span>
+              <div style={{ fontSize: '1.05rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', fontWeight: '500' }}>{user?.email}</div>
             </div>
           </div>
-        ))}
-      </div>
-
-      {/* Tasks Panel */}
-      <div className="glass-panel" style={{ padding: '40px', borderRadius: '24px', animation: 'fadeInUp 0.6s ease-out', animationDelay: '0.2s', animationFillMode: 'both' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-          <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', fontFamily: 'var(--font-sinhala)', color: 'var(--text-main)' }}>
-            මෙම සතියේ ප්‍රධාන කාර්යයන්
-          </h3>
-          <span style={{ fontSize: '0.95rem', color: 'var(--primary)', cursor: 'pointer', fontFamily: 'var(--font-sinhala)', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '500', transition: 'color 0.2s' }}
-            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary-hover)'}
-            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--primary)'}
-          >
-            සියල්ල බලන්න <ArrowRight size={16} />
-          </span>
         </div>
 
-        {activeTasks.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {activeTasks.map(task => (
-              <div key={task.id} style={{ 
-                background: '#fff', 
-                padding: '24px', 
-                borderRadius: '16px', 
+        {/* Quick Access Portal */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', animation: 'fadeInUp 0.6s ease-out', animationDelay: '0.2s', animationFillMode: 'both' }}>
+          <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', fontFamily: 'var(--font-sinhala)', color: 'var(--text-main)', marginBottom: '8px', paddingLeft: '8px' }}>
+            ඉක්මන් පිවිසුම්
+          </h3>
+          
+          {[
+            { title: 'භාවනා පුහුණුව', desc: 'භාවනා මාර්ගෝපදේශ සහ නිශ්ශබ්ද කාලය', icon: Activity, path: '/meditation' },
+            { title: 'ධර්ම දේශනා', desc: 'සජීවී සහ පටිගත කළ දේශනා', icon: BookOpen, path: '/sermons' },
+            { title: 'කල්‍යාණ මිත්‍රත්වය', desc: 'ප්‍රජාව සමඟ සම්බන්ධ වන්න', icon: User, path: '/community' }
+          ].map((item, idx) => (
+            <div 
+              key={idx}
+              onClick={() => navigate(item.path)}
+              style={{
+                background: '#fff',
                 border: '1px solid var(--glass-border)',
+                borderRadius: '16px',
+                padding: '24px',
                 display: 'flex',
-                justifyContent: 'space-between',
                 alignItems: 'center',
+                gap: '20px',
+                cursor: 'pointer',
                 transition: 'all 0.3s ease',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+                boxShadow: '0 4px 15px rgba(0,0,0,0.02)'
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.06)'; e.currentTarget.style.borderColor = 'rgba(153, 27, 27, 0.1)'; e.currentTarget.style.transform = 'scale(1.01)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.02)'; e.currentTarget.style.borderColor = 'var(--glass-border)'; e.currentTarget.style.transform = 'scale(1)'; }}
-              >
-                <div>
-                  <h4 style={{ fontSize: '1.1rem', fontWeight: '600', fontFamily: 'var(--font-sinhala)', color: 'var(--text-main)', marginBottom: '8px' }}>
-                    {task.title}
-                  </h4>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)' }}>
-                    {task.week_start} සිට {task.week_end}
-                  </p>
-                </div>
-                <button style={{ 
-                  padding: '10px 24px', 
-                  background: 'var(--primary)', 
-                  color: '#fff', 
-                  border: 'none', 
-                  borderRadius: '10px',
-                  fontFamily: 'var(--font-sinhala)',
-                  fontSize: '0.95rem',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'background 0.2s, transform 0.2s'
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--primary-hover)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.transform = 'translateY(0)'; }}
-                >
-                  සම්පූර්ණ කරන්න
-                </button>
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.06)'; e.currentTarget.style.borderColor = 'var(--primary)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.02)'; e.currentTarget.style.borderColor = 'var(--glass-border)'; }}
+            >
+              <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(140, 21, 21, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <item.icon size={24} color="var(--primary)" />
               </div>
-            ))}
-          </div>
-        ) : (
-          <div style={{ 
-            background: 'rgba(255, 255, 255, 0.6)', 
-            padding: '48px', 
-            borderRadius: '16px', 
-            border: '2px dashed var(--glass-border)',
-            textAlign: 'center',
-            color: 'var(--text-muted)',
-            fontFamily: 'var(--font-sinhala)',
-            fontSize: '1.1rem'
-          }}>
-            මෙම සතියට අදාළ කාර්යයන් තවම එක් කර නොමැත.
-          </div>
-        )}
+              <div>
+                <h4 style={{ fontSize: '1.1rem', fontWeight: 'bold', fontFamily: 'var(--font-sinhala)', color: 'var(--text-main)', marginBottom: '4px' }}>{item.title}</h4>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)' }}>{item.desc}</p>
+              </div>
+              <div style={{ marginLeft: 'auto', color: 'var(--text-muted)' }}>
+                <ArrowRight size={20} />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
       
       {/* Sign Out */}
