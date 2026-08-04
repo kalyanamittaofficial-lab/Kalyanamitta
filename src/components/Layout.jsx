@@ -26,6 +26,7 @@ export default function Layout() {
       <main style={{
         flex: 1,
         width: '100%',
+        paddingTop: '100px', /* Prevent overlap with fixed Header */
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
