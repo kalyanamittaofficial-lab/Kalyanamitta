@@ -10,10 +10,9 @@ export default function HeroSection() {
       justifyContent: 'space-between',
       alignItems: 'center',
       padding: '0 48px',
-      marginTop: '15vh',
       width: '100%',
       maxWidth: '1400px',
-      margin: '15vh auto 0 auto',
+      margin: '5vh auto 0 auto',
       position: 'relative',
       zIndex: 10
     }}>
