@@ -30,36 +30,29 @@ export default function OtherChantings() {
     <div style={{
       minHeight: '100vh',
       background: 'var(--bg-main)',
-      color: 'var(--text-main)',
-      paddingTop: '50px',
-      paddingBottom: '120px'
+      color: 'var(--text-main)'
     }}>
-      <div className="mobile-padding" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      <div className="mobile-padding" style={{ position: 'relative', zIndex: 10, padding: '5vh 48px 120px 48px', maxWidth: '1400px', margin: '0 auto' }}>
         
-        {/* Header */}
+        {/* Hero Text */}
         <div 
-          style={{ textAlign: 'center', marginBottom: '60px' }}
+          className="text-center-mobile" style={{ maxWidth: '800px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', margin: '0 auto 10vh auto', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '40px' }}
         >
-          <div style={{ color: 'var(--primary)', marginBottom: '16px' }}>✧ ✧ ✧</div>
-          <h1 style={{ 
-            fontSize: 'clamp(2.5rem, 5vw, 4rem)', 
-            color: 'var(--primary)', 
-            marginBottom: '20px', 
-            fontFamily: 'var(--font-serif)',
-            fontWeight: '700' 
-          }}>
-            වෙනත් සජ්ඣායනයන්
-          </h1>
-          <p style={{ 
-            fontSize: '1.2rem', 
-            color: 'var(--text-muted)',
-            fontFamily: 'var(--font-sinhala)', 
-            maxWidth: '600px', 
-            margin: '0 auto',
-            lineHeight: '1.6'
-          }}>
-            පහත දැක්වෙන සූත්‍ර දේශනාවන්ගෙන් ඔබට අවශ්‍ය සජ්ඣායනාව තෝරාගන්න.
+          <h1 style={{
+            fontSize: 'clamp(3rem, 5vw, 5rem)', fontWeight: '700',
+            color: 'var(--primary)', fontFamily: 'var(--font-serif)',
+            marginBottom: '16px', letterSpacing: '-0.02em'
+          }}>වෙනත් සූත්‍ර දේශනා</h1>
+          
+          <p style={{ fontSize: '1.2rem', color: 'var(--text-main)', marginBottom: '32px', letterSpacing: '0.05em', fontWeight: '600', fontFamily: 'var(--font-sinhala)' }}>
+            අමතර පිරිත් සහ දේශනා එකතුව.
           </p>
+
+          <div style={{ display: 'flex', gap: '16px', color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: '1.8', fontFamily: 'var(--font-sinhala)', maxWidth: '650px' }}>
+            <p>
+              පූජාවන්, පිරිත් සජ්ඣායනා සහ එදිනෙදා භාවිතයට අවශ්‍ය අනෙකුත් සූත්‍ර දේශනාවන් මෙහි අන්තර්ගත වේ.
+            </p>
+          </div>
         </div>
 
         {/* Chantings Grid */}
