@@ -53,24 +53,24 @@ export default function DharmaDhana() {
         
         {/* Hero Text */}
         <div 
-          className="text-center-mobile" style={{ maxWidth: '800px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', margin: '0 auto 60px auto' }}
+          className="text-center-mobile" style={{ maxWidth: '800px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', margin: '0 auto 10vh auto', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '40px' }}
         >
-          <div style={{ color: 'var(--primary)', marginBottom: '12px' }}>
-            <BookOpen size={32} strokeWidth={1.5} />
-          </div>
           <h1 style={{
-            fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: '700',
-            color: 'var(--primary)',
-            fontFamily: 'var(--font-serif)',
-            marginBottom: '12px', letterSpacing: '-0.02em'
+            fontSize: 'clamp(3rem, 5vw, 5rem)', fontWeight: '700',
+            color: 'var(--primary)', fontFamily: 'var(--font-serif)',
+            marginBottom: '16px', letterSpacing: '-0.02em'
           }}>ධර්ම දානය</h1>
           
-          <p style={{ fontSize: '1rem', color: 'var(--primary)', marginBottom: '20px', letterSpacing: '0.1em', fontWeight: '600', textTransform: 'uppercase' }}>
+          <p style={{ fontSize: '1.2rem', color: 'var(--text-main)', marginBottom: '32px', letterSpacing: '0.05em', fontWeight: '600', fontFamily: 'var(--font-sinhala)' }}>
             කල්‍යාණමිත්ත ප්‍රකාශන
           </p>
-          <p style={{ fontSize: '1.1rem', color: 'var(--text-muted)', lineHeight: '1.6', maxWidth: '600px', fontFamily: 'var(--font-sinhala)' }}>
-            අප විසින් සම්පාදනය කරන ලද ධර්ම ග්‍රන්ථ සහ අත්පොත් මෙහිදී ඔබට කියවිය හැක.
-          </p>
+
+          <div style={{ display: 'flex', gap: '16px', color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: '1.8', fontFamily: 'var(--font-sinhala)', maxWidth: '650px' }}>
+            <p>
+              අප විසින් සම්පාදනය කරන ලද ධර්ම ග්‍රන්ථ සහ අත්පොත් මෙහිදී
+              ඔබට පරිශීලනය කළ හැක.
+            </p>
+          </div>
         </div>
 
         {/* Currently Available Books - Library Shelf */}
