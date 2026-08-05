@@ -38,6 +38,8 @@ export default function Path() {
       }}>
         <h2 style={{ fontSize: '2rem', color: 'var(--text-main)', marginBottom: '16px', fontFamily: 'var(--font-serif)', fontWeight: '700' }}>මෙහි අන්තර්ගතය ගොඩනැගෙමින් පවතී</h2>
       </div>
+      </div>
     </div>
   );
 }
+
