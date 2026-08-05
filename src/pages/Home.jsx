@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import HeroSection from '../components/HeroSection';
-import WorldsSlider from '../components/WorldsSlider';
 import LatestSermons from '../components/LatestSermons';
 import FeaturedArticle from '../components/FeaturedArticle';
 import UpcomingEvents from '../components/UpcomingEvents';
@@ -15,7 +14,6 @@ export default function Home() {
       {/* Main Content (Scrollable) */}
       <div style={{ position: 'relative', zIndex: 10, paddingBottom: '120px' }}>
         <HeroSection />
-        <WorldsSlider />
         <LatestSermons />
         <FeaturedArticle />
         <UpcomingEvents />
