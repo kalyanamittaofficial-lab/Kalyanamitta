@@ -49,7 +49,7 @@ export default function DharmaDhana() {
       style={{ position: 'relative', minHeight: '100vh', width: '100%', overflowX: 'hidden', background: 'var(--bg-main)' }}
     >
       {/* Main Content Wrapper */}
-      <div className="mobile-padding" style={{ position: 'relative', zIndex: 10, paddingTop: '150px', paddingBottom: '120px', maxWidth: '1400px', margin: '0 auto', paddingLeft: '5vw', paddingRight: '5vw' }}>
+      <div className="mobile-padding" style={{ position: 'relative', zIndex: 10, paddingTop: '50px', paddingBottom: '120px', maxWidth: '1400px', margin: '0 auto', paddingLeft: '5vw', paddingRight: '5vw' }}>
         
         {/* Hero Text */}
         <div 

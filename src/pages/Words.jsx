@@ -21,7 +21,7 @@ export default function Words() {
       style={{ position: 'relative', minHeight: '100vh', width: '100%', overflowX: 'hidden', background: 'var(--bg-main)' }}
     >
       {/* Main Content Wrapper */}
-      <div className="mobile-padding" style={{ position: 'relative', zIndex: 10, padding: '15vh 48px 120px 48px', maxWidth: '1400px', margin: '0 auto' }}>
+      <div className="mobile-padding" style={{ position: 'relative', zIndex: 10, padding: '5vh 48px 120px 48px', maxWidth: '1400px', margin: '0 auto' }}>
         
         {/* Hero Text */}
         <div 

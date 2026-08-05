@@ -19,7 +19,7 @@ export default function Sermons() {
     >
       
       {/* Hero Header Content */}
-      <div className="mobile-padding" style={{ position: 'relative', zIndex: 10, padding: '15vh 5vw 5vh 5vw', maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+      <div className="mobile-padding" style={{ position: 'relative', zIndex: 10, padding: '5vh 5vw 5vh 5vw', maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
         <h1 style={{
           fontSize: 'clamp(3rem, 5vw, 5rem)', fontWeight: '700',
           color: 'var(--primary)', fontFamily: 'var(--font-serif)',

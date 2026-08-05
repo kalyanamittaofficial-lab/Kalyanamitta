@@ -31,7 +31,7 @@ export default function OtherChantings() {
       minHeight: '100vh',
       background: 'var(--bg-main)',
       color: 'var(--text-main)',
-      paddingTop: '150px',
+      paddingTop: '50px',
       paddingBottom: '120px'
     }}>
       <div className="mobile-padding" style={{ maxWidth: '1200px', margin: '0 auto' }}>
