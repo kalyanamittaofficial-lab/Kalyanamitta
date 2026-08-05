@@ -12,7 +12,7 @@ export default function BookReader() {
   // Reader Settings State
   const [fontSize, setFontSize] = useState(1.4);
   const [lineHeight, setLineHeight] = useState(2.2);
-  const [theme, setTheme] = useState('dark'); // 'dark' | 'sepia' | 'light'
+  const [theme, setTheme] = useState('light'); // 'dark' | 'sepia' | 'light'
   
   // Auto-Scroll State
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
@@ -57,15 +57,15 @@ export default function BookReader() {
           textAlign: 'center',
           fontFamily: 'var(--font-serif)',
           letterSpacing: '0.03em',
-          opacity: item.type === 'paragraph' ? 0.75 : 1
+          color: item.type === 'paragraph' ? 'var(--text-muted)' : 'inherit'
         }}
       >
         {lines.map((line, lineIndex) => (
           <span key={lineIndex} style={{ 
             display: 'block', 
             marginBottom: lineIndex < lines.length - 1 ? '12px' : '0',
-            fontWeight: item.type === 'paragraph' ? '300' : '400',
-            fontSize: item.type === 'paragraph' ? '0.9em' : '1em'
+            fontWeight: item.type === 'paragraph' ? '400' : '600',
+            fontSize: item.type === 'paragraph' ? '0.95em' : '1.1em'
           }}>
             {line}
           </span>
@@ -179,7 +179,7 @@ export default function BookReader() {
   const themeStyles = {
     dark: { bg: '#060709', text: '#f0ebd8', topbar: 'rgba(6,7,9,0.98)', menuBg: '#11141a', border: 'rgba(255,255,255,0.1)' },
     sepia: { bg: '#fbf0d9', text: '#433422', topbar: 'rgba(251,240,217,0.98)', menuBg: '#f4e5c3', border: 'rgba(0,0,0,0.1)' },
-    light: { bg: '#ffffff', text: '#111111', topbar: 'rgba(255,255,255,0.98)', menuBg: '#f5f5f5', border: 'rgba(0,0,0,0.1)' }
+    light: { bg: '#faf9f6', text: '#1a1a1a', topbar: 'rgba(250,249,246,0.98)', menuBg: '#f0efe9', border: 'rgba(0,0,0,0.06)' }
   };
 
   const currentTheme = themeStyles[theme];
@@ -256,8 +256,32 @@ export default function BookReader() {
           </span>
         </div>
 
-        {/* Right Side: Settings Button */}
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', position: 'relative' }} ref={settingsRef}>
+        {/* Right Side: Settings & AutoScroll */}
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', position: 'relative', gap: '8px' }} ref={settingsRef}>
+          
+          {/* Auto Scroll Toggle */}
+          <button 
+            onClick={() => setIsAutoScrolling(!isAutoScrolling)}
+            style={{ 
+              background: isAutoScrolling ? 'var(--gold-primary)' : 'transparent',
+              color: isAutoScrolling ? '#000' : currentTheme.text,
+              border: `1px solid ${isAutoScrolling ? 'var(--gold-primary)' : currentTheme.border}`,
+              padding: '8px 16px',
+              borderRadius: '20px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontFamily: 'sans-serif',
+              fontWeight: '600',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            {isAutoScrolling ? <Pause size={18} /> : <Play size={18} />}
+            <span className="hide-on-mobile" style={{ fontSize: '0.85rem' }}>{isAutoScrolling ? 'Pause' : 'Scroll'}</span>
+          </button>
+
+          {/* Settings Toggle */}
           <button 
             onClick={() => {
               if (!isAutoScrolling) setShowSettings(!showSettings);
@@ -281,7 +305,7 @@ export default function BookReader() {
             }}
           >
             <Type size={18} />
-            <span>Aa</span>
+            <span className="hide-on-mobile" style={{ fontSize: '0.85rem' }}>Aa</span>
           </button>
 
           <AnimatePresence>
@@ -343,7 +367,7 @@ export default function BookReader() {
                   </div>
                 </div>
 
-                <div>
+                <div style={{ marginBottom: '24px' }}>
                   <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px', opacity: 0.7 }}>Spacing</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(128,128,128,0.1)', borderRadius: '8px', padding: '4px' }}>
                     {[1.6, 2.2, 2.8].map(lh => (
@@ -372,87 +396,32 @@ export default function BookReader() {
                   </div>
                 </div>
 
+                <div>
+                  <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px', opacity: 0.7 }}>Auto Scroll Speed</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(128,128,128,0.1)', borderRadius: '8px', padding: '4px' }}>
+                    <button onClick={() => setScrollSpeed(Math.max(1, scrollSpeed - 1))} style={{ flex: 1, padding: '8px', background: 'transparent', border: 'none', color: currentTheme.text, cursor: 'pointer', display: 'flex', justifyContent: 'center' }}><Minus size={18} /></button>
+                    <span style={{ fontFamily: 'monospace', fontSize: '1.1rem', fontWeight: 'bold', width: '20px', textAlign: 'center' }}>{scrollSpeed}</span>
+                    <button onClick={() => setScrollSpeed(Math.min(10, scrollSpeed + 1))} style={{ flex: 1, padding: '8px', background: 'transparent', border: 'none', color: currentTheme.text, cursor: 'pointer', display: 'flex', justifyContent: 'center' }}><Plus size={18} /></button>
+                  </div>
+                </div>
+
               </motion.div>
             )}
           </AnimatePresence>
         </div>
       </div>
 
-      {/* Floating Auto-Scroll Controls */}
-      <motion.div 
-        initial={{ y: 100 }}
-        animate={{ y: 0 }}
-        style={{
-          position: 'fixed',
-          bottom: '30px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 60,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px',
-          padding: '8px 24px',
-          background: isAutoScrolling ? 'rgba(196,152,79,0.95)' : currentTheme.topbar,
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderRadius: '40px',
-          boxShadow: isAutoScrolling ? '0 10px 30px rgba(196,152,79,0.3)' : '0 10px 30px rgba(0,0,0,0.5)',
-          border: `1px solid ${isAutoScrolling ? 'rgba(255,255,255,0.2)' : currentTheme.border}`,
-          transition: 'all 0.3s ease'
-        }}
-      >
-        <button 
-          onClick={() => setIsAutoScrolling(!isAutoScrolling)}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: isAutoScrolling ? '#000' : currentTheme.text,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '40px',
-            height: '40px'
-          }}
-        >
-          {isAutoScrolling ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" />}
-        </button>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button 
-            onClick={() => setScrollSpeed(Math.max(1, scrollSpeed - 1))}
-            style={{ background: 'none', border: 'none', color: isAutoScrolling ? '#000' : currentTheme.text, cursor: 'pointer', opacity: 0.8 }}
-          >
-            <Minus size={18} />
-          </button>
-          <span style={{ 
-            fontFamily: 'monospace', 
-            fontSize: '1.1rem', 
-            fontWeight: 'bold', 
-            color: isAutoScrolling ? '#000' : currentTheme.text,
-            width: '20px',
-            textAlign: 'center'
-          }}>
-            {scrollSpeed}
-          </span>
-          <button 
-            onClick={() => setScrollSpeed(Math.min(10, scrollSpeed + 1))}
-            style={{ background: 'none', border: 'none', color: isAutoScrolling ? '#000' : currentTheme.text, cursor: 'pointer', opacity: 0.8 }}
-          >
-            <Plus size={18} />
-          </button>
-        </div>
-      </motion.div>
+      {/* Floating Auto-Scroll Controls Removed - Integrated into TopBar and Settings */}
 
       {/* Clean, Distraction-Free Reading Area */}
       <div style={{ 
         flex: 1, 
-        padding: '140px 5vw 40px 5vw', // Increased top padding from 120px to 140px to prevent overlap with the fixed header
+        padding: '140px 5vw 40px 5vw', 
         display: 'flex', 
         justifyContent: 'center' 
       }}>
         <article style={{
-          maxWidth: '740px', 
+          maxWidth: '680px', 
           width: '100%',
           fontFamily: 'var(--font-serif)',
           fontSize: `${fontSize}rem`,
@@ -480,7 +449,7 @@ export default function BookReader() {
                         style={{ marginBottom: '40px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}
                       >
                         {secIndex !== 0 && (
-                          <div style={{ color: 'var(--gold-primary)', opacity: 0.5, marginBottom: '8px' }}>✧ ✧ ✧</div>
+                          <div style={{ color: theme === 'dark' ? 'var(--gold-primary)' : 'var(--primary)', opacity: 0.5, marginBottom: '8px', letterSpacing: '0.2em' }}>✧ ✧ ✧</div>
                         )}
                         <h2 style={{ fontSize: `${fontSize * 1.5}rem`, color: theme === 'dark' ? 'var(--gold-primary)' : currentTheme.text, margin: 0, fontWeight: '600' }}>
                           {section.title}
@@ -742,7 +711,7 @@ export default function BookReader() {
                               transition={{ duration: 0.5, ease: "easeOut" }}
                               style={{ overflow: 'hidden', marginTop: '40px', padding: '30px 20px', background: theme === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)', borderRadius: '20px', border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}` }}
                             >
-                              <h4 style={{ textAlign: 'center', color: 'var(--gold-primary)', marginBottom: '30px', fontSize: `${fontSize * 1.2}rem`, fontWeight: '500', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+                              <h4 style={{ textAlign: 'center', color: theme === 'dark' ? 'var(--gold-primary)' : 'var(--primary)', marginBottom: '30px', fontSize: `${fontSize * 1.2}rem`, fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
                                 <span style={{ opacity: 0.5 }}>✧</span>
                                 {optData.title}
                                 <span style={{ opacity: 0.5 }}>✧</span>
