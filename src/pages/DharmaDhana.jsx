@@ -125,7 +125,7 @@ export default function DharmaDhana() {
                     position: 'relative',
                     width: '100%',
                     maxWidth: '180px',
-                    paddingTop: '145%', // Realistic Portrait Ratio
+                    aspectRatio: '2 / 3', // Realistic Portrait Ratio
                     background: index % 2 === 0 ? 'linear-gradient(135deg, #8C1515, #4A0B0B)' : 'linear-gradient(135deg, #c4984f, #8a6730)',
                     borderRadius: '2px 8px 8px 2px',
                     boxShadow: 'inset 4px 0 10px rgba(0,0,0,0.2), inset -1px 0 2px rgba(255,255,255,0.3), 5px 5px 15px rgba(0,0,0,0.4)',
@@ -196,7 +196,7 @@ export default function DharmaDhana() {
                     position: 'relative',
                     width: '100%',
                     maxWidth: '180px',
-                    paddingTop: '145%', // Realistic Portrait Ratio
+                    aspectRatio: '2 / 3', // Realistic Portrait Ratio
                     background: 'linear-gradient(135deg, #e5e7eb, #d1d5db)', // Gray for upcoming
                     borderRadius: '2px 8px 8px 2px',
                     boxShadow: 'inset 4px 0 10px rgba(0,0,0,0.1), inset -1px 0 2px rgba(255,255,255,0.5), 5px 5px 15px rgba(0,0,0,0.2)',
