@@ -238,10 +238,10 @@ export default function DharmaDhana() {
                  {/* The Wooden Shelf */}
                  <div style={{
                   position: 'absolute',
-                  bottom: -15px,
-                  left: -20px,
-                  right: -20px,
-                  height: 15px,
+                  bottom: '-15px',
+                  left: '-20px',
+                  right: '-20px',
+                  height: '15px',
                   background: 'linear-gradient(to bottom, #734a31, #4a2e1d)',
                   borderRadius: '2px',
                   boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
