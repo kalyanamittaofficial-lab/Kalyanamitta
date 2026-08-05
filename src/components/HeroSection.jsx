@@ -33,9 +33,10 @@ export default function HeroSection() {
           fontWeight: '400',
           color: 'var(--text-muted)',
           marginBottom: '40px',
-          lineHeight: '1.6',
+          lineHeight: '1.8',
           fontFamily: 'var(--font-serif)',
-          maxWidth: '550px'
+          maxWidth: '550px',
+          fontStyle: 'italic'
         }}>
           "සකලමේව හිදං ආනන්ද, බ්‍රහ්මචරියං යදිදං කල්‍යාණමිත්තතා කල්‍යාණසහායතා කල්‍යාණසම්පවංකතා"
         </h2>
@@ -75,7 +76,7 @@ export default function HeroSection() {
         background: 'var(--bg-secondary)', 
         border: '1px solid rgba(0,0,0,0.05)',
         borderLeft: '4px solid var(--primary)',
-        padding: '40px',
+        padding: '48px',
         display: 'flex',
         flexDirection: 'column',
         boxShadow: '0 20px 40px rgba(0,0,0,0.03)'
@@ -89,14 +90,14 @@ export default function HeroSection() {
           <p style={{ 
             color: 'var(--text-main)', 
             fontSize: '1.1rem', 
-            marginBottom: '24px', 
-            lineHeight: '1.8', 
+            marginBottom: '32px', 
+            lineHeight: '1.9', 
             fontFamily: 'var(--font-serif)',
             textAlign: 'justify'
           }}>
             "ආනන්දය එසේ කියන්න එපා. ආනන්දය එසේ කියන්න එපා. මේ මාර්ග බ්‍රහ්මචරියාවේ හරි අඩක් නොව, මුළුමනින්ම රඳා පවතින්නේ කල්‍යාණ මිත්‍රත්වය, කල්‍යාණ යහළුවන් සහ කල්‍යාණ සහායකයන් මතය. කල්‍යාණ මිත්‍රයන් ඇති භික්ෂුව ආර්ය අෂ්ටාංගික මාර්ගය වඩයි, බහුල වශයෙන් ප්‍රගුණ කරයි."
           </p>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', color: 'var(--text-muted)', fontSize: '0.9rem', fontStyle: 'italic', fontFamily: 'var(--font-serif)' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', color: 'var(--text-muted)', fontSize: '0.95rem', fontStyle: 'italic', fontFamily: 'var(--font-serif)' }}>
             — උපඩ්ඪ සූත්‍රය (සංයුත්ත නිකාය)
           </div>
         </div>

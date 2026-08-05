@@ -106,6 +106,17 @@ export default function DharmaDhana() {
                   box-shadow: inset 4px 0 10px rgba(0,0,0,0.1), inset -1px 0 2px rgba(255,255,255,0.4), 12px 12px 25px rgba(0,0,0,0.5) !important;
                   transform: perspective(1000px) rotateY(-5deg) scale(1.02);
                 }
+                .book-card-hover .book-desc {
+                  max-height: 0;
+                  opacity: 0;
+                  overflow: hidden;
+                  transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, margin-top 0.4s ease;
+                }
+                .book-card-hover:hover .book-desc {
+                  max-height: 100px;
+                  opacity: 1;
+                  margin-top: 10px;
+                }
                 .shelf-wood {
                   position: absolute;
                   bottom: -15px;
@@ -153,9 +164,9 @@ export default function DharmaDhana() {
               </div>
 
               {/* Typography Meta (below the shelf) */}
-              <div style={{ marginTop: '20px', textAlign: 'center' }}>
+              <div style={{ marginTop: '20px', textAlign: 'center', padding: '0 10px' }}>
                  <p style={{ fontSize: '1.05rem', color: 'var(--text-main)', fontFamily: 'var(--font-serif)', fontWeight: '700' }}>{book.title}</p>
-                 <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', marginTop: '6px' }}>{book.description}</p>
+                 <p className="book-desc" style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', lineHeight: '1.4' }}>{book.description}</p>
               </div>
             </div>
           ))}
@@ -188,7 +199,27 @@ export default function DharmaDhana() {
                 flexDirection: 'column',
                 position: 'relative'
               }}
+              className="upcoming-card-hover"
             >
+              <style>{`
+                .upcoming-card-hover {
+                  transition: transform 0.4s ease;
+                }
+                .upcoming-card-hover:hover {
+                  transform: translateY(-8px);
+                }
+                .upcoming-card-hover .book-desc {
+                  max-height: 0;
+                  opacity: 0;
+                  overflow: hidden;
+                  transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, margin-top 0.4s ease;
+                }
+                .upcoming-card-hover:hover .book-desc {
+                  max-height: 100px;
+                  opacity: 1;
+                  margin-top: 10px;
+                }
+              `}</style>
               
               <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', zIndex: 2, marginBottom: '20px' }}>
                  {/* 3D Book Cover (Muted for Upcoming) */}
@@ -250,9 +281,9 @@ export default function DharmaDhana() {
               </div>
 
               {/* Typography Meta (below the shelf) */}
-              <div style={{ marginTop: '20px', textAlign: 'center' }}>
+              <div style={{ marginTop: '20px', textAlign: 'center', padding: '0 10px' }}>
                  <p style={{ fontSize: '1.05rem', color: 'var(--text-main)', fontFamily: 'var(--font-serif)', fontWeight: '700' }}>{book.title}</p>
-                 <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', marginTop: '6px' }}>{book.description}</p>
+                 <p className="book-desc" style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', lineHeight: '1.4' }}>{book.description}</p>
               </div>
             </div>
           ))}

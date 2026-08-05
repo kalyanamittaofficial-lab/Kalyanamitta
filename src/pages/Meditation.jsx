@@ -23,13 +23,24 @@ export default function Meditation() {
         
         {/* Hero Text */}
         <div 
-          className="text-center-mobile" style={{ maxWidth: '650px', marginBottom: '10vh', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '40px' }}
+          className="text-center-mobile" style={{ maxWidth: '800px', marginBottom: '10vh', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', margin: '0 auto 10vh auto', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '40px' }}
         >
           <h1 style={{
-            fontSize: 'clamp(3.5rem, 6vw, 6.5rem)', fontWeight: '700',
+            fontSize: 'clamp(3rem, 5vw, 5rem)', fontWeight: '700',
             color: 'var(--primary)', fontFamily: 'var(--font-serif)',
-            marginBottom: '16px', letterSpacing: '-0.02em', lineHeight: '1.1'
-          }}>භාවනා</h1>
+            marginBottom: '16px', letterSpacing: '-0.02em'
+          }}>භාවනා පුහුණුව</h1>
+          
+          <p style={{ fontSize: '1.2rem', color: 'var(--text-main)', marginBottom: '32px', letterSpacing: '0.05em', fontWeight: '600', fontFamily: 'var(--font-sinhala)' }}>
+            සිතේ සාමය සහ සැනසීම උදෙසා.
+          </p>
+
+          <div style={{ display: 'flex', gap: '16px', color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: '1.8', fontFamily: 'var(--font-sinhala)', maxWidth: '650px' }}>
+            <p>
+              ගෞතම බුදුරජාණන් වහන්සේගේ ශ්‍රී මුවින් දේශනා කළ, භාවනා ක්‍රම ඔස්සේ
+              සිත සංසිඳුවා ගැනීමට අවශ්‍ය මඟ පෙන්වීම මෙහිදී ලබා ගත හැක.
+            </p>
+          </div>
         </div>
 
         {/* Coming Soon Section */}

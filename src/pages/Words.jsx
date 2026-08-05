@@ -25,7 +25,7 @@ export default function Words() {
         
         {/* Hero Text */}
         <div 
-          className="text-center-mobile" style={{ maxWidth: '700px', marginBottom: '10vh', display: 'flex', flexDirection: 'column', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '40px' }}
+          className="text-center-mobile" style={{ maxWidth: '800px', marginBottom: '10vh', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', margin: '0 auto 10vh auto', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '40px' }}
         >
           <h1 style={{
             fontSize: 'clamp(3rem, 5vw, 5rem)', fontWeight: '700',
@@ -37,7 +37,7 @@ export default function Words() {
             ශ්‍රී සද්ධර්මයේ පිරිසිදුම උල්පත.
           </p>
 
-          <div style={{ display: 'flex', gap: '16px', color: 'var(--text-muted)', fontSize: '1.05rem', lineHeight: '1.8', fontFamily: 'var(--font-sinhala)' }}>
+          <div style={{ display: 'flex', gap: '16px', color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: '1.8', fontFamily: 'var(--font-sinhala)', maxWidth: '650px' }}>
             <p>
               ගෞතම බුදුරජාණන් වහන්සේගේ ශ්‍රී මුවින් දේශනා කළ, කිසිදු වෙනසකට ලක් නොවූ 
               පිරිසිදු ත්‍රිපිටක ධර්මය සහ පැරණි අටුවා ග්‍රන්ථ වෙත පිවිසෙන මණ්ඩපය.

@@ -19,14 +19,14 @@ export default function Sermons() {
     >
       
       {/* Hero Header Content */}
-      <div className="mobile-padding" style={{ position: 'relative', zIndex: 10, padding: '5vh 5vw 5vh 5vw', maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+      <div className="mobile-padding" style={{ position: 'relative', zIndex: 10, padding: '5vh 5vw 5vh 5vw', maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
         <h1 style={{
           fontSize: 'clamp(3rem, 5vw, 5rem)', fontWeight: '700',
           color: 'var(--primary)', fontFamily: 'var(--font-serif)',
           marginBottom: '16px', letterSpacing: '-0.02em'
         }}>සද්ධර්ම ශ්‍රවණය</h1>
         
-        <p style={{ fontSize: '1.2rem', color: 'var(--text-muted)', marginBottom: '40px', letterSpacing: '0.05em', fontWeight: '400', maxWidth: '600px', margin: '0 0 20px 0', fontFamily: 'var(--font-sinhala)' }}>
+        <p style={{ fontSize: '1.2rem', color: 'var(--text-muted)', marginBottom: '40px', letterSpacing: '0.05em', fontWeight: '400', maxWidth: '650px', margin: '0 auto 40px auto', fontFamily: 'var(--font-sinhala)', lineHeight: '1.8' }}>
           විශ්වාසදායක මූලාශ්‍ර වෙතින් ගෙනෙන පිරිසිදු ධර්ම දේශනා, සූත්‍ර සාකච්ඡා සහ භාවනා උපදෙස් ඇතුළත් දහම් පුස්තකාලය.
         </p>
       </div>
