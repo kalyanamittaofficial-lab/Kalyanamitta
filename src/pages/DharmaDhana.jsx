@@ -73,84 +73,89 @@ export default function DharmaDhana() {
           </p>
         </div>
 
-        {/* Currently Available Books */}
+        {/* Currently Available Books - Library Shelf */}
         <div 
-          className="book-grid-responsive"
-          style={{ marginBottom: '80px' }}
+          style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', 
+            gap: '60px 40px',
+            marginBottom: '100px',
+            padding: '20px 0'
+          }}
         >
-          {booksData.map((book) => (
+          {booksData.map((book, index) => (
             <div 
               key={book.id} 
               onClick={() => handleBookClick(book)}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
-                background: 'var(--bg-secondary)',
-                border: '1px solid rgba(0,0,0,0.05)',
-                borderRadius: '4px',
-                overflow: 'hidden',
                 cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                position: 'relative',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.02)'
+                position: 'relative'
               }}
               className="book-card-hover"
             >
               <style>{`
-                .book-card-hover:hover {
-                  transform: translateY(-8px);
-                  border-color: var(--primary) !important;
-                  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+                .book-card-hover {
+                  transition: transform 0.4s ease;
                 }
-                .book-card-hover:hover .read-btn {
-                  background: var(--primary) !important;
-                  color: #fff !important;
+                .book-card-hover:hover {
+                  transform: translateY(-12px);
+                }
+                .book-card-hover:hover .book-3d {
+                  box-shadow: inset 4px 0 10px rgba(0,0,0,0.1), inset -1px 0 2px rgba(255,255,255,0.4), 12px 12px 25px rgba(0,0,0,0.5) !important;
+                  transform: perspective(1000px) rotateY(-5deg) scale(1.02);
+                }
+                .shelf-wood {
+                  position: absolute;
+                  bottom: -15px;
+                  left: -20px;
+                  right: -20px;
+                  height: 15px;
+                  background: linear-gradient(to bottom, #734a31, #4a2e1d);
+                  border-radius: 2px;
+                  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+                  z-index: 1;
                 }
               `}</style>
-
-              {/* Cover Text (Text-only Square Cover) */}
-              <div style={{
-                position: 'relative',
-                paddingTop: '100%',
-                overflow: 'hidden',
-                background: 'var(--glass-bg)',
-                borderBottom: '1px solid rgba(0,0,0,0.05)'
-              }}>
-                <div style={{
-                  position: 'absolute',
-                  top: 0, left: 0, width: '100%', height: '100%',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                  padding: '20px',
-                  textAlign: 'center'
-                }}>
-                  <BookOpen size={48} color="rgba(140, 21, 21, 0.2)" style={{ marginBottom: '20px' }} strokeWidth={1} />
-                  <h3 style={{ fontSize: '1.8rem', fontFamily: 'var(--font-serif)', color: 'var(--text-main)', marginBottom: '8px', fontWeight: '700', lineHeight: '1.3' }}>
-                    {book.title}
-                  </h3>
-                  <div style={{ width: '40px', height: '2px', background: 'var(--primary)', marginTop: '16px', opacity: 0.3 }}></div>
-                </div>
+              
+              <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', zIndex: 2, marginBottom: '20px' }}>
+                 {/* 3D Book Cover */}
+                 <div className="book-3d" style={{
+                    position: 'relative',
+                    width: '100%',
+                    maxWidth: '180px',
+                    paddingTop: '145%', // Realistic Portrait Ratio
+                    background: index % 2 === 0 ? 'linear-gradient(135deg, #8C1515, #4A0B0B)' : 'linear-gradient(135deg, #c4984f, #8a6730)',
+                    borderRadius: '2px 8px 8px 2px',
+                    boxShadow: 'inset 4px 0 10px rgba(0,0,0,0.2), inset -1px 0 2px rgba(255,255,255,0.3), 5px 5px 15px rgba(0,0,0,0.4)',
+                    transition: 'all 0.4s ease',
+                    transformOrigin: 'left center'
+                 }}>
+                    {/* Spine Crease */}
+                    <div style={{ position: 'absolute', left: '10px', top: 0, bottom: 0, width: '2px', background: 'rgba(255,255,255,0.15)' }}></div>
+                    <div style={{ position: 'absolute', left: '14px', top: 0, bottom: 0, width: '6px', background: 'rgba(0,0,0,0.1)' }}></div>
+                    
+                    {/* Cover Content */}
+                    <div style={{ position: 'absolute', left: '20px', top: '15px', bottom: '15px', right: '10px', border: '1px solid rgba(255,255,255,0.2)', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+                       <BookOpen size={32} color="rgba(255,255,255,0.9)" style={{ marginBottom: '16px' }} strokeWidth={1} />
+                       <h3 style={{ fontSize: '1.25rem', fontFamily: 'var(--font-serif)', color: '#fff', marginBottom: '8px', fontWeight: '700', lineHeight: '1.2', textShadow: '0 2px 4px rgba(0,0,0,0.4)' }}>
+                         {book.title}
+                       </h3>
+                       <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)', fontFamily: 'var(--font-sinhala)', letterSpacing: '0.05em' }}>
+                         {book.author}
+                       </p>
+                    </div>
+                 </div>
+                 
+                 {/* The Wooden Shelf */}
+                 <div className="shelf-wood"></div>
               </div>
 
-              {/* Typography Meta */}
-              <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', flexGrow: 1, zIndex: 2 }}>
-                <p style={{ fontSize: '0.85rem', color: 'var(--primary)', marginBottom: '12px', letterSpacing: '0.05em', fontWeight: '600' }}>
-                  {book.author}
-                </p>
-                <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', lineHeight: '1.5', marginBottom: '24px', flexGrow: 1, fontFamily: 'var(--font-sinhala)' }}>
-                  {book.description}
-                </p>
-                
-                <div className="read-btn" style={{ 
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', 
-                  color: 'var(--text-main)', fontSize: '0.9rem', fontWeight: '600',
-                  padding: '10px 20px', borderRadius: '4px',
-                  background: 'transparent',
-                  border: '1px solid rgba(0,0,0,0.1)',
-                  transition: 'all 0.3s ease',
-                  fontFamily: 'var(--font-sinhala)'
-                }}>
-                  කියවන්න <span style={{ fontSize: '1.1rem', lineHeight: '1' }}>→</span>
-                </div>
+              {/* Typography Meta (below the shelf) */}
+              <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                 <p style={{ fontSize: '1.05rem', color: 'var(--text-main)', fontFamily: 'var(--font-serif)', fontWeight: '700' }}>{book.title}</p>
+                 <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', marginTop: '6px' }}>{book.description}</p>
               </div>
             </div>
           ))}
@@ -165,77 +170,89 @@ export default function DharmaDhana() {
           <div style={{ height: '1px', flex: 1, background: 'var(--glass-border)' }}></div>
         </div>
 
-        {/* Coming Soon Books */}
+        {/* Coming Soon Books - Library Shelf */}
         <div 
-          className="book-grid-responsive"
           style={{ 
-            opacity: 0.7
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', 
+            gap: '60px 40px',
+            opacity: 0.7,
+            padding: '20px 0'
           }}
         >
-          {upcomingBooks.map((book) => (
+          {upcomingBooks.map((book, index) => (
             <div 
               key={book.id} 
               style={{
                 display: 'flex',
                 flexDirection: 'column',
-                background: 'var(--bg-secondary)',
-                border: '1px solid rgba(0,0,0,0.05)',
-                borderRadius: '4px',
-                overflow: 'hidden',
                 position: 'relative'
               }}
             >
-              {/* Coming Soon Badge Overlay */}
-              <div style={{
-                position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-                background: 'rgba(255,255,255,0.7)', zIndex: 10,
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}>
-                <div style={{
-                  background: 'var(--primary)',
-                  padding: '8px 24px',
-                  borderRadius: '30px',
-                  color: '#fff',
-                  fontFamily: 'var(--font-sinhala)',
-                  fontSize: '0.9rem',
-                  letterSpacing: '0.05em',
-                  fontWeight: '600'
-                }}>
-                  ඉදිරියේදී
-                </div>
-              </div>
-
-              {/* Text Only Square Cover */}
-              <div style={{
-                position: 'relative',
-                paddingTop: '100%',
-                overflow: 'hidden',
-                background: 'var(--glass-bg)',
-                borderBottom: '1px solid rgba(0,0,0,0.05)'
-              }}>
-                <div style={{
+              
+              <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', zIndex: 2, marginBottom: '20px' }}>
+                 {/* 3D Book Cover (Muted for Upcoming) */}
+                 <div className="book-3d" style={{
+                    position: 'relative',
+                    width: '100%',
+                    maxWidth: '180px',
+                    paddingTop: '145%', // Realistic Portrait Ratio
+                    background: 'linear-gradient(135deg, #e5e7eb, #d1d5db)', // Gray for upcoming
+                    borderRadius: '2px 8px 8px 2px',
+                    boxShadow: 'inset 4px 0 10px rgba(0,0,0,0.1), inset -1px 0 2px rgba(255,255,255,0.5), 5px 5px 15px rgba(0,0,0,0.2)',
+                 }}>
+                    {/* Spine Crease */}
+                    <div style={{ position: 'absolute', left: '10px', top: 0, bottom: 0, width: '2px', background: 'rgba(0,0,0,0.05)' }}></div>
+                    <div style={{ position: 'absolute', left: '14px', top: 0, bottom: 0, width: '6px', background: 'rgba(0,0,0,0.03)' }}></div>
+                    
+                    {/* Cover Content */}
+                    <div style={{ position: 'absolute', left: '20px', top: '15px', bottom: '15px', right: '10px', border: '1px solid rgba(0,0,0,0.1)', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+                       <BookOpen size={32} color="rgba(0,0,0,0.2)" style={{ marginBottom: '16px' }} strokeWidth={1} />
+                       <h3 style={{ fontSize: '1.25rem', fontFamily: 'var(--font-serif)', color: 'var(--text-muted)', marginBottom: '8px', fontWeight: '700', lineHeight: '1.2' }}>
+                         {book.title}
+                       </h3>
+                    </div>
+                    
+                    {/* Coming Soon Badge Overlay */}
+                    <div style={{
+                      position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                      background: 'rgba(255,255,255,0.4)', borderRadius: '2px 8px 8px 2px', zIndex: 10,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}>
+                      <div style={{
+                        background: 'var(--primary)',
+                        padding: '6px 16px',
+                        borderRadius: '30px',
+                        color: '#fff',
+                        fontFamily: 'var(--font-sinhala)',
+                        fontSize: '0.85rem',
+                        letterSpacing: '0.05em',
+                        fontWeight: '600',
+                        boxShadow: '0 4px 10px rgba(140, 21, 21, 0.3)'
+                      }}>
+                        ඉදිරියේදී
+                      </div>
+                    </div>
+                 </div>
+                 
+                 {/* The Wooden Shelf */}
+                 <div style={{
                   position: 'absolute',
-                  top: 0, left: 0, width: '100%', height: '100%',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                  padding: '20px',
-                  textAlign: 'center'
-                }}>
-                  <BookOpen size={48} color="rgba(0,0,0,0.1)" style={{ marginBottom: '20px' }} strokeWidth={1} />
-                  <h3 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-serif)', color: 'var(--text-muted)', marginBottom: '8px', fontWeight: '700', lineHeight: '1.3' }}>
-                    {book.title}
-                  </h3>
-                </div>
+                  bottom: -15px,
+                  left: -20px,
+                  right: -20px,
+                  height: 15px,
+                  background: 'linear-gradient(to bottom, #734a31, #4a2e1d)',
+                  borderRadius: '2px',
+                  boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
+                  zIndex: 1
+                 }}></div>
               </div>
 
-              {/* Typography Meta */}
-              <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '16px', letterSpacing: '0.05em' }}>
-                  {book.author}
-                </p>
-                <div style={{ width: '30px', height: '1px', background: 'rgba(0,0,0,0.1)', marginBottom: '16px' }}></div>
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.5', flexGrow: 1, fontFamily: 'var(--font-sinhala)' }}>
-                  {book.description}
-                </p>
+              {/* Typography Meta (below the shelf) */}
+              <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                 <p style={{ fontSize: '1.05rem', color: 'var(--text-main)', fontFamily: 'var(--font-serif)', fontWeight: '700' }}>{book.title}</p>
+                 <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', marginTop: '6px' }}>{book.description}</p>
               </div>
             </div>
           ))}
