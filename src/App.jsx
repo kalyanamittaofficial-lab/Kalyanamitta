@@ -15,6 +15,7 @@ import BookReader from './components/BookReader';
 import OtherChantings from './pages/OtherChantings';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import ResourceLanding from './pages/ResourceLanding';
 
 function ProtectedRoute({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -50,6 +51,7 @@ function App() {
           <Route path="dharmadhana" element={<DharmaDhana />} />
           <Route path="profile" element={<Profile />} />
           <Route path="other-chantings" element={<OtherChantings />} />
+          <Route path="library/:id" element={<ResourceLanding />} />
           <Route path="login" element={<Login />} />
           <Route 
             path="dashboard" 
