@@ -113,11 +113,8 @@ export default function Register() {
 
   const containerStyle = {
     display: 'flex',
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    height: 'calc(100vh - 100px)',
+    width: '100%',
     backgroundColor: '#ffffff',
     overflow: 'hidden'
   };
@@ -172,10 +169,9 @@ export default function Register() {
         {`
           @media (max-width: 900px) {
             .auth-container {
-              position: relative !important;
               flex-direction: column !important;
               height: auto !important;
-              min-height: 100vh !important;
+              min-height: calc(100vh - 100px) !important;
               overflow: visible !important;
             }
             .left-pane {
