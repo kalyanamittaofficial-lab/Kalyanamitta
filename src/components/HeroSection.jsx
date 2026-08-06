@@ -82,9 +82,7 @@ export default function HeroSection() {
         boxShadow: '0 20px 40px rgba(0,0,0,0.03)'
       }}>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-          <div style={{ color: 'var(--primary)', fontSize: '0.85rem', fontWeight: '700', letterSpacing: '0.05em', textTransform: 'uppercase' }}>ශ්‍රී මුඛ දේශනාව</div>
-        </div>
+
         
         <div>
           <p style={{ 
