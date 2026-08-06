@@ -16,6 +16,7 @@ import OtherChantings from './pages/OtherChantings';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import ResourceLanding from './pages/ResourceLanding';
+import Onboarding from './pages/Onboarding';
 
 function ProtectedRoute({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -53,6 +54,14 @@ function App() {
           <Route path="other-chantings" element={<OtherChantings />} />
           <Route path="library/:id" element={<ResourceLanding />} />
           <Route path="login" element={<Login />} />
+          <Route 
+            path="onboarding" 
+            element={
+              <ProtectedRoute>
+                <Onboarding />
+              </ProtectedRoute>
+            } 
+          />
           <Route 
             path="dashboard" 
             element={

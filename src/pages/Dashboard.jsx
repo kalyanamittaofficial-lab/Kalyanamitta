@@ -1,26 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabase';
-import { Search, User, Bell, ArrowRight, Activity, BookOpen, Calendar } from 'lucide-react';
+import { User, Activity, BookOpen, ArrowRight, Edit2, Save, X } from 'lucide-react';
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
-  const [activeTasks, setActiveTasks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isHoveringLogout, setIsHoveringLogout] = useState(false);
-  const [needsOnboarding, setNeedsOnboarding] = useState(false);
   
-  // Onboarding Form State
-  const [formData, setFormData] = useState({
-    name: '',
-    phone_number: '',
-    district: '',
-    age: ''
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [onboardingError, setOnboardingError] = useState('');
+  // Edit Mode State
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -42,30 +35,12 @@ export default function Dashboard() {
           .single();
         
         if (profileData) {
-          setProfile(profileData);
-          
-          // Check if onboarding is needed
-          if (!profileData.name || !profileData.phone_number || !profileData.district || !profileData.age) {
-            setNeedsOnboarding(true);
-            setFormData({
-              name: profileData.name || '',
-              phone_number: profileData.phone_number || '',
-              district: profileData.district || '',
-              age: profileData.age || ''
-            });
+          if (profileData.status === 'pending_onboarding') {
+            navigate('/onboarding');
+            return;
           }
-        }
-
-        const { data: tasksData } = await supabase
-          .from('tasks')
-          .select('*')
-          .eq('is_active', true)
-          .neq('is_deleted', true)
-          .order('created_at', { ascending: false })
-          .limit(3);
-
-        if (tasksData) {
-          setActiveTasks(tasksData);
+          setProfile(profileData);
+          setEditForm(profileData);
         }
 
       } catch (error) {
@@ -78,99 +53,73 @@ export default function Dashboard() {
     fetchUserData();
   }, [navigate]);
 
-  const handleOnboardingSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setOnboardingError('');
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm(prev => ({ ...prev, [name]: value }));
+  };
 
+  const handleSave = async () => {
+    setIsSaving(true);
     try {
       const { error } = await supabase
         .from('profiles')
         .update({
-          name: formData.name,
-          phone_number: formData.phone_number,
-          district: formData.district,
-          age: parseInt(formData.age, 10)
+          name: editForm.name,
+          mobile_number: editForm.mobile_number,
+          country: editForm.country,
+          state_district: editForm.state_district,
+          native_language: editForm.native_language,
+          dob: editForm.dob,
+          marital_status: editForm.marital_status,
+          family_details: editForm.family_details,
+          education_profession: editForm.education_profession
         })
         .eq('id', user.id);
 
       if (error) throw error;
-
-      // Update local state to dismiss onboarding
-      setProfile({ ...profile, ...formData, age: parseInt(formData.age, 10) });
-      setNeedsOnboarding(false);
+      setProfile(editForm);
+      setIsEditing(false);
     } catch (err) {
+      alert("Error updating profile");
       console.error(err);
-      setOnboardingError('තොරතුරු යාවත්කාලීන කිරීමේදී දෝෂයක් මතු විය. කරුණාකර නැවත උත්සාහ කරන්න.');
     } finally {
-      setIsSubmitting(false);
+      setIsSaving(false);
     }
   };
 
   if (isLoading) {
     return (
       <div className="flex-center" style={{ minHeight: 'calc(100vh - 100px)', padding: '24px', background: 'var(--bg-main)' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%', maxWidth: '1000px', margin: '0 auto' }}>
-          <div style={{ height: '40px', width: '200px', background: 'var(--bg-secondary)', borderRadius: '8px', animation: 'pulse 1.5s infinite ease-in-out' }}></div>
-          <div style={{ height: '24px', width: '300px', background: 'var(--bg-secondary)', borderRadius: '6px', animation: 'pulse 1.5s infinite ease-in-out', animationDelay: '0.2s' }}></div>
-          <div style={{ height: '200px', width: '100%', background: 'var(--bg-secondary)', borderRadius: '16px', marginTop: '32px', animation: 'pulse 1.5s infinite ease-in-out', animationDelay: '0.4s' }}></div>
-        </div>
+        <p style={{ color: 'var(--text-muted)' }}>Loading Dashboard...</p>
       </div>
     );
   }
 
-  if (needsOnboarding) {
-    return (
-      <div className="flex-center" style={{ minHeight: 'calc(100vh - 100px)', padding: '24px', background: 'radial-gradient(circle at top, var(--bg-secondary) 0%, var(--bg-main) 100%)' }}>
-        <div className="glass-panel" style={{ width: '100%', maxWidth: '500px', padding: '48px 40px', borderRadius: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.08)', animation: 'fadeInUp 0.6s ease-out' }}>
-          <h2 style={{ fontSize: '2rem', fontFamily: 'var(--font-serif)', color: 'var(--primary)', marginBottom: '16px', textAlign: 'center' }}>
-            සාදරයෙන් පිළිගනිමු!
-          </h2>
-          <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', fontSize: '0.95rem', marginBottom: '32px', textAlign: 'center', lineHeight: '1.6' }}>
-            කරුණාකර ඔබගේ ගිණුම සම්පූර්ණ කිරීම සඳහා පහත තොරතුරු ලබා දෙන්න.
-          </p>
-
-          {onboardingError && (
-            <div style={{ marginBottom: '24px', padding: '14px', borderRadius: '12px', background: '#fff1f2', color: '#9f1239', border: '1px solid #fecdd3', fontSize: '0.85rem', fontFamily: 'var(--font-sinhala)' }}>
-              {onboardingError}
-            </div>
-          )}
-
-          <form onSubmit={handleOnboardingSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', fontWeight: '600' }}>විද්‍යුත් තැපෑල (Email)</label>
-              <input type="email" value={user.email} disabled style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid var(--glass-border)', background: 'rgba(0,0,0,0.02)', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', outline: 'none' }} />
-            </div>
-            
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', fontWeight: '600' }}>සම්පූර්ණ නම</label>
-              <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="උදා: කසුන් පෙරේරා" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '2px solid var(--glass-border)', background: '#fff', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', outline: 'none' }} />
-            </div>
-
-            <div style={{ display: 'flex', gap: '16px' }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', fontWeight: '600' }}>දුරකථන අංකය</label>
-                <input required type="tel" value={formData.phone_number} onChange={e => setFormData({...formData, phone_number: e.target.value})} placeholder="07XXXXXXXX" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '2px solid var(--glass-border)', background: '#fff', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', outline: 'none' }} />
-              </div>
-              <div style={{ width: '100px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', fontWeight: '600' }}>වයස</label>
-                <input required type="number" min="10" max="120" value={formData.age} onChange={e => setFormData({...formData, age: e.target.value})} placeholder="25" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '2px solid var(--glass-border)', background: '#fff', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', outline: 'none' }} />
-              </div>
-            </div>
-
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', fontWeight: '600' }}>දිස්ත්‍රික්කය</label>
-              <input required type="text" value={formData.district} onChange={e => setFormData({...formData, district: e.target.value})} placeholder="උදා: කොළඹ" style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '2px solid var(--glass-border)', background: '#fff', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', outline: 'none' }} />
-            </div>
-
-            <button type="submit" disabled={isSubmitting} style={{ width: '100%', padding: '16px', marginTop: '12px', borderRadius: '12px', background: 'var(--primary)', color: '#fff', fontFamily: 'var(--font-sinhala)', fontSize: '1.05rem', fontWeight: '600', border: 'none', cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: isSubmitting ? 0.7 : 1, transition: 'all 0.3s ease', boxShadow: '0 8px 20px rgba(153, 27, 27, 0.2)' }}>
-              {isSubmitting ? 'සුරකිමින් පවතී...' : 'ඉදිරියට යන්න'}
-            </button>
-          </form>
+  const InputOrText = ({ label, name, value, isReadOnly }) => (
+    <div style={{ marginBottom: '16px' }}>
+      <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', display: 'block', marginBottom: '4px' }}>{label}</span>
+      {isEditing && !isReadOnly ? (
+        <input 
+          type={name === 'dob' ? 'date' : 'text'}
+          name={name}
+          value={value || ''}
+          onChange={handleEditChange}
+          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--primary)', background: '#fff', fontSize: '1rem', fontFamily: 'var(--font-sinhala)' }}
+        />
+      ) : (
+        <div style={{ 
+          fontSize: '1.05rem', 
+          color: isReadOnly ? 'rgba(0,0,0,0.4)' : 'var(--text-main)', 
+          fontFamily: 'var(--font-sinhala)', 
+          fontWeight: isReadOnly ? '400' : '500',
+          padding: '10px 0',
+          borderBottom: '1px solid rgba(0,0,0,0.05)'
+        }}>
+          {value || '-'}
         </div>
-      </div>
-    );
-  }
+      )}
+    </div>
+  );
 
   return (
     <div style={{ padding: '40px 24px', maxWidth: '1000px', margin: '0 auto', width: '100%', minHeight: 'calc(100vh - 100px)' }}>
@@ -185,96 +134,126 @@ export default function Dashboard() {
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '32px' }}>
         
         {/* Account Information Card */}
-        <div className="glass-panel" style={{ padding: '40px', borderRadius: '24px', animation: 'fadeInUp 0.6s ease-out', animationDelay: '0.1s', animationFillMode: 'both', borderTop: '4px solid var(--primary)' }}>
-          <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', fontFamily: 'var(--font-sinhala)', color: 'var(--text-main)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <User size={24} color="var(--primary)" /> ඔබගේ ගිණුමේ තොරතුරු
-          </h3>
+        <div className="glass-panel" style={{ padding: '40px', borderRadius: '24px', animation: 'fadeInUp 0.6s ease-out', borderTop: '4px solid var(--primary)', position: 'relative' }}>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Kalyanamitta ID</span>
-              <div style={{ fontSize: '1.2rem', color: 'var(--primary)', fontFamily: 'var(--font-serif)', fontWeight: 'bold' }}>{profile?.kalyanamitta_id || 'Generating...'}</div>
-            </div>
-            <div style={{ height: '1px', background: 'var(--glass-border)', width: '100%' }}></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', fontFamily: 'var(--font-sinhala)', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <User size={24} color="var(--primary)" /> ඔබගේ ගිණුමේ තොරතුරු
+            </h3>
+            {!isEditing ? (
+              <button onClick={() => setIsEditing(true)} style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600' }}>
+                <Edit2 size={16} /> Edit
+              </button>
+            ) : (
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={() => { setIsEditing(false); setEditForm(profile); }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <X size={16} /> Cancel
+                </button>
+                <button onClick={handleSave} disabled={isSaving} style={{ background: 'var(--primary)', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600' }}>
+                  <Save size={16} /> {isSaving ? 'Saving...' : 'Save'}
+                </button>
+              </div>
+            )}
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <InputOrText label="Kalyanamitta ID (නොවෙනස්වන)" name="kalyanamitta_id" value={profile?.kalyanamitta_id} isReadOnly={true} />
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-              <div>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)' }}>සම්පූර්ණ නම</span>
-                <div style={{ fontSize: '1.05rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', fontWeight: '500' }}>{profile?.name}</div>
-              </div>
-              <div>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)' }}>වයස</span>
-                <div style={{ fontSize: '1.05rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', fontWeight: '500' }}>{profile?.age}</div>
-              </div>
+              <InputOrText label="සම්පූර්ණ නම" name="name" value={isEditing ? editForm.name : profile?.name} />
+              <InputOrText label="විද්‍යුත් තැපෑල (Email)" name="email" value={user?.email} isReadOnly={true} />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-              <div>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)' }}>දුරකථන අංකය</span>
-                <div style={{ fontSize: '1.05rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', fontWeight: '500' }}>{profile?.phone_number}</div>
-              </div>
-              <div>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)' }}>දිස්ත්‍රික්කය</span>
-                <div style={{ fontSize: '1.05rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', fontWeight: '500' }}>{profile?.district}</div>
-              </div>
+              <InputOrText label="දුරකථන අංකය" name="mobile_number" value={isEditing ? editForm.mobile_number : profile?.mobile_number} />
+              <InputOrText label="උපන් දිනය" name="dob" value={isEditing ? editForm.dob : profile?.dob} />
             </div>
 
-            <div>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)' }}>විද්‍යුත් තැපෑල (Email)</span>
-              <div style={{ fontSize: '1.05rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', fontWeight: '500' }}>{user?.email}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+              <InputOrText label="රට" name="country" value={isEditing ? editForm.country : profile?.country} />
+              <InputOrText label="දිස්ත්‍රික්කය" name="state_district" value={isEditing ? editForm.state_district : profile?.state_district} />
             </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+              <InputOrText label="විවාහක/අවිවාහක බව" name="marital_status" value={isEditing ? editForm.marital_status : profile?.marital_status} />
+              <InputOrText label="මව්බස" name="native_language" value={isEditing ? editForm.native_language : profile?.native_language} />
+            </div>
+
+            <InputOrText label="අධ්‍යාපනය / රැකියාව" name="education_profession" value={isEditing ? editForm.education_profession : profile?.education_profession} />
+            <InputOrText label="පවුලේ විස්තර" name="family_details" value={isEditing ? editForm.family_details : profile?.family_details} />
           </div>
         </div>
 
-        {/* Quick Access Portal */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', animation: 'fadeInUp 0.6s ease-out', animationDelay: '0.2s', animationFillMode: 'both' }}>
-          <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', fontFamily: 'var(--font-sinhala)', color: 'var(--text-main)', marginBottom: '8px', paddingLeft: '8px' }}>
-            ඉක්මන් පිවිසුම්
-          </h3>
-          
-          {[
-            { title: 'භාවනා පුහුණුව', desc: 'භාවනා මාර්ගෝපදේශ සහ නිශ්ශබ්ද කාලය', icon: Activity, path: '/meditation' },
-            { title: 'ධර්ම දේශනා', desc: 'සජීවී සහ පටිගත කළ දේශනා', icon: BookOpen, path: '/sermons' },
-            { title: 'කල්‍යාණ මිත්‍රත්වය', desc: 'ප්‍රජාව සමඟ සම්බන්ධ වන්න', icon: User, path: '/community' }
-          ].map((item, idx) => (
-            <div 
-              key={idx}
-              onClick={() => navigate(item.path)}
-              style={{
-                background: '#fff',
-                border: '1px solid var(--glass-border)',
-                borderRadius: '16px',
-                padding: '24px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '20px',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.02)'
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.06)'; e.currentTarget.style.borderColor = 'var(--primary)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.02)'; e.currentTarget.style.borderColor = 'var(--glass-border)'; }}
-            >
-              <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(140, 21, 21, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <item.icon size={24} color="var(--primary)" />
-              </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+          {/* Read-Only Spiritual Ratings */}
+          <div className="glass-panel" style={{ padding: '32px', borderRadius: '24px', background: 'rgba(255,255,255,0.4)' }}>
+            <h4 style={{ fontSize: '1.2rem', fontWeight: 'bold', fontFamily: 'var(--font-sinhala)', color: 'rgba(0,0,0,0.5)', marginBottom: '24px' }}>
+              ආධ්‍යාත්මික පසුබිම (Initial Assessment)
+            </h4>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
-                <h4 style={{ fontSize: '1.1rem', fontWeight: 'bold', fontFamily: 'var(--font-sinhala)', color: 'var(--text-main)', marginBottom: '4px' }}>{item.title}</h4>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)' }}>{item.desc}</p>
+                <span style={{ fontSize: '0.85rem', color: 'rgba(0,0,0,0.4)', fontFamily: 'var(--font-sinhala)', display: 'block', marginBottom: '8px' }}>නිවන් දකින්න ඇති උනන්දුව</span>
+                <div style={{ width: '100%', height: '8px', background: 'rgba(0,0,0,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div style={{ width: `${profile?.spiritual_interest || 0}%`, height: '100%', background: 'rgba(140, 21, 21, 0.3)' }}></div>
+                </div>
               </div>
-              <div style={{ marginLeft: 'auto', color: 'var(--text-muted)' }}>
-                <ArrowRight size={20} />
+              
+              <div>
+                <span style={{ fontSize: '0.85rem', color: 'rgba(0,0,0,0.4)', fontFamily: 'var(--font-sinhala)', display: 'block', marginBottom: '8px' }}>දැනට කරන කැපකිරීම</span>
+                <div style={{ width: '100%', height: '8px', background: 'rgba(0,0,0,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div style={{ width: `${profile?.current_dedication || 0}%`, height: '100%', background: 'rgba(140, 21, 21, 0.3)' }}></div>
+                </div>
+              </div>
+
+              <div>
+                <span style={{ fontSize: '0.85rem', color: 'rgba(0,0,0,0.4)', fontFamily: 'var(--font-sinhala)', display: 'block', marginBottom: '8px' }}>ඉදිරියට කිරීමට සූදානම් කැපකිරීම</span>
+                <div style={{ width: '100%', height: '8px', background: 'rgba(0,0,0,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div style={{ width: `${profile?.potential_dedication || 0}%`, height: '100%', background: 'rgba(140, 21, 21, 0.3)' }}></div>
+                </div>
               </div>
             </div>
-          ))}
+          </div>
+
+          {/* Quick Access Portal */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <h3 style={{ fontSize: '1.3rem', fontWeight: 'bold', fontFamily: 'var(--font-sinhala)', color: 'var(--text-main)', paddingLeft: '8px' }}>
+              ඉක්මන් පිවිසුම්
+            </h3>
+            
+            {[
+              { title: 'භාවනා පුහුණුව', desc: 'භාවනා මාර්ගෝපදේශ සහ නිශ්ශබ්ද කාලය', icon: Activity, path: '/meditation' },
+              { title: 'ධර්ම දේශනා', desc: 'සජීවී සහ පටිගත කළ දේශනා', icon: BookOpen, path: '/sermons' }
+            ].map((item, idx) => (
+              <div 
+                key={idx}
+                onClick={() => navigate(item.path)}
+                style={{
+                  background: '#fff', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '20px',
+                  display: 'flex', alignItems: 'center', gap: '20px', cursor: 'pointer', transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 15px rgba(0,0,0,0.02)'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = 'var(--primary)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'var(--glass-border)'; }}
+              >
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(140, 21, 21, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <item.icon size={20} color="var(--primary)" />
+                </div>
+                <div>
+                  <h4 style={{ fontSize: '1.05rem', fontWeight: 'bold', fontFamily: 'var(--font-sinhala)', color: 'var(--text-main)', marginBottom: '4px' }}>{item.title}</h4>
+                </div>
+                <div style={{ marginLeft: 'auto', color: 'var(--text-muted)' }}><ArrowRight size={18} /></div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
       
       {/* Sign Out */}
-      <div style={{ marginTop: '64px', textAlign: 'center', paddingBottom: '32px', animation: 'fadeInUp 0.6s ease-out', animationDelay: '0.3s', animationFillMode: 'both' }}>
+      <div style={{ marginTop: '64px', textAlign: 'center', paddingBottom: '32px' }}>
         <button 
           onClick={async () => { await supabase.auth.signOut(); navigate('/login'); }}
           style={{ 
@@ -283,10 +262,7 @@ export default function Dashboard() {
             padding: '12px 32px', 
             borderRadius: '12px', 
             color: isHoveringLogout ? '#be123c' : 'var(--text-muted)', 
-            fontFamily: 'var(--font-sinhala)',
-            fontWeight: '500',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease'
+            fontFamily: 'var(--font-sinhala)', fontWeight: '500', cursor: 'pointer', transition: 'all 0.3s ease'
           }}
           onMouseEnter={() => setIsHoveringLogout(true)}
           onMouseLeave={() => setIsHoveringLogout(false)}
