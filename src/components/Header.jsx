@@ -36,13 +36,12 @@ export default function Header() {
   // Mapping nav items to their routes for future-proofing
   const allNavItems = [
     { name: 'මුල් පිටුව', path: '/', icon: <Home size={16} /> },
-    { name: 'බුදු වදන්', path: '/words' }, 
-    { name: 'දේශනා', path: '/sermons' }, 
-    { name: 'භාවනා', path: '/meditation' }, 
-    { name: 'ධර්ම මාර්ගය', path: '/path' }, 
+    { name: 'කල්‍යාණ මිත්‍රත්වය', path: '/community' },
     { name: 'ජීවිතයට ධර්මය', path: '/life' }, 
-    { name: 'ධර්ම දාන', path: '/dharmadhana' },
-    { name: 'කල්‍යාණ මිත්‍රත්වය', path: '/community' }
+    { name: 'ධර්ම මාර්ගය', path: '/path' }, 
+    { name: 'කල්‍යාණමිත්ත පුස්තකාලය', path: '/dharmadhana' },
+    { name: 'දේශනා', path: '/sermons' }, 
+    { name: 'භාවනා', path: '/meditation' }
   ];
 
   return (
