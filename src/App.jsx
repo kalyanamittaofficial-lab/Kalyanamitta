@@ -14,6 +14,7 @@ import DharmaDhana from './pages/DharmaDhana';
 import BookReader from './components/BookReader';
 import OtherChantings from './pages/OtherChantings';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ResourceLanding from './pages/ResourceLanding';
 import Onboarding from './pages/Onboarding';
@@ -54,6 +55,7 @@ function App() {
           <Route path="other-chantings" element={<OtherChantings />} />
           <Route path="library/:id" element={<ResourceLanding />} />
           <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
           <Route 
             path="onboarding" 
             element={

@@ -5,33 +5,20 @@ import { supabase } from '../utils/supabase';
 export default function Login() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState({ text: '', type: '' });
   const [focusedInput, setFocusedInput] = useState(null);
 
-  const handleAuth = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setMessage({ text: '', type: '' });
 
     try {
-      if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-        });
-        if (error) throw error;
-        setMessage({ text: 'ගිණුම සෑදීම සාර්ථකයි! කරුණාකර ඔබගේ විද්‍යුත් තැපෑල (Email) පරීක්ෂා කරන්න.', type: 'success' });
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
-        navigate('/dashboard');
-      }
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      navigate('/dashboard');
     } catch (error) {
       setMessage({ text: error.message, type: 'error' });
     } finally {
@@ -43,6 +30,7 @@ export default function Login() {
     setIsLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
+      options: { redirectTo: `${window.location.origin}/onboarding` }
     });
     
     if (error) {
@@ -56,12 +44,8 @@ export default function Login() {
       <div 
         className="glass-panel" 
         style={{ 
-          width: '100%', 
-          maxWidth: '420px', 
-          padding: '48px 40px', 
-          textAlign: 'center',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05)',
-          borderRadius: '24px',
+          width: '100%', maxWidth: '420px', padding: '48px 40px', textAlign: 'center',
+          boxShadow: '0 20px 40px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05)', borderRadius: '24px',
           transition: 'transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)'
         }}
         onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
@@ -71,97 +55,55 @@ export default function Login() {
           Kalyanamitta
         </h1>
         <p style={{ marginBottom: '36px', color: 'var(--text-muted)', fontSize: '0.95rem', fontFamily: 'var(--font-sinhala)' }}>
-          {isSignUp ? 'නව ගිණුමක් සාදන්න' : 'ඔබගේ ගිණුමට පිවිසෙන්න'}
+          ඔබගේ ගිණුමට පිවිසෙන්න
         </p>
         
         {message.text && (
           <div style={{
-            marginBottom: '20px',
-            padding: '14px',
-            borderRadius: '12px',
-            fontSize: '0.85rem',
-            fontFamily: 'var(--font-sinhala)',
-            background: message.type === 'error' ? '#fff1f2' : '#f0fdf4',
-            color: message.type === 'error' ? '#9f1239' : '#166534',
-            border: `1px solid ${message.type === 'error' ? '#fecdd3' : '#bbf7d0'}`,
-            animation: 'fadeIn 0.3s ease-out'
+            marginBottom: '20px', padding: '14px', borderRadius: '12px', fontSize: '0.85rem', fontFamily: 'var(--font-sinhala)',
+            background: message.type === 'error' ? '#fff1f2' : '#f0fdf4', color: message.type === 'error' ? '#9f1239' : '#166534',
+            border: `1px solid ${message.type === 'error' ? '#fecdd3' : '#bbf7d0'}`, animation: 'fadeIn 0.3s ease-out'
           }}>
             {message.text}
           </div>
         )}
 
-        <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '28px' }}>
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '28px' }}>
           <div style={{ position: 'relative' }}>
-            <input
-              type="email"
-              placeholder="විද්‍යුත් තැපෑල (Email)"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+            <input type="email" placeholder="විද්‍යුත් තැපෑල (Email)" value={email} onChange={(e) => setEmail(e.target.value)} required
               style={{
-                width: '100%',
-                padding: '14px 18px',
-                borderRadius: '12px',
+                width: '100%', padding: '14px 18px', borderRadius: '12px',
                 border: `2px solid ${focusedInput === 'email' ? 'var(--primary)' : 'var(--glass-border)'}`,
-                fontFamily: 'var(--font-sinhala)',
-                fontSize: '0.95rem',
-                outline: 'none',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                background: focusedInput === 'email' ? '#fff' : 'rgba(255, 255, 255, 0.5)',
-                color: 'var(--text-main)',
+                fontFamily: 'var(--font-sinhala)', fontSize: '0.95rem', outline: 'none', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                background: focusedInput === 'email' ? '#fff' : 'rgba(255, 255, 255, 0.5)', color: 'var(--text-main)',
                 boxShadow: focusedInput === 'email' ? '0 4px 12px rgba(153, 27, 27, 0.1)' : 'none'
               }}
-              onFocus={() => setFocusedInput('email')}
-              onBlur={() => setFocusedInput(null)}
+              onFocus={() => setFocusedInput('email')} onBlur={() => setFocusedInput(null)}
             />
           </div>
           <div style={{ position: 'relative' }}>
-            <input
-              type="password"
-              placeholder="මුරපදය (Password)"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
+            <input type="password" placeholder="මුරපදය (Password)" value={password} onChange={(e) => setPassword(e.target.value)} required
               style={{
-                width: '100%',
-                padding: '14px 18px',
-                borderRadius: '12px',
+                width: '100%', padding: '14px 18px', borderRadius: '12px',
                 border: `2px solid ${focusedInput === 'password' ? 'var(--primary)' : 'var(--glass-border)'}`,
-                fontFamily: 'var(--font-sinhala)',
-                fontSize: '0.95rem',
-                outline: 'none',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                background: focusedInput === 'password' ? '#fff' : 'rgba(255, 255, 255, 0.5)',
-                color: 'var(--text-main)',
+                fontFamily: 'var(--font-sinhala)', fontSize: '0.95rem', outline: 'none', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                background: focusedInput === 'password' ? '#fff' : 'rgba(255, 255, 255, 0.5)', color: 'var(--text-main)',
                 boxShadow: focusedInput === 'password' ? '0 4px 12px rgba(153, 27, 27, 0.1)' : 'none'
               }}
-              onFocus={() => setFocusedInput('password')}
-              onBlur={() => setFocusedInput(null)}
+              onFocus={() => setFocusedInput('password')} onBlur={() => setFocusedInput(null)}
             />
           </div>
-          <button
-            type="submit"
-            disabled={isLoading}
+          <button type="submit" disabled={isLoading}
             style={{
-              width: '100%',
-              padding: '14px',
-              marginTop: '4px',
-              borderRadius: '12px',
-              background: 'var(--primary)',
-              color: '#fff',
-              fontFamily: 'var(--font-sinhala)',
-              fontSize: '1rem',
-              fontWeight: '600',
-              border: 'none',
-              cursor: isLoading ? 'not-allowed' : 'pointer',
-              opacity: isLoading ? 0.7 : 1,
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              width: '100%', padding: '14px', marginTop: '4px', borderRadius: '12px', background: 'var(--primary)', color: '#fff',
+              fontFamily: 'var(--font-sinhala)', fontSize: '1rem', fontWeight: '600', border: 'none',
+              cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.7 : 1, transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               boxShadow: '0 8px 20px rgba(153, 27, 27, 0.25)'
             }}
-            onMouseEnter={(e) => { if(!isLoading) e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 24px rgba(153, 27, 27, 0.35)'; }}
+            onMouseEnter={(e) => { if(!isLoading) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 24px rgba(153, 27, 27, 0.35)'; } }}
             onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 20px rgba(153, 27, 27, 0.25)'; }}
           >
-            {isLoading ? 'කරුණාකර රැඳී සිටින්න...' : (isSignUp ? 'ලියාපදිංචි වන්න' : 'ඇතුල් වන්න')}
+            {isLoading ? 'කරුණාකර රැඳී සිටින්න...' : 'ඇතුල් වන්න'}
           </button>
         </form>
 
@@ -171,28 +113,12 @@ export default function Login() {
           <div style={{ flex: 1, height: '1px', background: 'var(--glass-border)' }}></div>
         </div>
 
-        <button
-          onClick={handleGoogleLogin}
-          disabled={isLoading}
-          type="button"
+        <button onClick={handleGoogleLogin} disabled={isLoading} type="button"
           style={{
-            display: 'flex',
-            width: '100%',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '12px',
-            borderRadius: '12px',
-            background: '#fff',
-            padding: '14px',
-            fontSize: '0.95rem',
-            fontFamily: 'var(--font-sinhala)',
-            fontWeight: '600',
-            border: '2px solid var(--glass-border)',
-            cursor: isLoading ? 'not-allowed' : 'pointer',
-            opacity: isLoading ? 0.7 : 1,
-            color: 'var(--text-main)',
-            transition: 'all 0.3s ease',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+            display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'center', gap: '12px',
+            borderRadius: '12px', background: '#fff', padding: '14px', fontSize: '0.95rem', fontFamily: 'var(--font-sinhala)',
+            fontWeight: '600', border: '2px solid var(--glass-border)', cursor: isLoading ? 'not-allowed' : 'pointer',
+            opacity: isLoading ? 0.7 : 1, color: 'var(--text-main)', transition: 'all 0.3s ease', boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
           }}
           onMouseEnter={(e) => { if(!isLoading) { e.currentTarget.style.background = '#f9fafb'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.1)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
           onMouseLeave={(e) => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = 'var(--glass-border)'; e.currentTarget.style.transform = 'translateY(0)'; }}
@@ -207,24 +133,17 @@ export default function Login() {
         </button>
 
         <p style={{ marginTop: '36px', fontSize: '0.9rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)' }}>
-          {isSignUp ? 'දැනටමත් ගිණුමක් තිබේද?' : 'නව ගිණුමක් අවශ්‍යද?'}
+          නව ගිණුමක් අවශ්‍යද?
           <button 
-            onClick={() => setIsSignUp(!isSignUp)} 
+            onClick={() => navigate('/register')} 
             style={{
-              marginLeft: '8px',
-              background: 'none',
-              border: 'none',
-              color: 'var(--primary)',
-              fontWeight: '600',
-              cursor: 'pointer',
-              textDecoration: 'none',
-              transition: 'color 0.2s',
-              fontFamily: 'var(--font-sinhala)'
+              marginLeft: '8px', background: 'none', border: 'none', color: 'var(--primary)',
+              fontWeight: '600', cursor: 'pointer', textDecoration: 'none', transition: 'color 0.2s', fontFamily: 'var(--font-sinhala)'
             }}
             onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline'; e.currentTarget.style.color = 'var(--primary-hover)'; }}
             onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none'; e.currentTarget.style.color = 'var(--primary)'; }}
           >
-            {isSignUp ? 'ඇතුල් වන්න' : 'ලියාපදිංචි වන්න'}
+            ලියාපදිංචි වන්න
           </button>
         </p>
       </div>
