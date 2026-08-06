@@ -39,11 +39,13 @@ export default function Login() {
     }
   };
 
-  // Inline styling for the split-screen layout
   const containerStyle = {
     display: 'flex',
-    height: '100vh',
-    width: '100vw',
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: '#ffffff',
     overflow: 'hidden'
   };
@@ -97,6 +99,7 @@ export default function Login() {
         {`
           @media (max-width: 768px) {
             .auth-container {
+              position: relative !important;
               flex-direction: column !important;
               height: auto !important;
               min-height: 100vh !important;
