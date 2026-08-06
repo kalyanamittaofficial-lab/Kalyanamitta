@@ -16,6 +16,7 @@ export default function Register() {
     name: '',
     mobile: '',
     country: 'Sri Lanka',
+    otherCountry: '',
     state: '',
     language: 'Sinhala',
     dob: '',
@@ -38,6 +39,10 @@ export default function Register() {
       setError('Please fill in all mandatory fields.');
       return;
     }
+    if (formData.country === 'Other' && !formData.otherCountry) {
+      setError('Please specify your country.');
+      return;
+    }
     setError('');
     setStep(2);
   };
@@ -55,7 +60,7 @@ export default function Register() {
           data: {
             full_name: formData.name,
             mobile: formData.mobile,
-            country: formData.country,
+            country: formData.country === 'Other' ? formData.otherCountry : formData.country,
             state: formData.state,
             language: formData.language,
             dob: formData.dob,
@@ -156,21 +161,30 @@ export default function Register() {
                 <input type="tel" name="mobile" value={formData.mobile} onChange={handleChange} required style={inputStyle} placeholder="+947XXXXXXXX" />
               </div>
 
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <div style={{ flex: 1 }}>
-                  <label style={labelStyle}>Country *</label>
-                  <select name="country" value={formData.country} onChange={handleChange} style={inputStyle}>
-                    <option value="Sri Lanka">Sri Lanka</option>
-                    <option value="Australia">Australia</option>
-                    <option value="UK">United Kingdom</option>
-                    <option value="USA">United States</option>
-                    <option value="Other">Other</option>
-                  </select>
+              <div style={{ display: 'flex', gap: '16px', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', gap: '16px' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={labelStyle}>Country *</label>
+                    <select name="country" value={formData.country} onChange={handleChange} style={inputStyle}>
+                      <option value="Sri Lanka">Sri Lanka</option>
+                      <option value="Australia">Australia</option>
+                      <option value="UK">United Kingdom</option>
+                      <option value="USA">United States</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={labelStyle}>State / District *</label>
+                    <input type="text" name="state" value={formData.state} onChange={handleChange} required style={inputStyle} placeholder="e.g. Colombo" />
+                  </div>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <label style={labelStyle}>State / District *</label>
-                  <input type="text" name="state" value={formData.state} onChange={handleChange} required style={inputStyle} placeholder="e.g. Colombo" />
-                </div>
+                
+                {formData.country === 'Other' && (
+                  <div>
+                    <label style={labelStyle}>Specify Your Country *</label>
+                    <input type="text" name="otherCountry" value={formData.otherCountry} onChange={handleChange} required style={inputStyle} placeholder="e.g. Canada" />
+                  </div>
+                )}
               </div>
 
               <div style={{ display: 'flex', gap: '16px' }}>

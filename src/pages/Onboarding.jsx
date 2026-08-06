@@ -13,6 +13,7 @@ export default function Onboarding() {
     name: '',
     mobile: '',
     country: 'Sri Lanka',
+    otherCountry: '',
     state: '',
     language: 'Sinhala',
     dob: '',
@@ -24,9 +25,9 @@ export default function Onboarding() {
     potentialDedication: 50
   });
 
+  // Fetch initial profile data on mount to prefill name
   useEffect(() => {
-    // Pre-fill name if available from session
-    const fetchUser = async () => {
+    async function fetchProfile() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         navigate('/login');
@@ -35,17 +36,20 @@ export default function Onboarding() {
       
       const { data: profile } = await supabase
         .from('profiles')
-        .select('status, name')
+        .select('*')
         .eq('id', session.user.id)
         .single();
         
-      if (profile?.status === 'active') {
-        navigate('/dashboard');
-      } else if (profile?.name) {
-        setFormData(prev => ({ ...prev, name: profile.name }));
+      if (profile) {
+        // If they already completed onboarding, send them away
+        if (profile.status === 'active') {
+          navigate('/dashboard');
+          return;
+        }
+        setFormData(prev => ({ ...prev, name: profile.name || '' }));
       }
-    };
-    fetchUser();
+    }
+    fetchProfile();
   }, [navigate]);
 
   const handleChange = (e) => {
@@ -59,6 +63,10 @@ export default function Onboarding() {
       setError('Please fill in all mandatory fields.');
       return;
     }
+    if (formData.country === 'Other' && !formData.otherCountry) {
+      setError('Please specify your country.');
+      return;
+    }
     setError('');
     setStep(2);
   };
@@ -69,10 +77,16 @@ export default function Onboarding() {
     setError('');
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const finalCountry = formData.country === 'Other' ? formData.otherCountry : formData.country;
+
+      // Call the complete_onboarding RPC
       const { data, error: rpcError } = await supabase.rpc('complete_onboarding', {
         p_name: formData.name,
         p_mobile: formData.mobile,
-        p_country: formData.country,
+        p_country: finalCountry,
         p_state: formData.state,
         p_language: formData.language,
         p_dob: formData.dob,
@@ -89,7 +103,8 @@ export default function Onboarding() {
       // Success, redirect to dashboard
       navigate('/dashboard');
     } catch (err) {
-      setError(err.message || 'An error occurred during onboarding. Make sure you have run the Supabase SQL reset script.');
+      setError(err.message || 'An error occurred while saving your profile.');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -108,10 +123,10 @@ export default function Onboarding() {
       <div style={{ maxWidth: '600px', width: '100%', margin: '0 auto', padding: '0 24px' }}>
         
         <h1 style={{ fontSize: '2.5rem', color: 'var(--primary)', fontFamily: 'var(--font-serif)', marginBottom: '8px', textAlign: 'center' }}>
-          Welcome to Kalyanamitta
+          Complete Your Profile
         </h1>
         <p style={{ textAlign: 'center', color: 'var(--text-muted)', marginBottom: '40px' }}>
-          Please complete your profile to generate your unique Kalyanamitta ID.
+          Please provide a few more details to finalize your account.
         </p>
 
         {error && (
@@ -125,7 +140,7 @@ export default function Onboarding() {
           {step === 1 ? (
             <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div style={{ borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '16px', marginBottom: '8px' }}>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: '700', color: 'var(--text-main)' }}>Step 1: Personal Details</h3>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: '700', color: 'var(--text-main)' }}>Step 1: Account Details</h3>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>This information is kept strictly confidential.</p>
               </div>
 
@@ -139,21 +154,30 @@ export default function Onboarding() {
                 <input type="tel" name="mobile" value={formData.mobile} onChange={handleChange} required style={inputStyle} placeholder="+947XXXXXXXX" />
               </div>
 
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <div style={{ flex: 1 }}>
-                  <label style={labelStyle}>Country *</label>
-                  <select name="country" value={formData.country} onChange={handleChange} style={inputStyle}>
-                    <option value="Sri Lanka">Sri Lanka</option>
-                    <option value="Australia">Australia</option>
-                    <option value="UK">United Kingdom</option>
-                    <option value="USA">United States</option>
-                    <option value="Other">Other</option>
-                  </select>
+              <div style={{ display: 'flex', gap: '16px', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', gap: '16px' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={labelStyle}>Country *</label>
+                    <select name="country" value={formData.country} onChange={handleChange} style={inputStyle}>
+                      <option value="Sri Lanka">Sri Lanka</option>
+                      <option value="Australia">Australia</option>
+                      <option value="UK">United Kingdom</option>
+                      <option value="USA">United States</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={labelStyle}>State / District *</label>
+                    <input type="text" name="state" value={formData.state} onChange={handleChange} required style={inputStyle} placeholder="e.g. Colombo" />
+                  </div>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <label style={labelStyle}>State / District *</label>
-                  <input type="text" name="state" value={formData.state} onChange={handleChange} required style={inputStyle} placeholder="e.g. Colombo" />
-                </div>
+
+                {formData.country === 'Other' && (
+                  <div>
+                    <label style={labelStyle}>Specify Your Country *</label>
+                    <input type="text" name="otherCountry" value={formData.otherCountry} onChange={handleChange} required style={inputStyle} placeholder="e.g. Canada" />
+                  </div>
+                )}
               </div>
 
               <div style={{ display: 'flex', gap: '16px' }}>
