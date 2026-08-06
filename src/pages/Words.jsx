@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Search, Book, Headphones, Grid, ChevronRight } from 'lucide-react';
+import { Search, Book, Headphones, ArrowRight } from 'lucide-react';
 
-// Mock DB for Search
+// Mock DB for Search (Images removed)
 const libraryResources = [
-  { id: 'dhammapadaya', title: 'ධම්මපදය', category: 'සූත්‍ර පිටකය', type: 'book', image: '/sutta_pitaka.png' },
-  { id: 'satipatthana', title: 'මහා සතිපට්ඨාන සූත්‍රය', category: 'සූත්‍ර පිටකය', type: 'audio', image: '/buddha_ananda_hero.png' }
+  { id: 'dhammapadaya', title: 'ධම්මපදය', category: 'සූත්‍ර පිටකය', type: 'book' },
+  { id: 'satipatthana', title: 'මහා සතිපට්ඨාන සූත්‍රය', category: 'සූත්‍ර පිටකය', type: 'audio' }
 ];
 
 export default function Words() {
@@ -20,93 +19,94 @@ export default function Words() {
   return (
     <div style={{ position: 'relative', minHeight: '100vh', width: '100%', overflowX: 'hidden', background: 'var(--bg-main)' }}>
       {/* Main Content Wrapper */}
-      <div className="mobile-padding" style={{ position: 'relative', zIndex: 10, padding: '5vh 5vw 120px 5vw', maxWidth: '1400px', margin: '0 auto' }}>
+      <div className="mobile-padding" style={{ position: 'relative', zIndex: 10, padding: '10vh 5vw 120px 5vw', maxWidth: '1000px', margin: '0 auto' }}>
         
-        {/* Hero & Search */}
-        <div style={{ maxWidth: '800px', margin: '0 auto 60px auto', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+        {/* Academic Header & Search */}
+        <div style={{ marginBottom: '60px', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: '600', marginBottom: '16px' }}>
+            Kalyanamitta Pusthakalaya
+          </div>
           <h1 style={{
-            fontSize: 'clamp(2.5rem, 5vw, 4.5rem)', fontWeight: '700',
-            color: 'var(--primary)', fontFamily: 'var(--font-serif)',
-            marginBottom: '16px', letterSpacing: '-0.02em'
+            fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: '700',
+            color: 'var(--text-main)', fontFamily: 'var(--font-serif)',
+            marginBottom: '16px', letterSpacing: '-0.02em', lineHeight: '1.1'
           }}>කල්‍යාණමිත්ත පුස්තකාලය</h1>
           
-          <p style={{ fontSize: '1.2rem', color: 'var(--text-main)', marginBottom: '40px', letterSpacing: '0.05em', fontWeight: '600', fontFamily: 'var(--font-sinhala)' }}>
-            විස්තීරණ ධර්ම ග්‍රන්ථ හා දේශනා එකතුව
+          <p style={{ fontSize: '1.2rem', color: 'var(--text-muted)', marginBottom: '40px', lineHeight: '1.6', fontFamily: 'var(--font-sinhala)', maxWidth: '700px' }}>
+            විස්තීරණ ධර්ම ග්‍රන්ථ, අටුවා සහ දේශනා ඇතුළත් කේන්ද්‍රීය ඩිජිටල් සංරක්ෂිතය.
           </p>
 
           <div style={{ 
             width: '100%', 
-            maxWidth: '600px', 
             position: 'relative',
             display: 'flex',
-            alignItems: 'center'
+            alignItems: 'center',
+            borderBottom: '1px solid rgba(0,0,0,0.1)',
+            paddingBottom: '8px'
           }}>
-            <Search size={20} color="var(--text-muted)" style={{ position: 'absolute', left: '20px' }} />
+            <Search size={22} color="var(--text-muted)" style={{ position: 'absolute', left: '0' }} />
             <input 
               type="text" 
-              placeholder="ධර්ම ග්‍රන්ථ, සූත්‍ර, හෝ දේශනා සොයන්න..."
+              placeholder="ග්‍රන්ථයක් හෝ මූලාශ්‍රයක් සොයන්න..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
                 width: '100%',
-                padding: '18px 20px 18px 56px',
-                fontSize: '1.1rem',
-                border: '1px solid rgba(0,0,0,0.1)',
-                borderRadius: '50px',
-                background: 'var(--bg-secondary)',
+                padding: '16px 20px 16px 40px',
+                fontSize: '1.2rem',
+                border: 'none',
+                background: 'transparent',
                 fontFamily: 'var(--font-sinhala)',
                 color: 'var(--text-main)',
                 outline: 'none',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-                transition: 'all 0.3s ease'
               }}
-              onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(184, 134, 11, 0.15)'; }}
-              onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(0,0,0,0.1)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.05)'; }}
             />
           </div>
         </div>
 
-        {/* Search Results / Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '32px' }}>
+        {/* Academic Index List */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
           {filteredResources.map((res) => (
             <div 
               key={res.id}
               onClick={() => navigate(`/library/${res.id}`)}
               style={{
-                background: 'var(--bg-secondary)',
-                borderRadius: '16px',
-                border: '1px solid rgba(0,0,0,0.05)',
-                overflow: 'hidden',
+                display: 'grid',
+                gridTemplateColumns: '1fr auto',
+                alignItems: 'center',
+                padding: '24px 0',
+                borderBottom: '1px solid rgba(0,0,0,0.06)',
                 cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.02)',
-                display: 'flex',
-                flexDirection: 'column'
+                transition: 'background 0.2s ease, padding-left 0.2s ease',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.08)'; e.currentTarget.style.borderColor = 'var(--primary)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,0,0,0.02)'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.05)'; }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0,0,0,0.01)'; e.currentTarget.style.paddingLeft = '12px'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.paddingLeft = '0'; }}
             >
-              <div style={{ width: '100%', height: '200px', backgroundImage: `url(${res.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
-              <div style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                <div style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: '700', letterSpacing: '0.05em', marginBottom: '8px' }}>
-                  {res.category}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <h3 style={{ fontSize: '1.4rem', color: 'var(--text-main)', fontFamily: 'var(--font-serif)', fontWeight: '700', margin: 0 }}>
+                    {res.title}
+                  </h3>
                 </div>
-                <h3 style={{ fontSize: '1.4rem', color: 'var(--text-main)', fontFamily: 'var(--font-serif)', fontWeight: '700', marginBottom: '16px' }}>
-                  {res.title}
-                </h3>
-                <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '0.9rem', fontFamily: 'var(--font-sinhala)', fontWeight: '600' }}>
-                  {res.type === 'book' ? <Book size={16} /> : <Headphones size={16} />}
-                  <span>{res.type === 'book' ? 'කියවීම සඳහා' : 'ශ්‍රවණය සඳහා'}</span>
-                  <ChevronRight size={16} style={{ marginLeft: 'auto' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', color: 'var(--text-muted)', fontSize: '0.9rem', fontFamily: 'var(--font-sinhala)' }}>
+                  <span style={{ fontWeight: '600', letterSpacing: '0.05em', color: 'var(--primary)' }}>{res.category}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {res.type === 'book' ? <Book size={14} /> : <Headphones size={14} />}
+                    {res.type === 'book' ? 'Text' : 'Audio'}
+                  </span>
                 </div>
+              </div>
+              
+              <div style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}>
+                <ArrowRight size={20} />
               </div>
             </div>
           ))}
         </div>
 
         {filteredResources.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', fontSize: '1.2rem' }}>
-            සෙවුම් ප්‍රතිඵල හමු නොවීය. (No results found)
+          <div style={{ padding: '60px 0', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', fontSize: '1.1rem' }}>
+            අදාළ ප්‍රතිඵල හමු නොවීය.
           </div>
         )}
 
