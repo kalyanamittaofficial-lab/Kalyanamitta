@@ -114,9 +114,10 @@ export default function Register() {
   // Inline styling for the split-screen layout
   const containerStyle = {
     display: 'flex',
-    minHeight: '100vh',
+    height: '100vh',
     width: '100vw',
-    backgroundColor: '#ffffff'
+    backgroundColor: '#ffffff',
+    overflow: 'hidden'
   };
 
   const leftPaneStyle = {
@@ -170,6 +171,9 @@ export default function Register() {
           @media (max-width: 900px) {
             .auth-container {
               flex-direction: column !important;
+              height: auto !important;
+              min-height: 100vh !important;
+              overflow: visible !important;
             }
             .left-pane {
               flex: none !important;
@@ -179,6 +183,7 @@ export default function Register() {
             }
             .right-pane {
               padding: 40px 24px !important;
+              overflow-y: visible !important;
             }
             .quote-text {
               font-size: 1.5rem !important;
@@ -214,12 +219,9 @@ export default function Register() {
       {/* LEFT PANE (Branding) */}
       <div style={leftPaneStyle} className="left-pane">
         <div style={{ zIndex: 2, position: 'relative' }}>
-          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', fontWeight: '700', marginBottom: '8px', letterSpacing: '-0.02em' }}>
+          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', fontWeight: '700', marginBottom: '60px', letterSpacing: '-0.02em' }}>
             Kalyanamitta
           </h1>
-          <p style={{ fontFamily: 'var(--font-sinhala)', fontSize: '1.1rem', opacity: 0.8, marginBottom: '60px' }}>
-            කල්‍යාණමිත්ත පුස්තකාලය
-          </p>
           
           <blockquote style={{ borderLeft: '3px solid rgba(255,255,255,0.3)', paddingLeft: '24px', margin: 0 }}>
             <p className="quote-text" style={{ fontFamily: 'var(--font-sinhala)', fontSize: '1.75rem', lineHeight: 1.4, fontWeight: '300', marginBottom: '16px' }}>
