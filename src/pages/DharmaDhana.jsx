@@ -59,7 +59,7 @@ export default function DharmaDhana() {
             fontSize: 'clamp(3rem, 5vw, 5rem)', fontWeight: '700',
             color: 'var(--primary)', fontFamily: 'var(--font-serif)',
             marginBottom: '16px', letterSpacing: '-0.02em'
-          }}>කල්‍යාණමිත්ත පුස්තකාලය</h1>
+          }}>ධර්ම දානය</h1>
           
           <p style={{ fontSize: '1.2rem', color: 'var(--text-main)', marginBottom: '32px', letterSpacing: '0.05em', fontWeight: '600', fontFamily: 'var(--font-sinhala)' }}>
             කල්‍යාණමිත්ත ප්‍රකාශන

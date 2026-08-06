@@ -39,7 +39,8 @@ export default function Header() {
     { name: 'කල්‍යාණ මිත්‍රත්වය', path: '/community' },
     { name: 'ජීවිතයට ධර්මය', path: '/life' }, 
     { name: 'ධර්ම මාර්ගය', path: '/path' }, 
-    { name: 'කල්‍යාණමිත්ත පුස්තකාලය', path: '/dharmadhana' },
+    { name: 'කල්‍යාණමිත්ත පුස්තකාලය', path: '/words' },
+    { name: 'ධර්ම දාන', path: '/dharmadhana' },
     { name: 'දේශනා', path: '/sermons' }, 
     { name: 'භාවනා', path: '/meditation' }
   ];

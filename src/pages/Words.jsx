@@ -31,16 +31,15 @@ export default function Words() {
             fontSize: 'clamp(3rem, 5vw, 5rem)', fontWeight: '700',
             color: 'var(--primary)', fontFamily: 'var(--font-serif)',
             marginBottom: '16px', letterSpacing: '-0.02em'
-          }}>බුදු වදන්</h1>
+          }}>කල්‍යාණමිත්ත පුස්තකාලය</h1>
           
           <p style={{ fontSize: '1.2rem', color: 'var(--text-main)', marginBottom: '32px', letterSpacing: '0.05em', fontWeight: '600', fontFamily: 'var(--font-sinhala)' }}>
-            ශ්‍රී සද්ධර්මයේ පිරිසිදුම උල්පත.
+            විස්තීරණ ධර්ම ග්‍රන්ථ එකතුව.
           </p>
 
           <div style={{ display: 'flex', gap: '16px', color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: '1.8', fontFamily: 'var(--font-sinhala)', maxWidth: '650px' }}>
             <p>
-              ගෞතම බුදුරජාණන් වහන්සේගේ ශ්‍රී මුවින් දේශනා කළ, කිසිදු වෙනසකට ලක් නොවූ 
-              පිරිසිදු ත්‍රිපිටක ධර්මය සහ පැරණි අටුවා ග්‍රන්ථ වෙත පිවිසෙන මණ්ඩපය.
+              විශ්වාසදායක මූලාශ්‍ර වෙතින් ගෙනෙන වෙනත් ධර්ම ග්‍රන්ථ, ත්‍රිපිටක ග්‍රන්ථ සහ අටුවා ග්‍රන්ථ ඇතුළත් පුස්තකාලය.
             </p>
           </div>
         </div>
@@ -52,7 +51,7 @@ export default function Words() {
           </div>
           <h2 style={{ color: 'var(--text-main)', fontSize: '2rem', fontFamily: 'var(--font-serif)', fontWeight: '700', marginBottom: '16px' }}>ඉදිරියේදී බලාපොරොත්තු වන්න</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '500px', lineHeight: '1.6', fontFamily: 'var(--font-sinhala)' }}>
-            මෙම පිටුවේ අන්තර්ගතය මේ දිනවල සකස් වෙමින් පවතී. ඉතා ඉක්මනින් සම්පූර්ණ ධර්ම කරුණු මෙහි යාවත්කාලීන කරනු ඇත.
+            මෙම පුස්තකාල පිටුව මේ දිනවල සකස් වෙමින් පවතී. ඉතා ඉක්මනින් ධර්ම ග්‍රන්ථ සඳහා පහසුවෙන් පිවිසිය හැකි නවතම මුහුණුවරක් (UI) මෙහි යාවත්කාලීන කරනු ඇත.
           </p>
         </div>
 
