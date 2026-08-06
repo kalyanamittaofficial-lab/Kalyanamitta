@@ -2,19 +2,36 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, Book, Headphones, ArrowRight } from 'lucide-react';
 
-// Mock DB for Search (Images removed)
+// Mock DB for Search (Images removed, Singlish aliases added)
 const libraryResources = [
-  { id: 'dhammapadaya', title: 'ධම්මපදය', category: 'සූත්‍ර පිටකය', type: 'book' },
-  { id: 'satipatthana', title: 'මහා සතිපට්ඨාන සූත්‍රය', category: 'සූත්‍ර පිටකය', type: 'audio' }
+  { 
+    id: 'dhammapadaya', 
+    title: 'ධම්මපදය', 
+    category: 'සූත්‍ර පිටකය', 
+    type: 'book',
+    aliases: ['dhammapadaya', 'dammapadaya', 'dhammapada', 'dhamma padaya']
+  },
+  { 
+    id: 'satipatthana', 
+    title: 'මහා සතිපට්ඨාන සූත්‍රය', 
+    category: 'සූත්‍ර පිටකය', 
+    type: 'audio',
+    aliases: ['satipatthana', 'maha satipattana', 'satipattana', 'sathipatthana', 'sathipattana']
+  }
 ];
 
 export default function Words() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredResources = libraryResources.filter(res => 
-    res.title.includes(searchQuery) || res.category.includes(searchQuery)
-  );
+  const filteredResources = libraryResources.filter(res => {
+    const query = searchQuery.toLowerCase();
+    return (
+      res.title.toLowerCase().includes(query) || 
+      res.category.toLowerCase().includes(query) ||
+      (res.aliases && res.aliases.some(alias => alias.toLowerCase().includes(query)))
+    );
+  });
 
   return (
     <div style={{ position: 'relative', minHeight: '100vh', width: '100%', overflowX: 'hidden', background: 'var(--bg-main)' }}>
