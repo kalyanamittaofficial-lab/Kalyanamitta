@@ -208,8 +208,6 @@ export default function Register() {
                   <option value="">Select Status</option>
                   <option value="Single">Single / Unmarried</option>
                   <option value="Married">Married</option>
-                  <option value="Divorced">Divorced</option>
-                  <option value="Widowed">Widowed</option>
                 </select>
               </div>
 
