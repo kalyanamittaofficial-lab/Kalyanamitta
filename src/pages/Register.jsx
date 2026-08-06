@@ -145,7 +145,10 @@ export default function Register() {
                 </div>
                 <div>
                   <label style={labelStyle}>Password *</label>
-                  <input type="password" name="password" value={formData.password} onChange={handleChange} required style={inputStyle} minLength="6" placeholder="Min 6 characters" />
+                  <input type="password" name="password" value={formData.password} onChange={handleChange} required style={inputStyle} minLength="6" placeholder="අකුරු 6 කට වඩා ලබාදෙන්න" />
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>
+                    * ඉලක්කම් සහ අකුරු මිශ්‍ර කර ශක්තිමත් මුරපදයක් (Strong Password) ලබා දෙන්න.
+                  </span>
                 </div>
               </div>
 
