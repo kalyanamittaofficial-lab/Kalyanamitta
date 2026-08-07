@@ -1,5 +1,4 @@
 import React, { useRef, Suspense } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useTexture } from '@react-three/drei';
 import * as THREE from 'three';
@@ -14,6 +13,7 @@ const ImagePlane = ({ url, index, total }) => {
   
   const ref = useRef();
   const angle = (index / total) * Math.PI * 2;
+  
   const aspect = texture.image ? texture.image.width / texture.image.height : 1;
   const height = 12;
   const width = height * aspect;
@@ -21,7 +21,8 @@ const ImagePlane = ({ url, index, total }) => {
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
     if (ref.current) {
-      ref.current.position.y = Math.sin(t * 1.2 + index) * 0.3;
+      // Gentle breathing effect
+      ref.current.position.y = Math.sin(t * 1.5 + index) * 0.4; 
     }
   });
 
@@ -32,23 +33,24 @@ const ImagePlane = ({ url, index, total }) => {
         <meshBasicMaterial 
           map={texture} 
           transparent={true} 
-          opacity={1} 
           side={THREE.DoubleSide} 
           depthWrite={false}
-          color={new THREE.Color(1.1, 1.1, 1.1)}
+          // Boost colors for high quality look
+          color={new THREE.Color(1.15, 1.15, 1.15)}
+          toneMapped={false}
         />
       </mesh>
     </group>
   );
 };
 
-const Carousel = ({ scrollYProgress, totalStages }) => {
+const AutoCarousel = ({ totalStages }) => {
   const groupRef = useRef();
 
-  useFrame(() => {
+  useFrame((state) => {
     if (!groupRef.current) return;
-    const targetRotation = -(scrollYProgress.current * Math.PI * 2 * (totalStages / (totalStages - 1))); 
-    groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotation, 0.05);
+    // Auto-rotate the circle continuously based on time
+    groupRef.current.rotation.y = -(state.clock.getElapsedTime() * 0.15);
   });
 
   return (
@@ -60,84 +62,7 @@ const Carousel = ({ scrollYProgress, totalStages }) => {
   );
 };
 
-const StoryText = ({ text, desc, progress, index, total }) => {
-  const peak = index / total;
-  const pad = 1 / (total * 2);
-  
-  // Guarantee strictly increasing 3-element arrays to prevent WAAPI crashes
-  let start = peak - pad;
-  let mid = peak;
-  let end = peak + pad;
-  
-  if (index === 0) {
-    start = 0;
-    mid = pad / 2;
-    end = pad;
-  }
-  
-  const input = [start, mid, end];
-  const opacityOut = index === 0 ? [1, 1, 0] : [0, 1, 0];
-  const yOut = index === 0 ? [0, 0, -20] : [20, 0, -20];
-  
-  const opacity = useTransform(progress, input, opacityOut);
-  const y = useTransform(progress, input, yOut);
-
-  return (
-    <motion.div style={{
-      position: 'absolute',
-      bottom: '10%',
-      left: 0,
-      width: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 10,
-      opacity,
-      y,
-      pointerEvents: 'none'
-    }}>
-      <div style={{ 
-        textAlign: 'center', 
-        maxWidth: '800px', 
-        padding: '0 20px',
-        // Responsive background blur for mobile readability
-        background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 70%)'
-      }}>
-        <h2 style={{ 
-          fontSize: 'clamp(2rem, 5vw, 4rem)', 
-          color: '#ffffff',
-          fontFamily: 'var(--font-serif)', 
-          margin: '0 0 12px 0', 
-          fontWeight: '500',
-          letterSpacing: '0.05em', 
-          textShadow: '0 4px 30px rgba(0,0,0,1)' // Stronger shadow
-        }}>
-          {text}
-        </h2>
-        <p style={{ 
-          color: 'rgba(255, 255, 255, 0.85)',
-          fontSize: 'clamp(1.1rem, 2vw, 1.4rem)', 
-          fontFamily: 'var(--font-sinhala)', 
-          margin: 0, 
-          lineHeight: 1.6, 
-          fontWeight: '400', 
-          textShadow: '0 2px 20px rgba(0,0,0,1)' 
-        }}>
-          {desc}
-        </p>
-      </div>
-    </motion.div>
-  );
-};
-
 export default function LifeCycleHero() {
-  const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"]
-  });
-
   const stages = [
     { text: 'නොදැනුවත්කම', desc: 'ඉපදෙන්න කලින් කිසි දෙයක් අපි දන්නේ නෑ. අපි කොහේ හිටියද, මොනවද කළේ කියලා කිසිම මතකයක් අපිට ඉතිරි වෙලා නෑ.' },
     { text: 'ආරම්භය', desc: 'එකපාරටම අපි මේ ලෝකෙට එනවා. මේක අපි තෝරගෙන ආපු ගමනක් නෙවෙයි. ඒත් ගමන පටන් අරන් ඉවරයි.' },
@@ -153,111 +78,40 @@ export default function LifeCycleHero() {
   ];
 
   return (
-    <>
-      {/* 
-        THE TV CONTAINER
-        This wrapper forces a black background for the entire 1500vh scroll space,
-        making it look like a seamless cinematic TV window regardless of the site's theme.
-      */}
-      <div style={{ backgroundColor: '#000000', color: '#ffffff' }}>
-        <div ref={containerRef} style={{ height: '1500vh', position: 'relative' }}>
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            background: 'radial-gradient(circle at center, transparent 30%, #000000 100%)',
-            pointerEvents: 'none',
-            zIndex: 5
-          }} />
+    <div className="w-full bg-[var(--bg-main)]">
+      
+      {/* THE TV BOX CONTAINER */}
+      <div className="pt-24 pb-16 px-4 md:px-12 flex justify-center">
+        <div 
+          className="w-full max-w-[1400px] rounded-2xl md:rounded-[40px] overflow-hidden relative shadow-2xl"
+          style={{ 
+            height: 'clamp(500px, 75vh, 800px)', 
+            backgroundColor: '#020202', 
+            border: '2px solid rgba(255,255,255,0.05)',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' 
+          }}
+        >
+          {/* Vignette Overlay for the TV effect */}
+          <div 
+            className="absolute inset-0 z-10 pointer-events-none" 
+            style={{ background: 'radial-gradient(circle at center, transparent 30%, #000000 100%)' }} 
+          />
 
-          <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden' }}>
-            <Canvas 
-              camera={{ position: [0, 0, RADIUS + 15], fov: 45 }} 
-              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1 }}
-            >
-              <fog attach="fog" args={['#000000', 10, 40]} />
-              <ambientLight intensity={1} />
-              <Suspense fallback={null}>
-                <Carousel scrollYProgress={scrollYProgress} totalStages={stages.length} />
-              </Suspense>
-            </Canvas>
-
-            {stages.map((stage, i) => (
-              <StoryText 
-                key={i}
-                text={stage.text}
-                desc={stage.desc}
-                progress={scrollYProgress}
-                index={i}
-                total={stages.length}
-              />
-            ))}
-
-            <motion.div
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100vh',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                zIndex: 30,
-                opacity: useTransform(scrollYProgress, [0.92, 1], [0, 1]),
-                background: '#000000'
-              }}
-            >
-              <div style={{ textAlign: 'center', maxWidth: '900px', padding: '0 24px' }}>
-                <motion.h1 
-                  style={{ 
-                    color: '#ffffff', 
-                    fontSize: 'clamp(3rem, 7vw, 6rem)',
-                    fontFamily: 'var(--font-serif)',
-                    marginBottom: '1rem',
-                    fontWeight: '600',
-                    letterSpacing: '-0.02em'
-                  }}
-                >
-                  ඉතින්, ඔබ කවුද?
-                </motion.h1>
-                <motion.div
-                  style={{
-                    color: 'var(--primary)',
-                    fontSize: 'clamp(2rem, 4vw, 3rem)',
-                    fontFamily: 'var(--font-sinhala)',
-                    lineHeight: 1.2,
-                    fontWeight: '600',
-                    letterSpacing: '0.1em'
-                  }}
-                >
-                  ඔබ අනාථයෙක්!
-                </motion.div>
-                <motion.p
-                  style={{
-                    color: 'rgba(255,255,255,0.6)',
-                    fontSize: 'clamp(1rem, 2vw, 1.4rem)',
-                    fontFamily: 'var(--font-sinhala)',
-                    lineHeight: 1.8,
-                    marginTop: '3rem',
-                    fontWeight: '400',
-                    maxWidth: '600px',
-                    marginInline: 'auto'
-                  }}
-                >
-                  මෙය තේරුම් ගෙන, මේ සසර ගමනින් එතෙර වීමට මාර්ගය සොයා ගැනීම පමණක්ම ජීවිතයේ එකම අරමුණ කරගන්න...
-                </motion.p>
-              </div>
-            </motion.div>
-          </div>
+          {/* WebGL Canvas */}
+          <Canvas 
+            camera={{ position: [0, 0, RADIUS + 15], fov: 45 }} 
+            className="absolute inset-0 z-0"
+          >
+            <fog attach="fog" args={['#000000', 10, 45]} />
+            <Suspense fallback={null}>
+              <AutoCarousel totalStages={11} />
+            </Suspense>
+          </Canvas>
         </div>
       </div>
 
-      {/* FULL STORY SECTION (Respects Light/Dark mode) */}
-      <section className="py-24 bg-[var(--bg-main)] text-[var(--text-main)]">
+      {/* FULL STORY SECTION */}
+      <section className="py-16 bg-[var(--bg-main)] text-[var(--text-main)]">
         <div className="max-w-4xl mx-auto px-6">
           <h2 className="text-3xl md:text-5xl font-serif font-bold mb-16 text-center text-[var(--primary)]">
             ජීවන චක්‍රයේ සත්‍යය
@@ -273,9 +127,21 @@ export default function LifeCycleHero() {
                 </div>
               </div>
             ))}
+            
+            {/* The Climax statement at the bottom of the story */}
+            <div className="flex flex-col items-center justify-center pt-16 text-center">
+               <h1 className="text-4xl md:text-6xl font-serif font-bold mb-4">ඉතින්, ඔබ කවුද?</h1>
+               <div className="text-3xl md:text-5xl font-sinhala font-bold text-[var(--primary)] uppercase tracking-wider mb-8">
+                 ඔබ අනාථයෙක්!
+               </div>
+               <p className="text-xl md:text-2xl opacity-70 font-sinhala max-w-2xl leading-relaxed">
+                 මෙය තේරුම් ගෙන, මේ සසර ගමනින් එතෙර වීමට මාර්ගය සොයා ගැනීම පමණක්ම ජීවිතයේ එකම අරමුණ කරගන්න...
+               </p>
+            </div>
           </div>
         </div>
       </section>
-    </>
+
+    </div>
   );
 }
