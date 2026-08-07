@@ -310,7 +310,7 @@ export default function LifeCycleHero() {
                   viewport={{ once: false, margin: "-20% 0px -20% 0px" }}
                   className="lc-highlight"
                >
-                 "එහි පස්සිකෝ..."
+                 "ඒහිපස්සිකෝ..."
                </motion.div>
                <motion.p
                   initial={{ opacity: 0 }}
