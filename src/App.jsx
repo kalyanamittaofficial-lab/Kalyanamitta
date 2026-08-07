@@ -13,6 +13,7 @@ import Profile from './pages/Profile';
 import DharmaDhana from './pages/DharmaDhana';
 import BookReader from './components/BookReader';
 import OtherChantings from './pages/OtherChantings';
+import LifeCycle from './pages/LifeCycle';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -60,6 +61,7 @@ function App() {
           <Route path="meditation" element={<Meditation />} />
           <Route path="path" element={<Path />} />
           <Route path="life" element={<Life />} />
+          <Route path="lifecycle" element={<LifeCycle />} />
           <Route path="community" element={<Community />} />
           <Route path="dharmadhana" element={<DharmaDhana />} />
           <Route path="profile" element={<Profile />} />
