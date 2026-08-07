@@ -22,7 +22,6 @@ const ImagePlane = ({ url, index, total }) => {
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
     if (ref.current) {
-      // Gentle breathing effect
       ref.current.position.y = Math.sin(t * 1.5 + index) * 0.4; 
     }
   });
@@ -36,7 +35,6 @@ const ImagePlane = ({ url, index, total }) => {
           transparent={true} 
           side={THREE.DoubleSide} 
           depthWrite={false}
-          // Boost colors for high quality look
           color={new THREE.Color(1.15, 1.15, 1.15)}
           toneMapped={false}
         />
@@ -50,7 +48,6 @@ const AutoCarousel = ({ totalStages }) => {
 
   useFrame((state) => {
     if (!groupRef.current) return;
-    // Auto-rotate the circle continuously based on time
     groupRef.current.rotation.y = -(state.clock.getElapsedTime() * 0.15);
   });
 
@@ -79,105 +76,264 @@ export default function LifeCycleHero() {
   ];
 
   return (
-    <div className="w-full bg-[var(--bg-main)] text-[var(--text-main)] relative overflow-hidden">
-      <div className="max-w-[1600px] mx-auto w-full flex flex-col lg:flex-row relative">
-        
-        {/* LEFT SIDE: SCROLLING TEXT (Elite Academic Style) */}
-        <div className="w-full lg:w-1/2 px-6 md:px-12 py-12 lg:py-48 flex flex-col z-0 order-last lg:order-first">
+    <>
+      <style>
+        {`
+          .lc-wrapper {
+             background-color: var(--bg-main);
+             color: var(--text-main);
+             width: 100%;
+             overflow: hidden;
+          }
+          .lc-hero-container {
+             display: flex;
+             flex-direction: column-reverse;
+             width: 100%;
+             max-width: 1600px;
+             margin: 0 auto;
+             position: relative;
+          }
+          .lc-text-side {
+             width: 100%;
+             padding: 4rem 1.5rem;
+             display: flex;
+             flex-direction: column;
+             z-index: 10;
+          }
+          .lc-tv-side {
+             width: 100%;
+             height: 40vh;
+             position: sticky;
+             top: 60px; /* offset for mobile header */
+             z-index: 20;
+             padding: 1rem;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             background-color: var(--bg-main);
+          }
           
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-24 lg:mb-48"
-          >
-             <h2 className="text-4xl md:text-6xl font-serif font-bold text-[var(--primary)] mb-6">ජීවන චක්‍රයේ සත්‍යය</h2>
-             <p className="text-lg md:text-2xl font-sinhala opacity-70 max-w-lg leading-relaxed">
-               අපි කවුද? කොහෙන්ද ආවේ? කොහෙටද යන්නේ? මේ සසර ගමනේ සැබෑ ස්වභාවය විමසා බලමු...
-             </p>
-          </motion.div>
+          .lc-tv-box {
+             width: 100%;
+             height: 100%;
+             background-color: #020202;
+             border-radius: 20px;
+             position: relative;
+             overflow: hidden;
+             box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6);
+             border: 1px solid rgba(255,255,255,0.05);
+          }
+          
+          .lc-intro {
+             margin-bottom: 8rem;
+          }
+          .lc-intro h2 {
+             font-family: var(--font-serif);
+             font-size: 2.5rem;
+             color: var(--primary);
+             font-weight: 700;
+             margin-bottom: 1rem;
+          }
+          .lc-intro p {
+             font-family: var(--font-sinhala);
+             font-size: 1.2rem;
+             opacity: 0.7;
+             line-height: 1.6;
+          }
 
-          <div className="space-y-48 lg:space-y-64">
-            {stages.map((stage, i) => (
-              <motion.div 
-                key={i}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, margin: "-20% 0px -20% 0px" }}
-                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                className="flex flex-col border-l-2 border-[var(--primary)] pl-8 lg:pl-12"
-              >
-                <div className="text-[var(--primary)] font-serif text-xl lg:text-2xl mb-2 opacity-50 tracking-widest">
-                   {String(i + 1).padStart(2, '0')} / {String(stages.length).padStart(2, '0')}
-                </div>
-                <h3 className="text-3xl md:text-5xl font-serif font-bold mb-6">{stage.text}</h3>
-                <p className="text-xl md:text-2xl opacity-80 leading-relaxed font-sinhala max-w-md">
-                  {stage.desc}
-                </p>
-              </motion.div>
-            ))}
+          .lc-stages {
+             display: flex;
+             flex-direction: column;
+          }
+          .lc-stage {
+             border-left: 2px solid var(--primary);
+             padding-left: 1.5rem;
+             margin-bottom: 12rem;
+             display: flex;
+             flex-direction: column;
+          }
+          .lc-stage-num {
+             color: var(--primary);
+             font-family: var(--font-serif);
+             font-size: 1.2rem;
+             opacity: 0.5;
+             letter-spacing: 0.2em;
+             margin-bottom: 0.5rem;
+          }
+          .lc-stage h3 {
+             font-family: var(--font-serif);
+             font-size: 2rem;
+             font-weight: 700;
+             margin-bottom: 1rem;
+          }
+          .lc-stage p {
+             font-family: var(--font-sinhala);
+             font-size: 1.2rem;
+             opacity: 0.8;
+             line-height: 1.6;
+          }
+
+          .lc-climax {
+             margin-top: 8rem;
+             padding-bottom: 8rem;
+             display: flex;
+             flex-direction: column;
+          }
+          .lc-climax h1 {
+             font-family: var(--font-serif);
+             font-size: 3rem;
+             font-weight: 700;
+             margin-bottom: 1rem;
+          }
+          .lc-climax .lc-highlight {
+             font-family: var(--font-sinhala);
+             font-size: 2.5rem;
+             font-weight: 700;
+             color: var(--primary);
+             letter-spacing: 0.1em;
+             margin-bottom: 2rem;
+          }
+          .lc-climax p {
+             font-family: var(--font-sinhala);
+             font-size: 1.2rem;
+             opacity: 0.7;
+             line-height: 1.6;
+             max-width: 600px;
+          }
+
+          @media (min-width: 1024px) {
+             .lc-hero-container {
+                flex-direction: row;
+             }
+             .lc-text-side {
+                width: 50%;
+                padding: 10rem 4rem;
+             }
+             .lc-tv-side {
+                width: 50%;
+                height: 100vh;
+                top: 0;
+                padding: 3rem;
+             }
+             .lc-tv-box {
+                border-radius: 40px;
+             }
+             .lc-intro {
+                margin-bottom: 12rem;
+             }
+             .lc-intro h2 { font-size: 4rem; }
+             .lc-intro p { font-size: 1.5rem; }
+             
+             .lc-stage {
+                padding-left: 2.5rem;
+                margin-bottom: 16rem;
+             }
+             .lc-stage-num { font-size: 1.5rem; }
+             .lc-stage h3 { font-size: 3rem; }
+             .lc-stage p { font-size: 1.5rem; }
+             
+             .lc-climax {
+                margin-top: 16rem;
+                padding-bottom: 16rem;
+             }
+             .lc-climax h1 { font-size: 4.5rem; }
+             .lc-climax .lc-highlight { font-size: 3.5rem; }
+             .lc-climax p { font-size: 1.5rem; }
+          }
+        `}
+      </style>
+
+      <div className="lc-wrapper">
+        <div className="lc-hero-container">
+          
+          {/* LEFT SIDE: SCROLLING TEXT */}
+          <div className="lc-text-side">
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="lc-intro"
+            >
+               <h2>ජීවන චක්‍රයේ සත්‍යය</h2>
+               <p>
+                 අපි කවුද? කොහෙන්ද ආවේ? කොහෙටද යන්නේ? මේ සසර ගමනේ සැබෑ ස්වභාවය විමසා බලමු...
+               </p>
+            </motion.div>
+
+            <div className="lc-stages">
+              {stages.map((stage, i) => (
+                <motion.div 
+                  key={i}
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false, margin: "-20% 0px -20% 0px" }}
+                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                  className="lc-stage"
+                >
+                  <div className="lc-stage-num">
+                     {String(i + 1).padStart(2, '0')} / {String(stages.length).padStart(2, '0')}
+                  </div>
+                  <h3>{stage.text}</h3>
+                  <p>{stage.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* FINAL CLIMAX */}
+            <div className="lc-climax">
+               <motion.h1 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false, margin: "-20% 0px -20% 0px" }}
+               >
+                 ඉතින්, ඔබ කවුද?
+               </motion.h1>
+               <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: false, margin: "-20% 0px -20% 0px" }}
+                  className="lc-highlight"
+               >
+                 ඔබ අනාථයෙක්!
+               </motion.div>
+               <motion.p
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: false, margin: "-20% 0px -20% 0px" }}
+               >
+                 මෙය තේරුම් ගෙන, මේ සසර ගමනින් එතෙර වීමට මාර්ගය සොයා ගැනීම පමණක්ම ජීවිතයේ එකම අරමුණ කරගන්න...
+               </motion.p>
+            </div>
+
           </div>
 
-          {/* FINAL CLIMAX */}
-          <div className="mt-64 pb-32 lg:pb-64 flex flex-col items-start">
-             <motion.h1 
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, margin: "-20% 0px -20% 0px" }}
-                className="text-5xl md:text-7xl font-serif font-bold mb-8"
-             >
-               ඉතින්, ඔබ කවුද?
-             </motion.h1>
-             <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: false, margin: "-20% 0px -20% 0px" }}
-                className="text-4xl md:text-6xl font-sinhala font-bold text-[var(--primary)] uppercase tracking-wider mb-12"
-             >
-               ඔබ අනාථයෙක්!
-             </motion.div>
-             <motion.p
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: false, margin: "-20% 0px -20% 0px" }}
-                className="text-xl md:text-3xl opacity-70 font-sinhala max-w-2xl leading-relaxed"
-             >
-               මෙය තේරුම් ගෙන, මේ සසර ගමනින් එතෙර වීමට මාර්ගය සොයා ගැනීම පමණක්ම ජීවිතයේ එකම අරමුණ කරගන්න...
-             </motion.p>
+          {/* RIGHT SIDE: STICKY TV BOX */}
+          <div className="lc-tv-side">
+             <div className="lc-tv-box">
+               <div 
+                 style={{ 
+                   position: 'absolute',
+                   inset: 0,
+                   zIndex: 10,
+                   pointerEvents: 'none',
+                   background: 'radial-gradient(circle at center, transparent 30%, #000000 100%)' 
+                 }} 
+               />
+               <Canvas 
+                 camera={{ position: [0, 0, RADIUS + 15], fov: 45 }} 
+                 style={{ position: 'absolute', inset: 0, zIndex: 0 }}
+               >
+                 <fog attach="fog" args={['#000000', 10, 45]} />
+                 <Suspense fallback={null}>
+                   <AutoCarousel totalStages={stages.length} />
+                 </Suspense>
+               </Canvas>
+             </div>
           </div>
 
         </div>
-
-        {/* RIGHT SIDE: STICKY TV BOX */}
-        <div className="w-full lg:w-1/2 h-[40vh] lg:h-screen sticky top-[80px] lg:top-0 flex items-center justify-center p-4 lg:p-12 order-first lg:order-last z-20 bg-[var(--bg-main)] lg:bg-transparent">
-           <div 
-             className="w-full h-full rounded-2xl lg:rounded-[40px] overflow-hidden relative shadow-2xl"
-             style={{ 
-               backgroundColor: '#020202', 
-               border: '1px solid rgba(255,255,255,0.05)',
-               boxShadow: '0 30px 60px -15px rgba(0, 0, 0, 0.6)' 
-             }}
-           >
-             {/* Vignette Overlay for the TV effect */}
-             <div 
-               className="absolute inset-0 z-10 pointer-events-none" 
-               style={{ background: 'radial-gradient(circle at center, transparent 30%, #000000 100%)' }} 
-             />
-
-             {/* WebGL Canvas */}
-             <Canvas 
-               camera={{ position: [0, 0, RADIUS + 15], fov: 45 }} 
-               className="absolute inset-0 z-0"
-             >
-               <fog attach="fog" args={['#000000', 10, 45]} />
-               <Suspense fallback={null}>
-                 <AutoCarousel totalStages={stages.length} />
-               </Suspense>
-             </Canvas>
-           </div>
-        </div>
-
       </div>
-    </div>
+    </>
   );
 }
