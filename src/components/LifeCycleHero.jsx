@@ -1,4 +1,5 @@
 import React, { useRef, Suspense } from 'react';
+import { motion } from 'framer-motion';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useTexture } from '@react-three/drei';
 import * as THREE from 'three';
@@ -78,70 +79,105 @@ export default function LifeCycleHero() {
   ];
 
   return (
-    <div className="w-full bg-[var(--bg-main)]">
-      
-      {/* THE TV BOX CONTAINER */}
-      <div className="pt-24 pb-16 px-4 md:px-12 flex justify-center">
-        <div 
-          className="w-full max-w-[1400px] rounded-2xl md:rounded-[40px] overflow-hidden relative shadow-2xl"
-          style={{ 
-            height: 'clamp(500px, 75vh, 800px)', 
-            backgroundColor: '#020202', 
-            border: '2px solid rgba(255,255,255,0.05)',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' 
-          }}
-        >
-          {/* Vignette Overlay for the TV effect */}
-          <div 
-            className="absolute inset-0 z-10 pointer-events-none" 
-            style={{ background: 'radial-gradient(circle at center, transparent 30%, #000000 100%)' }} 
-          />
-
-          {/* WebGL Canvas */}
-          <Canvas 
-            camera={{ position: [0, 0, RADIUS + 15], fov: 45 }} 
-            className="absolute inset-0 z-0"
+    <div className="w-full bg-[var(--bg-main)] text-[var(--text-main)] relative overflow-hidden">
+      <div className="max-w-[1600px] mx-auto w-full flex flex-col lg:flex-row relative">
+        
+        {/* LEFT SIDE: SCROLLING TEXT (Elite Academic Style) */}
+        <div className="w-full lg:w-1/2 px-6 md:px-12 py-12 lg:py-48 flex flex-col z-0 order-last lg:order-first">
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-24 lg:mb-48"
           >
-            <fog attach="fog" args={['#000000', 10, 45]} />
-            <Suspense fallback={null}>
-              <AutoCarousel totalStages={11} />
-            </Suspense>
-          </Canvas>
-        </div>
-      </div>
+             <h2 className="text-4xl md:text-6xl font-serif font-bold text-[var(--primary)] mb-6">ජීවන චක්‍රයේ සත්‍යය</h2>
+             <p className="text-lg md:text-2xl font-sinhala opacity-70 max-w-lg leading-relaxed">
+               අපි කවුද? කොහෙන්ද ආවේ? කොහෙටද යන්නේ? මේ සසර ගමනේ සැබෑ ස්වභාවය විමසා බලමු...
+             </p>
+          </motion.div>
 
-      {/* FULL STORY SECTION */}
-      <section className="py-16 bg-[var(--bg-main)] text-[var(--text-main)]">
-        <div className="max-w-4xl mx-auto px-6">
-          <h2 className="text-3xl md:text-5xl font-serif font-bold mb-16 text-center text-[var(--primary)]">
-            ජීවන චක්‍රයේ සත්‍යය
-          </h2>
-          <div className="space-y-12">
+          <div className="space-y-48 lg:space-y-64">
             {stages.map((stage, i) => (
-              <div key={i} className="flex flex-col md:flex-row gap-4 border-b border-[var(--border-color)] pb-8">
-                <div className="md:w-1/3">
-                  <h3 className="text-2xl md:text-3xl font-serif font-semibold">{stage.text}</h3>
+              <motion.div 
+                key={i}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, margin: "-20% 0px -20% 0px" }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                className="flex flex-col border-l-2 border-[var(--primary)] pl-8 lg:pl-12"
+              >
+                <div className="text-[var(--primary)] font-serif text-xl lg:text-2xl mb-2 opacity-50 tracking-widest">
+                   {String(i + 1).padStart(2, '0')} / {String(stages.length).padStart(2, '0')}
                 </div>
-                <div className="md:w-2/3 flex items-center">
-                  <p className="text-lg md:text-xl opacity-80 leading-relaxed font-sinhala">{stage.desc}</p>
-                </div>
-              </div>
+                <h3 className="text-3xl md:text-5xl font-serif font-bold mb-6">{stage.text}</h3>
+                <p className="text-xl md:text-2xl opacity-80 leading-relaxed font-sinhala max-w-md">
+                  {stage.desc}
+                </p>
+              </motion.div>
             ))}
-            
-            {/* The Climax statement at the bottom of the story */}
-            <div className="flex flex-col items-center justify-center pt-16 text-center">
-               <h1 className="text-4xl md:text-6xl font-serif font-bold mb-4">ඉතින්, ඔබ කවුද?</h1>
-               <div className="text-3xl md:text-5xl font-sinhala font-bold text-[var(--primary)] uppercase tracking-wider mb-8">
-                 ඔබ අනාථයෙක්!
-               </div>
-               <p className="text-xl md:text-2xl opacity-70 font-sinhala max-w-2xl leading-relaxed">
-                 මෙය තේරුම් ගෙන, මේ සසර ගමනින් එතෙර වීමට මාර්ගය සොයා ගැනීම පමණක්ම ජීවිතයේ එකම අරමුණ කරගන්න...
-               </p>
-            </div>
           </div>
-        </div>
-      </section>
 
+          {/* FINAL CLIMAX */}
+          <div className="mt-64 pb-32 lg:pb-64 flex flex-col items-start">
+             <motion.h1 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, margin: "-20% 0px -20% 0px" }}
+                className="text-5xl md:text-7xl font-serif font-bold mb-8"
+             >
+               ඉතින්, ඔබ කවුද?
+             </motion.h1>
+             <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: false, margin: "-20% 0px -20% 0px" }}
+                className="text-4xl md:text-6xl font-sinhala font-bold text-[var(--primary)] uppercase tracking-wider mb-12"
+             >
+               ඔබ අනාථයෙක්!
+             </motion.div>
+             <motion.p
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: false, margin: "-20% 0px -20% 0px" }}
+                className="text-xl md:text-3xl opacity-70 font-sinhala max-w-2xl leading-relaxed"
+             >
+               මෙය තේරුම් ගෙන, මේ සසර ගමනින් එතෙර වීමට මාර්ගය සොයා ගැනීම පමණක්ම ජීවිතයේ එකම අරමුණ කරගන්න...
+             </motion.p>
+          </div>
+
+        </div>
+
+        {/* RIGHT SIDE: STICKY TV BOX */}
+        <div className="w-full lg:w-1/2 h-[40vh] lg:h-screen sticky top-[80px] lg:top-0 flex items-center justify-center p-4 lg:p-12 order-first lg:order-last z-20 bg-[var(--bg-main)] lg:bg-transparent">
+           <div 
+             className="w-full h-full rounded-2xl lg:rounded-[40px] overflow-hidden relative shadow-2xl"
+             style={{ 
+               backgroundColor: '#020202', 
+               border: '1px solid rgba(255,255,255,0.05)',
+               boxShadow: '0 30px 60px -15px rgba(0, 0, 0, 0.6)' 
+             }}
+           >
+             {/* Vignette Overlay for the TV effect */}
+             <div 
+               className="absolute inset-0 z-10 pointer-events-none" 
+               style={{ background: 'radial-gradient(circle at center, transparent 30%, #000000 100%)' }} 
+             />
+
+             {/* WebGL Canvas */}
+             <Canvas 
+               camera={{ position: [0, 0, RADIUS + 15], fov: 45 }} 
+               className="absolute inset-0 z-0"
+             >
+               <fog attach="fog" args={['#000000', 10, 45]} />
+               <Suspense fallback={null}>
+                 <AutoCarousel totalStages={stages.length} />
+               </Suspense>
+             </Canvas>
+           </div>
+        </div>
+
+      </div>
     </div>
   );
 }
