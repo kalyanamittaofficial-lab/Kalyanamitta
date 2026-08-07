@@ -212,9 +212,9 @@ export default function LifeCycleHero() {
              }
              .lc-tv-side {
                 width: 50%;
-                height: 100vh;
-                top: 0;
-                padding: 3rem;
+                height: calc(100vh - 80px);
+                top: 80px;
+                padding: 2rem 3rem 2rem 1rem;
              }
              .lc-tv-box {
                 border-radius: 40px;
@@ -322,7 +322,7 @@ export default function LifeCycleHero() {
                  }} 
                />
                <Canvas 
-                 camera={{ position: [0, 0, RADIUS + 15], fov: 45 }} 
+                 camera={{ position: [0, 0, RADIUS + 20], fov: 45 }} 
                  style={{ position: 'absolute', inset: 0, zIndex: 0 }}
                >
                  <fog attach="fog" args={['#000000', 10, 45]} />
