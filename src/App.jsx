@@ -40,16 +40,13 @@ function ProtectedRoute({ children }) {
 
 function App() {
   useEffect(() => {
-    // Initialize theme from local storage or system preference
+    // Initialize theme from local storage or default to light
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
       document.documentElement.setAttribute('data-theme', savedTheme);
     } else {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (prefersDark) {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        localStorage.setItem('theme', 'dark');
-      }
+      document.documentElement.setAttribute('data-theme', 'light');
+      localStorage.setItem('theme', 'light');
     }
   }, []);
 
