@@ -15,23 +15,27 @@
   --glass-border: rgba(0, 0, 0, 0.08);
   --glass-blur: 16px;
   
+  --hover-overlay: rgba(0, 0, 0, 0.04);
+  
   --font-sinhala: 'Noto Sans Sinhala', sans-serif;
   --font-serif: 'Abhaya Libre', 'Georgia', serif;
 }
 
 [data-theme='dark'] {
-  --bg-main: #0A0B10; /* Very deep charcoal/slate */
-  --bg-secondary: #12131A;
+  --bg-main: #1C1917; /* Warm dark stone */
+  --bg-secondary: #292524;
   
-  --text-main: #F3F4F6;
-  --text-muted: #9CA3AF;
-  --text-inverse: #1C1D1E;
+  --text-main: #F5F5F4;
+  --text-muted: #A8A29E;
+  --text-inverse: #1C1917;
   
-  --glass-bg: rgba(18, 19, 26, 0.85);
+  --glass-bg: rgba(28, 25, 23, 0.85);
   --glass-border: rgba(255, 255, 255, 0.08);
   
-  --primary: #9F1919;
-  --primary-hover: #B81D1D;
+  --hover-overlay: rgba(255, 255, 255, 0.04);
+  
+  --primary: #B32424; /* Slightly brighter red for dark mode contrast */
+  --primary-hover: #CC2929;
   --accent-gold: #D4AF37; 
 }
 

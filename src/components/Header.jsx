@@ -44,7 +44,7 @@ const NavDropdown = ({ item, location }) => {
               top: '100%',
               left: '50%',
               transform: 'translateX(-50%)',
-              background: 'rgba(255, 255, 255, 0.98)',
+              background: 'var(--glass-bg)',
               backdropFilter: 'blur(20px)',
               border: '1px solid var(--glass-border)',
               borderRadius: '12px',
@@ -67,7 +67,7 @@ const NavDropdown = ({ item, location }) => {
                     padding: '12px 16px',
                     borderRadius: '8px',
                     color: isSubActive ? 'var(--primary)' : 'var(--text-main)',
-                    background: isSubActive ? 'rgba(0,0,0,0.02)' : 'transparent',
+                    background: isSubActive ? 'var(--hover-overlay)' : 'transparent',
                     textDecoration: 'none',
                     fontFamily: 'var(--font-sinhala)',
                     fontSize: '0.95rem',
@@ -75,8 +75,8 @@ const NavDropdown = ({ item, location }) => {
                     transition: 'all 0.2s ease',
                     display: 'block'
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0,0,0,0.03)'; e.currentTarget.style.color = 'var(--primary)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = isSubActive ? 'rgba(0,0,0,0.02)' : 'transparent'; e.currentTarget.style.color = isSubActive ? 'var(--primary)' : 'var(--text-main)'; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--hover-overlay)'; e.currentTarget.style.color = 'var(--primary)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = isSubActive ? 'var(--hover-overlay)' : 'transparent'; e.currentTarget.style.color = isSubActive ? 'var(--primary)' : 'var(--text-main)'; }}
                 >
                   {sub.name}
                 </Link>
@@ -165,7 +165,7 @@ export default function Header() {
         top: 0,
         left: 0,
         zIndex: 50,
-        background: isScrolled ? 'rgba(255, 255, 255, 0.95)' : 'var(--bg-main)',
+        background: isScrolled ? 'var(--glass-bg)' : 'var(--bg-main)',
         backdropFilter: isScrolled ? 'blur(20px)' : 'none',
         borderBottom: '1px solid var(--glass-border)',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -337,7 +337,7 @@ export default function Header() {
                 if (item.isDropdown) {
                   return (
                     <div key={item.name} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <div style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: '700', color: 'var(--primary)', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '8px' }}>
+                      <div style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: '700', color: 'var(--primary)', borderBottom: '1px solid var(--glass-border)', paddingBottom: '8px' }}>
                         {item.name}
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '8px' }}>
@@ -379,7 +379,7 @@ export default function Header() {
                       textDecoration: 'none',
                       fontFamily: 'var(--font-sinhala)',
                       padding: '8px 0',
-                      borderBottom: '1px solid rgba(0,0,0,0.05)'
+                      borderBottom: '1px solid var(--glass-border)'
                     }} 
                   >
                     {item.name}
