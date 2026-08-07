@@ -13,9 +13,7 @@ const ImagePlane = ({ url, index, total }) => {
   texture.minFilter = THREE.LinearMipmapLinearFilter;
   
   const ref = useRef();
-  
   const angle = (index / total) * Math.PI * 2;
-  
   const aspect = texture.image ? texture.image.width / texture.image.height : 1;
   const height = 12;
   const width = height * aspect;
@@ -64,19 +62,22 @@ const Carousel = ({ scrollYProgress, totalStages }) => {
 
 const StoryText = ({ text, desc, progress, index, total }) => {
   const peak = index / total;
-  const pad = 1 / (total * 2.5);
+  const pad = 1 / (total * 2);
   
-  const input = index === 0 
-    ? [0, pad] 
-    : [peak - pad, peak, peak + pad];
-      
-  const opacityOut = index === 0 
-    ? [1, 0] 
-    : [0, 1, 0];
-      
-  const yOut = index === 0 
-    ? [0, 20] 
-    : [20, 0, -20];
+  // Guarantee strictly increasing 3-element arrays to prevent WAAPI crashes
+  let start = peak - pad;
+  let mid = peak;
+  let end = peak + pad;
+  
+  if (index === 0) {
+    start = 0;
+    mid = pad / 2;
+    end = pad;
+  }
+  
+  const input = [start, mid, end];
+  const opacityOut = index === 0 ? [1, 1, 0] : [0, 1, 0];
+  const yOut = index === 0 ? [0, 0, -20] : [20, 0, -20];
   
   const opacity = useTransform(progress, input, opacityOut);
   const y = useTransform(progress, input, yOut);
@@ -96,26 +97,32 @@ const StoryText = ({ text, desc, progress, index, total }) => {
       y,
       pointerEvents: 'none'
     }}>
-      <div style={{ textAlign: 'center', maxWidth: '800px', padding: '0 24px' }}>
+      <div style={{ 
+        textAlign: 'center', 
+        maxWidth: '800px', 
+        padding: '0 20px',
+        // Responsive background blur for mobile readability
+        background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 70%)'
+      }}>
         <h2 style={{ 
-          fontSize: 'clamp(2.5rem, 5vw, 4rem)', 
+          fontSize: 'clamp(2rem, 5vw, 4rem)', 
           color: '#ffffff',
           fontFamily: 'var(--font-serif)', 
-          margin: '0 0 16px 0', 
+          margin: '0 0 12px 0', 
           fontWeight: '500',
           letterSpacing: '0.05em', 
-          textShadow: '0 4px 30px rgba(0,0,0,0.9)'
+          textShadow: '0 4px 30px rgba(0,0,0,1)' // Stronger shadow
         }}>
           {text}
         </h2>
         <p style={{ 
-          color: 'rgba(255, 255, 255, 0.7)',
-          fontSize: '1.4rem', 
+          color: 'rgba(255, 255, 255, 0.85)',
+          fontSize: 'clamp(1.1rem, 2vw, 1.4rem)', 
           fontFamily: 'var(--font-sinhala)', 
           margin: 0, 
-          lineHeight: 1.8, 
-          fontWeight: '300', 
-          textShadow: '0 2px 20px rgba(0,0,0,0.9)' 
+          lineHeight: 1.6, 
+          fontWeight: '400', 
+          textShadow: '0 2px 20px rgba(0,0,0,1)' 
         }}>
           {desc}
         </p>
@@ -146,55 +153,19 @@ export default function LifeCycleHero() {
   ];
 
   return (
-    <div ref={containerRef} style={{ height: '1500vh', backgroundColor: '#020202', position: 'relative' }}>
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        background: 'radial-gradient(circle at center, transparent 30%, #020202 100%)',
-        pointerEvents: 'none',
-        zIndex: 5
-      }} />
-
-      <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden' }}>
-        <Canvas 
-          camera={{ position: [0, 0, RADIUS + 15], fov: 45 }} 
-          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1 }}
-        >
-          <fog attach="fog" args={['#020202', 10, 40]} />
-          <ambientLight intensity={1} />
-          <Suspense fallback={null}>
-            <Carousel scrollYProgress={scrollYProgress} totalStages={stages.length} />
-          </Suspense>
-        </Canvas>
-
-        {stages.map((stage, i) => (
-          <StoryText 
-            key={i}
-            text={stage.text}
-            desc={stage.desc}
-            progress={scrollYProgress}
-            index={i}
-            total={stages.length}
-          />
-        ))}
-
-        <motion.div
-          style={{
+    <>
+      {/* 
+        THE TV CONTAINER
+        This wrapper forces a black background for the entire 1500vh scroll space,
+        making it look like a seamless cinematic TV window regardless of the site's theme.
+      */}
+      <div style={{ backgroundColor: '#000000', color: '#ffffff' }}>
+        <div ref={containerRef} style={{ height: '1500vh', position: 'relative' }}>
+          <div style={{
             position: 'absolute',
             top: 0,
             left: 0,
             width: '100%',
-            height: '100vh',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 30,
-            opacity: useTransform(scrollYProgress, [0.92, 1], [0, 1]),
-            background: '#000000'
           }}
         >
           <div style={{ textAlign: 'center', maxWidth: '900px', padding: '0 24px' }}>
