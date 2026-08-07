@@ -9,9 +9,14 @@ const CAMERA_START_Z = 8;
 
 const ImagePlane = ({ url, index }) => {
   const texture = useTexture(url);
+  const { gl } = useThree();
   texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = gl.capabilities.getMaxAnisotropy();
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  
   const ref = useRef();
   
+  // Aspect ratio calculation
   const aspect = texture.image ? texture.image.width / texture.image.height : 1;
   const height = 10;
   const width = height * aspect;
@@ -27,7 +32,8 @@ const ImagePlane = ({ url, index }) => {
   return (
     <mesh ref={ref} position={[0, 0, -index * Z_SPACING]}>
       <planeGeometry args={[width, height]} />
-      <meshBasicMaterial map={texture} transparent={true} opacity={1} side={THREE.DoubleSide} depthWrite={false} />
+      {/* Boosting color brightness by 20% to make it pop, toneMapped={false} keeps it vibrant */}
+      <meshBasicMaterial map={texture} transparent={true} opacity={1} side={THREE.DoubleSide} depthWrite={false} color={new THREE.Color(1.2, 1.2, 1.2)} toneMapped={false} />
     </mesh>
   );
 };
@@ -48,60 +54,78 @@ const CameraFlyThrough = ({ scrollYProgress, totalStages }) => {
 
 const StoryText = ({ text, desc, progress, index, total }) => {
   const peak = index / (total - 1);
-  const pad = 1 / (total * 2.5); // Spread of the text visibility
+  const pad = 1 / (total * 2.5);
   
-  // WAAPI requires inputs strictly in [0, 1] and monotonically increasing
   const input = index === 0 
     ? [0, pad] 
     : index === total - 1 
       ? [1 - pad, 1] 
       : [peak - pad, peak, peak + pad];
       
-  const opacityOut = index === 0 
-    ? [1, 0] 
-    : index === total - 1 
-      ? [0, 1] 
-      : [0, 1, 0];
-      
-  const yOut = index === 0 
-    ? [0, -50] 
-    : index === total - 1 
-      ? [50, 0] 
-      : [50, 0, -50];
+  const opacityOut = index === 0 ? [1, 0] : index === total - 1 ? [0, 1] : [0, 1, 0];
+  const yOut = index === 0 ? [0, -50] : index === total - 1 ? [50, 0] : [50, 0, -50];
   
   const opacity = useTransform(progress, input, opacityOut);
   const y = useTransform(progress, input, yOut);
 
+  // Alternate left and right alignment for elite editorial feel
+  const isEven = index % 2 === 0;
+  const stageNum = String(index + 1).padStart(2, '0');
+
   return (
     <motion.div style={{
       position: 'absolute',
-      bottom: '15%',
-      left: 0,
+      top: '50%',
+      left: isEven ? '10%' : 'auto',
+      right: isEven ? 'auto' : '10%',
+      transform: 'translateY(-50%)',
       width: '100%',
+      maxWidth: '450px',
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'center',
-      alignItems: 'center',
+      alignItems: isEven ? 'flex-start' : 'flex-end',
+      textAlign: isEven ? 'left' : 'right',
       zIndex: 10,
       opacity,
       y,
       pointerEvents: 'none'
     }}>
-      <div style={{ textAlign: 'center', maxWidth: '700px', padding: '0 24px' }}>
+      <div style={{ position: 'relative' }}>
+        {/* Massive watermark number */}
+        <div style={{
+          position: 'absolute',
+          top: '-60px',
+          [isEven ? 'left' : 'right']: '-20px',
+          fontSize: '12rem',
+          fontWeight: '900',
+          color: 'var(--text-main)',
+          opacity: 0.05,
+          fontFamily: 'var(--font-serif)',
+          zIndex: -1,
+          lineHeight: 1
+        }}>
+          {stageNum}
+        </div>
+        
+        {/* Accent line */}
+        <div style={{ width: '40px', height: '2px', backgroundColor: 'var(--primary)', marginBottom: '16px', marginLeft: isEven ? 0 : 'auto' }} />
+        
         <h2 style={{ 
-          fontSize: 'clamp(2.5rem, 5vw, 4rem)', 
+          fontSize: 'clamp(2.5rem, 4vw, 3.5rem)', 
           color: 'var(--text-main)', 
           fontFamily: 'var(--font-serif)', 
-          margin: '0 0 12px 0', 
+          margin: '0 0 16px 0', 
           fontWeight: '700', 
           letterSpacing: '0.02em', 
           textShadow: '0 4px 30px rgba(0,0,0,0.8)'
         }}>
           {text}
         </h2>
+        
         <p style={{ 
           color: 'var(--text-muted)', 
-          fontSize: '1.4rem', 
+          fontSize: '1.25rem', 
           fontFamily: 'var(--font-sinhala)', 
           margin: 0, 
           lineHeight: 1.8, 
