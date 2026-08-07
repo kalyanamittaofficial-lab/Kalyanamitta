@@ -48,19 +48,29 @@ const CameraFlyThrough = ({ scrollYProgress, totalStages }) => {
 
 const StoryText = ({ text, desc, progress, index, total }) => {
   const peak = index / (total - 1);
-  const pad = 1 / (total * 2.5);
+  const pad = 1 / (total * 2.5); // Spread of the text visibility
   
-  const opacity = useTransform(
-    progress,
-    [peak - pad, peak, peak + pad],
-    [0, 1, 0]
-  );
+  // WAAPI requires inputs strictly in [0, 1] and monotonically increasing
+  const input = index === 0 
+    ? [0, pad] 
+    : index === total - 1 
+      ? [1 - pad, 1] 
+      : [peak - pad, peak, peak + pad];
+      
+  const opacityOut = index === 0 
+    ? [1, 0] 
+    : index === total - 1 
+      ? [0, 1] 
+      : [0, 1, 0];
+      
+  const yOut = index === 0 
+    ? [0, -50] 
+    : index === total - 1 
+      ? [50, 0] 
+      : [50, 0, -50];
   
-  const y = useTransform(
-    progress,
-    [peak - pad, peak, peak + pad],
-    [50, 0, -50]
-  );
+  const opacity = useTransform(progress, input, opacityOut);
+  const y = useTransform(progress, input, yOut);
 
   return (
     <motion.div style={{
