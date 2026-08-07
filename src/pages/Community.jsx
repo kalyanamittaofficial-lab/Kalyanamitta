@@ -23,14 +23,6 @@ export default function Community() {
           margin-bottom: 1.5rem;
           letter-spacing: 0.05em;
         }
-        .cm-hero-subtitle {
-          font-family: var(--font-sinhala);
-          font-size: clamp(1.1rem, 3vw, 1.5rem);
-          opacity: 0.7;
-          max-width: 800px;
-          margin: 0 auto;
-          line-height: 1.6;
-        }
         
         .cm-split-section {
           display: flex;
@@ -46,12 +38,14 @@ export default function Community() {
         }
         .cm-quote-pali {
           font-family: var(--font-serif);
-          font-size: clamp(2rem, 6vw, 3rem);
+          font-size: clamp(1.8rem, 5vw, 2.5rem);
           font-weight: 700;
-          line-height: 1.3;
+          line-height: 1.5;
           color: var(--primary);
           margin-bottom: 1.5rem;
           opacity: 0.9;
+          word-break: keep-all;
+          overflow-wrap: break-word;
         }
         .cm-quote-sinhala {
           font-family: var(--font-sinhala);
@@ -100,7 +94,7 @@ export default function Community() {
             height: fit-content;
           }
           .cm-quote-pali {
-            font-size: 3.5rem;
+            font-size: 2.8rem;
           }
           .cm-quote-sinhala {
             border-left: 3px solid var(--primary);
@@ -131,14 +125,6 @@ export default function Community() {
           >
             කල්‍යාණ මිත්‍රත්වය
           </motion.h1>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
-            className="cm-hero-subtitle"
-          >
-            සසර ගමනේ දිශාව පෙන්වන සැබෑ මඟපෙන්වීම.
-          </motion.div>
         </div>
 
         <div className="cm-split-section">
@@ -173,7 +159,7 @@ export default function Community() {
               viewport={{ once: true, margin: "-15%" }}
               transition={{ duration: 0.8 }}
             >
-              බුදුරජාණන් වහන්සේට අනුව කල්‍යාණ මිත්‍රයෙකු යනු සාමාන්‍ය යහළුවෙකු නොවේ.
+              භාග්‍යවතුන් වහන්සේ දේශනා කළ පරිදි, කල්‍යාණ මිත්‍රයෙකු යනු සාමාන්‍ය යහළුවෙකු නොවේ.
             </motion.p>
             <motion.p
               initial={{ opacity: 0, y: 30 }}
@@ -181,7 +167,7 @@ export default function Community() {
               viewport={{ once: true, margin: "-15%" }}
               transition={{ duration: 0.8 }}
             >
-              ඔබගේ ලෞකික ජීවිතය දියුණු කරන පුද්ගලයෙකුට වඩා, දුකින් මිදෙන මාර්ගය පෙන්වන පුද්ගලයා කල්‍යාණ මිත්‍රයෙකි. ඔහු ඔබ වෙනුවෙන් නිවන් ලබා දිය නොහැක. නමුත්, ඔබට සත්‍යය දැකගත හැකි මාර්ගය පෙන්වා දිය හැක.
+              ඔබගේ ලෞකික ජීවිතය දියුණු කරන පුද්ගලයෙකුට වඩා, දුකින් මිදෙන මාර්ගය පෙන්වන පුද්ගලයා කල්‍යාණ මිත්‍රයෙකි. ඔහුට ඔබ වෙනුවෙන් නිවන් ලබා දිය නොහැක. නමුත්, ඔබට සත්‍යය දැකගත හැකි මාර්ගය පෙන්වා දිය හැක.
             </motion.p>
             <motion.p
               initial={{ opacity: 0, y: 30 }}
