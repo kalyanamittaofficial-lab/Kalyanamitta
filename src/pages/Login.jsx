@@ -43,7 +43,7 @@ export default function Login() {
     display: 'flex',
     height: 'calc(100vh - 100px)',
     width: '100%',
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--bg-main)',
     overflow: 'hidden'
   };
 
@@ -65,7 +65,7 @@ export default function Login() {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '40px',
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--bg-main)',
     overflowY: 'auto'
   };
 
@@ -80,8 +80,8 @@ export default function Login() {
     padding: '16px 0',
     backgroundColor: 'transparent',
     border: 'none',
-    borderBottom: `2px solid ${isFocused ? '#8b1818' : '#e5e7eb'}`,
-    color: '#111827',
+    borderBottom: `2px solid ${isFocused ? 'var(--primary)' : 'var(--glass-border)'}`,
+    color: 'var(--text-main)',
     fontSize: '1rem',
     fontFamily: 'var(--font-sinhala), sans-serif',
     outline: 'none',
@@ -141,10 +141,10 @@ export default function Login() {
       {/* RIGHT PANE (Form) */}
       <div style={rightPaneStyle} className="right-pane">
         <div style={formContainerStyle}>
-          <h2 style={{ fontSize: '2rem', color: '#111827', fontFamily: 'var(--font-serif)', fontWeight: '700', marginBottom: '12px' }}>
+          <h2 style={{ fontSize: '2rem', color: 'var(--text-main)', fontFamily: 'var(--font-serif)', fontWeight: '700', marginBottom: '12px' }}>
             Welcome Back
           </h2>
-          <p style={{ color: '#6b7280', fontSize: '1rem', fontFamily: 'var(--font-sinhala)', marginBottom: '40px' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '1rem', fontFamily: 'var(--font-sinhala)', marginBottom: '40px' }}>
             කරුණාකර ඔබගේ ගිණුමට පිවිසෙන්න
           </p>
           
@@ -188,32 +188,32 @@ export default function Login() {
             <button type="submit" disabled={isLoading}
               style={{
                 width: '100%', padding: '16px', marginTop: '12px', borderRadius: '8px', 
-                backgroundColor: '#8b1818', color: '#ffffff',
+                backgroundColor: 'var(--primary)', color: '#ffffff',
                 fontFamily: 'var(--font-sinhala), sans-serif', fontSize: '1.05rem', fontWeight: '600', border: 'none',
                 cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.8 : 1, transition: 'all 0.3s ease',
               }}
-              onMouseEnter={(e) => { if(!isLoading) e.currentTarget.style.backgroundColor = '#7a1515'; }}
-              onMouseLeave={(e) => { if(!isLoading) e.currentTarget.style.backgroundColor = '#8b1818'; }}
+              onMouseEnter={(e) => { if(!isLoading) e.currentTarget.style.backgroundColor = 'var(--primary-hover)'; }}
+              onMouseLeave={(e) => { if(!isLoading) e.currentTarget.style.backgroundColor = 'var(--primary)'; }}
             >
               {isLoading ? 'කරුණාකර රැඳී සිටින්න...' : 'ඇතුල් වන්න'}
             </button>
           </form>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', margin: '32px 0' }}>
-            <div style={{ flex: 1, height: '1px', backgroundColor: '#e5e7eb' }}></div>
-            <span style={{ fontSize: '0.8rem', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em' }}>OR</span>
-            <div style={{ flex: 1, height: '1px', backgroundColor: '#e5e7eb' }}></div>
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--glass-border)' }}></div>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>OR</span>
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--glass-border)' }}></div>
           </div>
 
           <button onClick={handleGoogleLogin} disabled={isLoading} type="button"
             style={{
               display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'center', gap: '12px',
-              borderRadius: '8px', backgroundColor: '#ffffff', padding: '14px', fontSize: '1rem', fontFamily: 'var(--font-sinhala), sans-serif',
-              fontWeight: '500', border: '1px solid #d1d5db', cursor: isLoading ? 'not-allowed' : 'pointer',
-              color: '#374151', transition: 'background-color 0.2s ease'
+              borderRadius: '8px', backgroundColor: 'transparent', padding: '14px', fontSize: '1rem', fontFamily: 'var(--font-sinhala), sans-serif',
+              fontWeight: '500', border: '1px solid var(--glass-border)', cursor: isLoading ? 'not-allowed' : 'pointer',
+              color: 'var(--text-main)', transition: 'background-color 0.2s ease'
             }}
-            onMouseEnter={(e) => { if(!isLoading) e.currentTarget.style.backgroundColor = '#f9fafb'; }}
-            onMouseLeave={(e) => { if(!isLoading) e.currentTarget.style.backgroundColor = '#ffffff'; }}
+            onMouseEnter={(e) => { if(!isLoading) e.currentTarget.style.backgroundColor = 'var(--glass-border)'; }}
+            onMouseLeave={(e) => { if(!isLoading) e.currentTarget.style.backgroundColor = 'transparent'; }}
           >
             <svg viewBox="0 0 24 24" style={{ height: '20px', width: '20px' }}>
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -224,12 +224,12 @@ export default function Login() {
             Google හරහා පිවිසෙන්න
           </button>
 
-          <p style={{ marginTop: '40px', textAlign: 'center', fontSize: '0.95rem', color: '#6b7280', fontFamily: 'var(--font-sinhala)' }}>
+          <p style={{ marginTop: '40px', textAlign: 'center', fontSize: '0.95rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)' }}>
             නව ගිණුමක් අවශ්‍යද?
             <button 
               onClick={() => navigate('/register')} 
               style={{
-                marginLeft: '8px', background: 'none', border: 'none', color: '#8b1818',
+                marginLeft: '8px', background: 'none', border: 'none', color: 'var(--primary)',
                 fontWeight: '600', cursor: 'pointer', textDecoration: 'none', transition: 'color 0.2s', fontFamily: 'var(--font-sinhala)'
               }}
               onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline'; }}

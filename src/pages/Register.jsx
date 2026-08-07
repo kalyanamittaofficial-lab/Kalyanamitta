@@ -95,8 +95,8 @@ export default function Register() {
     padding: '16px 0',
     backgroundColor: 'transparent',
     border: 'none',
-    borderBottom: `2px solid ${isFocused ? '#8b1818' : '#e5e7eb'}`,
-    color: '#111827',
+    borderBottom: `2px solid ${isFocused ? 'var(--primary)' : 'var(--glass-border)'}`,
+    color: 'var(--text-main)',
     fontSize: '1rem',
     fontFamily: 'var(--font-sinhala), sans-serif',
     outline: 'none',
@@ -109,13 +109,13 @@ export default function Register() {
     cursor: 'pointer'
   });
 
-  const labelStyle = { display: 'block', fontSize: '0.85rem', color: '#6b7280', fontWeight: '500', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' };
+  const labelStyle = { display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: '500', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' };
 
   const containerStyle = {
     display: 'flex',
     height: 'calc(100vh - 100px)',
-    width: '100%',
-    backgroundColor: '#ffffff',
+    bottom: 0,
+    backgroundColor: 'var(--bg-main)',
     overflow: 'hidden'
   };
 
@@ -136,7 +136,7 @@ export default function Register() {
     display: 'flex',
     flexDirection: 'column',
     padding: '60px 40px',
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--bg-main)',
     overflowY: 'auto'
   };
 
@@ -150,11 +150,11 @@ export default function Register() {
 
   if (success) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#ffffff', padding: '24px' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-main)', padding: '24px' }}>
         <div style={{ textAlign: 'center', maxWidth: '400px' }}>
           <h2 style={{ color: '#166534', marginBottom: '16px', fontFamily: 'var(--font-sinhala)', fontSize: '2rem' }}>සාර්ථකයි!</h2>
-          <p style={{ color: '#6b7280', fontFamily: 'var(--font-sinhala)', lineHeight: '1.6', marginBottom: '32px', fontSize: '1.1rem' }}>{success}</p>
-          <button onClick={() => navigate('/login')} style={{ width: '100%', padding: '16px', backgroundColor: '#8b1818', color: '#ffffff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '1.05rem', fontFamily: 'var(--font-sinhala)' }}>
+          <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', lineHeight: '1.6', marginBottom: '32px', fontSize: '1.1rem' }}>{success}</p>
+          <button onClick={() => navigate('/login')} style={{ width: '100%', padding: '16px', backgroundColor: 'var(--primary)', color: '#ffffff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '1.05rem', fontFamily: 'var(--font-sinhala)' }}>
             Login පිටුවට යන්න
           </button>
         </div>
@@ -238,10 +238,10 @@ export default function Register() {
         <div style={formContainerStyle}>
           
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-            <h2 style={{ fontSize: '2rem', color: '#111827', fontFamily: 'var(--font-serif)', fontWeight: '700', margin: 0 }}>
+            <h2 style={{ fontSize: '2rem', color: 'var(--text-main)', fontFamily: 'var(--font-serif)', fontWeight: '700', margin: 0 }}>
               Create Account
             </h2>
-            <Link to="/login" style={{ color: '#8b1818', fontWeight: '600', textDecoration: 'none', fontFamily: 'var(--font-sinhala)' }}>
+            <Link to="/login" style={{ color: 'var(--primary)', fontWeight: '600', textDecoration: 'none', fontFamily: 'var(--font-sinhala)' }}>
               ඇතුල් වන්න
             </Link>
           </div>
@@ -255,8 +255,8 @@ export default function Register() {
           {step === 1 ? (
             <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
               <div style={{ marginBottom: '8px' }}>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: '600', color: '#374151', margin: '0 0 8px 0' }}>Step 1: Account Details</h3>
-                <div style={{ height: '2px', backgroundColor: '#e5e7eb', width: '100%' }}><div style={{ height: '2px', backgroundColor: '#8b1818', width: '50%' }}></div></div>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: '600', color: 'var(--text-main)', margin: '0 0 8px 0' }}>Step 1: Account Details</h3>
+                <div style={{ height: '2px', backgroundColor: 'var(--glass-border)', width: '100%' }}><div style={{ height: '2px', backgroundColor: 'var(--primary)', width: '50%' }}></div></div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
@@ -268,7 +268,7 @@ export default function Register() {
                   <label style={labelStyle}>Password *</label>
                   <input type="password" name="password" value={formData.password} onChange={handleChange} required style={getInputStyle(focusedInput === 'password')} minLength="6" placeholder="අකුරු 6 කට වඩා ලබාදෙන්න" onFocus={() => setFocusedInput('password')} onBlur={() => setFocusedInput(null)} />
                   {focusedInput === 'password' && (
-                    <span style={{ fontSize: '0.75rem', color: '#8b1818', marginTop: '4px', display: 'block', animation: 'fadeIn 0.3s' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--primary)', marginTop: '4px', display: 'block', animation: 'fadeIn 0.3s' }}>
                       * ඉලක්කම් සහ අකුරු මිශ්‍ර කර ශක්තිමත් මුරපදයක් (Strong Password) ලබා දෙන්න.
                     </span>
                   )}
@@ -343,53 +343,53 @@ export default function Register() {
                 <input type="text" name="education" value={formData.education} onChange={handleChange} required style={getInputStyle(focusedInput === 'education')} placeholder="e.g. Software Engineer / BSc Degree" onFocus={() => setFocusedInput('education')} onBlur={() => setFocusedInput(null)} />
               </div>
 
-              <button type="submit" style={{ marginTop: '24px', padding: '16px', backgroundColor: '#8b1818', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '1.05rem', fontWeight: '600', cursor: 'pointer', transition: 'background-color 0.2s ease' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#7a1515'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#8b1818'}>
+              <button type="submit" style={{ marginTop: '24px', padding: '16px', backgroundColor: 'var(--primary)', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '1.05rem', fontWeight: '600', cursor: 'pointer', transition: 'background-color 0.2s ease' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-hover)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--primary)'}>
                 Continue to Final Step
               </button>
             </form>
           ) : (
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
               <div style={{ marginBottom: '8px' }}>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: '600', color: '#374151', margin: '0 0 8px 0', fontFamily: 'var(--font-sinhala)' }}>පියවර 2: ආධ්‍යාත්මික පසුබිම</h3>
-                <div style={{ height: '2px', backgroundColor: '#e5e7eb', width: '100%' }}><div style={{ height: '2px', backgroundColor: '#8b1818', width: '100%' }}></div></div>
-                <p style={{ fontSize: '0.85rem', color: '#6b7280', marginTop: '12px', fontFamily: 'var(--font-sinhala)' }}>කරුණාකර පහත ප්‍රශ්න සඳහා අවංකව පිළිතුරු සපයන්න.</p>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: '600', color: 'var(--text-main)', margin: '0 0 8px 0', fontFamily: 'var(--font-sinhala)' }}>පියවර 2: ආධ්‍යාත්මික පසුබිම</h3>
+                <div style={{ height: '2px', backgroundColor: 'var(--glass-border)', width: '100%' }}><div style={{ height: '2px', backgroundColor: 'var(--primary)', width: '100%' }}></div></div>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '12px', fontFamily: 'var(--font-sinhala)' }}>කරුණාකර පහත ප්‍රශ්න සඳහා අවංකව පිළිතුරු සපයන්න.</p>
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '1.05rem', color: '#111827', fontFamily: 'var(--font-sinhala)', marginBottom: '16px', fontWeight: '500' }}>
+                <label style={{ display: 'block', fontSize: '1.05rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', marginBottom: '16px', fontWeight: '500' }}>
                   1. නිවන් දකින්න කොච්චර උනන්දුවක් තියෙනවද?
                 </label>
                 <input type="range" min="0" max="100" name="interest" value={formData.interest} onChange={handleChange} />
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#6b7280', fontFamily: 'var(--font-sinhala)', marginTop: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', marginTop: '8px' }}>
                   <span>අඩුයි</span><span>වැඩියි</span>
                 </div>
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '1.05rem', color: '#111827', fontFamily: 'var(--font-sinhala)', marginBottom: '16px', fontWeight: '500' }}>
+                <label style={{ display: 'block', fontSize: '1.05rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', marginBottom: '16px', fontWeight: '500' }}>
                   2. ඒ වෙනුවෙන් තමන් කරන කැපකිරීම කොච්චරක් කියලා තමන්ට දැනෙනවද?
                 </label>
                 <input type="range" min="0" max="100" name="currentDedication" value={formData.currentDedication} onChange={handleChange} />
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#6b7280', fontFamily: 'var(--font-sinhala)', marginTop: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', marginTop: '8px' }}>
                   <span>අඩුයි</span><span>වැඩියි</span>
                 </div>
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '1.05rem', color: '#111827', fontFamily: 'var(--font-sinhala)', marginBottom: '16px', fontWeight: '500' }}>
+                <label style={{ display: 'block', fontSize: '1.05rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', marginBottom: '16px', fontWeight: '500' }}>
                   3. හරි මඟ පෙන්වීමක් ලැබුණොත් තමන්ට කොච්චර කැපකිරීමක් කරන්න සූදානම්ද?
                 </label>
                 <input type="range" min="0" max="100" name="potentialDedication" value={formData.potentialDedication} onChange={handleChange} />
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#6b7280', fontFamily: 'var(--font-sinhala)', marginTop: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', marginTop: '8px' }}>
                   <span>අඩුයි</span><span>වැඩියි</span>
                 </div>
               </div>
 
               <div style={{ display: 'flex', gap: '16px', marginTop: '16px' }}>
-                <button type="button" onClick={() => setStep(1)} style={{ flex: 1, padding: '16px', backgroundColor: 'transparent', color: '#374151', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '1.05rem', fontWeight: '600', cursor: 'pointer', fontFamily: 'var(--font-sinhala)' }}>
+                <button type="button" onClick={() => setStep(1)} style={{ flex: 1, padding: '16px', backgroundColor: 'transparent', color: 'var(--text-main)', border: '1px solid var(--glass-border)', borderRadius: '8px', fontSize: '1.05rem', fontWeight: '600', cursor: 'pointer', fontFamily: 'var(--font-sinhala)' }}>
                   ආපසු (Back)
                 </button>
-                <button type="submit" disabled={isLoading} style={{ flex: 2, padding: '16px', backgroundColor: '#8b1818', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '1.05rem', fontWeight: '600', cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.7 : 1, fontFamily: 'var(--font-sinhala)', transition: 'background-color 0.2s ease' }} onMouseEnter={(e) => { if(!isLoading) e.currentTarget.style.backgroundColor = '#7a1515'; }} onMouseLeave={(e) => { if(!isLoading) e.currentTarget.style.backgroundColor = '#8b1818'; }}>
+                <button type="submit" disabled={isLoading} style={{ flex: 2, padding: '16px', backgroundColor: 'var(--primary)', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '1.05rem', fontWeight: '600', cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.7 : 1, fontFamily: 'var(--font-sinhala)', transition: 'background-color 0.2s ease' }} onMouseEnter={(e) => { if(!isLoading) e.currentTarget.style.backgroundColor = 'var(--primary-hover)'; }} onMouseLeave={(e) => { if(!isLoading) e.currentTarget.style.backgroundColor = 'var(--primary)'; }}>
                   {isLoading ? 'Processing...' : 'ලියාපදිංචි වන්න'}
                 </button>
               </div>

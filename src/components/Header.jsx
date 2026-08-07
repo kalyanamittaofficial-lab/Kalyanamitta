@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Bell, User, Home, X, Menu, ChevronDown } from 'lucide-react';
+import { Search, Bell, User, Home, X, Menu, ChevronDown, Sun, Moon } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../utils/supabase';
@@ -95,8 +95,12 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [session, setSession] = useState(null);
+  const [theme, setTheme] = useState('light');
 
   useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(savedTheme);
+    
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
@@ -118,6 +122,13 @@ export default function Header() {
     };
   }, []);
   
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+  };
+
   // Elite Grouped Nav Structure
   const allNavItems = [
     { name: 'මුල් පිටුව', path: '/' },
@@ -227,6 +238,21 @@ export default function Header() {
 
         {/* Action Icons & Mobile Toggle */}
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          
+          <button 
+            onClick={toggleTheme}
+            style={{
+              background: 'transparent', border: 'none', color: 'var(--text-main)', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px',
+              borderRadius: '50%', transition: 'background-color 0.2s ease'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--glass-border)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+            title="Toggle Dark Mode"
+          >
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+
           {session ? (
             <Link 
               to="/dashboard"

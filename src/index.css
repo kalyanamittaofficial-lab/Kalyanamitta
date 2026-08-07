@@ -19,6 +19,22 @@
   --font-serif: 'Abhaya Libre', 'Georgia', serif;
 }
 
+[data-theme='dark'] {
+  --bg-main: #0A0B10; /* Very deep charcoal/slate */
+  --bg-secondary: #12131A;
+  
+  --text-main: #F3F4F6;
+  --text-muted: #9CA3AF;
+  --text-inverse: #1C1D1E;
+  
+  --glass-bg: rgba(18, 19, 26, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  
+  --primary: #9F1919;
+  --primary-hover: #B81D1D;
+  --accent-gold: #D4AF37; 
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -33,6 +49,7 @@ body {
   overflow-y: scroll;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 h1, h2, h3, h4, .serif-title {
