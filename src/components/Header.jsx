@@ -156,7 +156,7 @@ export default function Header() {
 
   return (
     <>
-      <header className={\`mobile-header-padding \${isScrolled ? 'scrolled' : ''}\`} style={{
+      <header className={`mobile-header-padding ${isScrolled ? 'scrolled' : ''}`} style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
