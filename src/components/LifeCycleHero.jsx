@@ -5,11 +5,12 @@ const StoryStage = ({ image, text, desc, progress, index, total }) => {
   // Each stage occupies a fraction of the scroll
   const start = index / total;
   const end = (index + 1) / total;
+  const pad = 1 / (total * 4); // safely smaller than (end - start) / 2
   
   const opacity = useTransform(
     progress,
-    [Math.max(0, start - 0.05), start + 0.05, end - 0.05, Math.min(1, end + 0.05)],
-    [0, 1, 1, 0]
+    [start, start + pad, end - pad, end],
+    [index === 0 ? 1 : 0, 1, 1, 0]
   );
   
   const scale = useTransform(
