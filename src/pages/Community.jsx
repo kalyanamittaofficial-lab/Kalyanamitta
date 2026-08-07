@@ -9,11 +9,10 @@ const EditorialSection = ({ num, title }) => (
     transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
     className="editorial-section"
   >
-    <div className="editorial-left">
-      <span className="editorial-num">{num}</span>
-      <h2 className="editorial-title">{title}</h2>
-    </div>
-    <div className="editorial-right">
+    <h2 className="editorial-title">
+      <span className="editorial-num">{num}.</span> {title}
+    </h2>
+    <div className="editorial-content">
       <p className="editorial-placeholder">
         [ මෙම ස්ථානයට අදාළ අන්තර්ගතය (Content) ඇතුළත් කෙරේ. ]
       </p>
@@ -28,94 +27,76 @@ export default function Community() {
       {/* Editorial CSS */}
       <style>{`
         .editorial-container {
-          max-width: 1100px;
+          max-width: 800px;
           margin: 0 auto;
-          padding: 12vh 48px 150px 48px;
+          padding: 120px 24px 120px 24px;
         }
 
         /* Hero Header */
         .editorial-header {
           text-align: center;
-          margin-bottom: 100px;
-          border-top: 1px solid var(--text-main);
-          border-bottom: 1px solid var(--text-main);
-          padding: 40px 0;
-        }
-        .editorial-hero-title {
-          font-size: clamp(3rem, 6vw, 5.5rem);
-          font-family: var(--font-serif);
-          font-weight: 400;
-          color: var(--text-main);
-          letter-spacing: -0.02em;
-          margin: 0;
-          line-height: 1.1;
-        }
-        .editorial-hero-subtitle {
-          font-size: 1rem;
-          font-family: var(--font-sinhala);
-          color: var(--text-muted);
-          text-transform: uppercase;
-          letter-spacing: 0.15em;
-          margin-top: 24px;
-        }
-
-        /* Sections Grid */
-        .editorial-section {
-          display: grid;
-          grid-template-columns: 350px 1fr;
-          gap: 60px;
-          padding: 60px 0;
-          border-top: 1px solid var(--glass-border);
+          margin-bottom: 60px;
+          border-bottom: 1px solid var(--glass-border);
+          padding-bottom: 40px;
         }
         
-        .editorial-left {
+        .editorial-hero-title {
+          font-size: clamp(2.5rem, 5vw, 4rem);
+          font-family: var(--font-serif);
+          font-weight: 700;
+          color: var(--primary);
+          margin: 0;
+          line-height: 1.2;
+        }
+
+        /* Sections */
+        .editorial-section {
+          margin-bottom: 50px;
+        }
+        
+        .editorial-title {
+          font-size: 1.5rem;
+          font-family: var(--font-sinhala);
+          font-weight: 700;
+          color: var(--text-main);
+          margin-bottom: 16px;
           display: flex;
-          flex-direction: column;
-          gap: 16px;
+          align-items: baseline;
+          gap: 12px;
+          line-height: 1.4;
         }
         
         .editorial-num {
           font-family: var(--font-serif);
-          font-size: 1.2rem;
+          font-size: 1.4rem;
           color: var(--primary);
-          font-weight: 600;
-        }
-        
-        .editorial-title {
-          font-size: 1.75rem;
-          font-family: var(--font-sinhala);
-          font-weight: 600;
-          color: var(--text-main);
-          line-height: 1.3;
-          margin: 0;
+          font-weight: 700;
         }
 
-        .editorial-right {
+        .editorial-content {
           font-family: var(--font-sinhala);
           font-size: 1.15rem;
           line-height: 2;
           color: var(--text-muted);
           font-weight: 400;
-          display: flex;
-          align-items: center;
+          padding-left: 32px;
         }
 
         .editorial-placeholder {
           font-style: italic;
-          opacity: 0.6;
+          opacity: 0.5;
+          margin: 0;
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 768px) {
           .editorial-container {
-            padding: 8vh 24px 100px 24px;
+            padding: 100px 20px 80px 20px;
           }
-          .editorial-section {
-            grid-template-columns: 1fr;
-            gap: 24px;
-            padding: 40px 0;
+          .editorial-content {
+            padding-left: 0;
           }
           .editorial-title {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
           }
         }
       `}</style>
@@ -125,7 +106,6 @@ export default function Community() {
         {/* Hero Header */}
         <div className="editorial-header">
           <h1 className="editorial-hero-title">කල්‍යාණ මිත්‍රත්වය</h1>
-          <div className="editorial-hero-subtitle">Volume I &mdash; The Path to Liberation</div>
         </div>
 
         {/* Sections */}
