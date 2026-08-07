@@ -83,7 +83,6 @@ export default function LifeCycleHero() {
              background-color: var(--bg-main);
              color: var(--text-main);
              width: 100%;
-             overflow: hidden;
           }
           .lc-hero-container {
              display: flex;
