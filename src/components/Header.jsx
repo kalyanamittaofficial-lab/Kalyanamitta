@@ -156,11 +156,10 @@ export default function Header() {
 
   return (
     <>
-      <header className="mobile-padding" style={{
+      <header className={\`mobile-header-padding \${isScrolled ? 'scrolled' : ''}\`} style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: isScrolled ? '12px 48px' : '24px 48px',
         width: '100%',
         position: 'fixed',
         top: 0,
@@ -319,6 +318,7 @@ export default function Header() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
+            className="mobile-menu-padding"
             style={{
               position: 'fixed',
               top: '80px',
@@ -329,7 +329,6 @@ export default function Header() {
               zIndex: 49,
               display: 'flex',
               flexDirection: 'column',
-              padding: '24px 48px',
               overflowY: 'auto'
             }}
           >
@@ -392,12 +391,31 @@ export default function Header() {
         )}
       </AnimatePresence>
       <style>{`
+        .mobile-header-padding {
+          padding: 24px 48px;
+        }
+        .mobile-header-padding.scrolled {
+          padding: 12px 48px;
+        }
+        .mobile-menu-padding {
+          padding: 24px 48px;
+        }
+        
         @media (max-width: 900px) {
           .show-on-mobile {
             display: block !important;
           }
           .hide-on-mobile {
             display: none !important;
+          }
+          .mobile-header-padding {
+            padding: 20px 20px;
+          }
+          .mobile-header-padding.scrolled {
+            padding: 12px 20px;
+          }
+          .mobile-menu-padding {
+            padding: 20px;
           }
         }
       `}</style>
