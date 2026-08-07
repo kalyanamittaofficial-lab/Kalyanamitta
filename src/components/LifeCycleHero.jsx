@@ -1,136 +1,121 @@
 import React, { useRef, Suspense } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 
-const Z_SPACING = 20;
-const CAMERA_START_Z = 8;
+const RADIUS = 18;
 
-const ImagePlane = ({ url, index }) => {
+const ImagePlane = ({ url, index, total }) => {
   const texture = useTexture(url);
-  const { gl } = useThree();
   texture.colorSpace = THREE.SRGBColorSpace;
-  texture.anisotropy = gl.capabilities.getMaxAnisotropy();
+  texture.generateMipmaps = true;
   texture.minFilter = THREE.LinearMipmapLinearFilter;
   
   const ref = useRef();
   
-  // Aspect ratio calculation
+  const angle = (index / total) * Math.PI * 2;
+  
   const aspect = texture.image ? texture.image.width / texture.image.height : 1;
-  const height = 10;
+  const height = 12;
   const width = height * aspect;
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
-    // Live floating feel (Morph/Breathing effect)
-    ref.current.position.y = Math.sin(t * 0.8 + index * 2) * 0.4;
-    ref.current.rotation.z = Math.sin(t * 0.4 + index) * 0.02;
-    ref.current.rotation.y = Math.sin(t * 0.3 + index * 1.5) * 0.05;
+    if (ref.current) {
+      ref.current.position.y = Math.sin(t * 1.2 + index) * 0.3;
+    }
   });
 
   return (
-    <mesh ref={ref} position={[0, 0, -index * Z_SPACING]}>
-      <planeGeometry args={[width, height]} />
-      {/* Boosting color brightness by 20% to make it pop, toneMapped={false} keeps it vibrant */}
-      <meshBasicMaterial map={texture} transparent={true} opacity={1} side={THREE.DoubleSide} depthWrite={false} color={new THREE.Color(1.2, 1.2, 1.2)} toneMapped={false} />
-    </mesh>
+    <group position={[Math.sin(angle) * RADIUS, 0, Math.cos(angle) * RADIUS]} rotation={[0, angle, 0]}>
+      <mesh ref={ref}>
+        <planeGeometry args={[width, height]} />
+        <meshBasicMaterial 
+          map={texture} 
+          transparent={true} 
+          opacity={1} 
+          side={THREE.DoubleSide} 
+          depthWrite={false}
+          color={new THREE.Color(1.1, 1.1, 1.1)}
+        />
+      </mesh>
+    </group>
   );
 };
 
-const CameraFlyThrough = ({ scrollYProgress, totalStages }) => {
-  const { camera } = useThree();
-  
+const Carousel = ({ scrollYProgress, totalStages }) => {
+  const groupRef = useRef();
+
   useFrame(() => {
-    const totalDistance = (totalStages - 1) * Z_SPACING;
-    const targetZ = CAMERA_START_Z - (scrollYProgress.current * totalDistance);
-    
-    // Smooth lerp for cinematic camera movement
-    camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetZ, 0.06);
+    if (!groupRef.current) return;
+    const targetRotation = -(scrollYProgress.current * Math.PI * 2 * (totalStages / (totalStages - 1))); 
+    groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotation, 0.05);
   });
-  
-  return null;
+
+  return (
+    <group ref={groupRef}>
+      {Array.from({ length: totalStages }).map((_, i) => (
+        <ImagePlane key={i} url={`/lifeCycle/LC-${i + 1}.png`} index={i} total={totalStages} />
+      ))}
+    </group>
+  );
 };
 
 const StoryText = ({ text, desc, progress, index, total }) => {
-  const peak = index / (total - 1);
+  const peak = index / total;
   const pad = 1 / (total * 2.5);
   
   const input = index === 0 
     ? [0, pad] 
-    : index === total - 1 
-      ? [1 - pad, 1] 
-      : [peak - pad, peak, peak + pad];
+    : [peak - pad, peak, peak + pad];
       
-  const opacityOut = index === 0 ? [1, 0] : index === total - 1 ? [0, 1] : [0, 1, 0];
-  const yOut = index === 0 ? [0, -50] : index === total - 1 ? [50, 0] : [50, 0, -50];
+  const opacityOut = index === 0 
+    ? [1, 0] 
+    : [0, 1, 0];
+      
+  const yOut = index === 0 
+    ? [0, 20] 
+    : [20, 0, -20];
   
   const opacity = useTransform(progress, input, opacityOut);
   const y = useTransform(progress, input, yOut);
 
-  // Alternate left and right alignment for elite editorial feel
-  const isEven = index % 2 === 0;
-  const stageNum = String(index + 1).padStart(2, '0');
-
   return (
     <motion.div style={{
       position: 'absolute',
-      top: '50%',
-      left: isEven ? '10%' : 'auto',
-      right: isEven ? 'auto' : '10%',
-      transform: 'translateY(-50%)',
+      bottom: '10%',
+      left: 0,
       width: '100%',
-      maxWidth: '450px',
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'center',
-      alignItems: isEven ? 'flex-start' : 'flex-end',
-      textAlign: isEven ? 'left' : 'right',
+      alignItems: 'center',
       zIndex: 10,
       opacity,
       y,
       pointerEvents: 'none'
     }}>
-      <div style={{ position: 'relative' }}>
-        {/* Massive watermark number */}
-        <div style={{
-          position: 'absolute',
-          top: '-60px',
-          [isEven ? 'left' : 'right']: '-20px',
-          fontSize: '12rem',
-          fontWeight: '900',
-          color: 'var(--text-main)',
-          opacity: 0.05,
-          fontFamily: 'var(--font-serif)',
-          zIndex: -1,
-          lineHeight: 1
-        }}>
-          {stageNum}
-        </div>
-        
-        {/* Accent line */}
-        <div style={{ width: '40px', height: '2px', backgroundColor: 'var(--primary)', marginBottom: '16px', marginLeft: isEven ? 0 : 'auto' }} />
-        
+      <div style={{ textAlign: 'center', maxWidth: '800px', padding: '0 24px' }}>
         <h2 style={{ 
-          fontSize: 'clamp(2.5rem, 4vw, 3.5rem)', 
-          color: 'var(--text-main)', 
+          fontSize: 'clamp(2.5rem, 5vw, 4rem)', 
+          color: '#ffffff',
           fontFamily: 'var(--font-serif)', 
           margin: '0 0 16px 0', 
-          fontWeight: '700', 
-          letterSpacing: '0.02em', 
-          textShadow: '0 4px 30px rgba(0,0,0,0.8)'
+          fontWeight: '500',
+          letterSpacing: '0.05em', 
+          textShadow: '0 4px 30px rgba(0,0,0,0.9)'
         }}>
           {text}
         </h2>
-        
         <p style={{ 
-          color: 'var(--text-muted)', 
-          fontSize: '1.25rem', 
+          color: 'rgba(255, 255, 255, 0.7)',
+          fontSize: '1.4rem', 
           fontFamily: 'var(--font-sinhala)', 
           margin: 0, 
           lineHeight: 1.8, 
-          fontWeight: '500', 
-          textShadow: '0 2px 15px rgba(0,0,0,0.8)' 
+          fontWeight: '300', 
+          textShadow: '0 2px 20px rgba(0,0,0,0.9)' 
         }}>
           {desc}
         </p>
@@ -147,35 +132,44 @@ export default function LifeCycleHero() {
   });
 
   const stages = [
-    { img: '/lifeCycle/LC-1.png', text: 'නොදැනුවත්කම', desc: 'ඉපදෙන්න කලින් කිසි දෙයක් අපි දන්නේ නෑ. අපි කොහේ හිටියද, මොනවද කළේ කියලා කිසිම මතකයක් අපිට ඉතිරි වෙලා නෑ.' },
-    { img: '/lifeCycle/LC-2.png', text: 'ආරම්භය', desc: 'එකපාරටම අපි මේ ලෝකෙට එනවා. මේක අපි තෝරගෙන ආපු ගමනක් නෙවෙයි. ඒත් ගමන පටන් අරන් ඉවරයි.' },
-    { img: '/lifeCycle/LC-3.png', text: 'ළමා විය', desc: 'ලෝකය අලුත්. හැමදේම සුන්දරයි වගේ පේනවා. විවිධ දේවල් පස්සේ දුවනවා. මේ චක්‍රයේ පළමු පියවර.' },
-    { img: '/lifeCycle/LC-4.png', text: 'තරුණ විය', desc: 'බලාපොරොත්තු ගොඩක් එක්ක ජීවිතේ ගොඩනඟන්න හදනවා. ගොඩක් දේවල් කරනවා, අත්පත් කරගන්න උත්සාහ කරනවා.' },
-    { img: '/lifeCycle/LC-5.png', text: 'බැඳීම්', desc: 'විවිධ අය මුණගැහෙනවා, අපිට නමක් ලැබෙනවා, අපිව අඳුරන අය හැදෙනවා. බැඳීම් එක්ක ජීවිතේ තවත් සංකීර්ණ වෙනවා.' },
-    { img: '/lifeCycle/LC-6.png', text: 'වෙහෙස', desc: 'මේ ජීවිතේ අස්සේ ගොඩක් දේවල් කරනවා. සතුටු වෙනවා වගේම ගොඩක් දුකට පත්වෙනවා.' },
-    { img: '/lifeCycle/LC-7.png', text: 'මහලු විය', desc: 'කාලය ගෙවිලා ගිහින්. ශරීරය දුර්වල වෙනවා. සමහර වෙලාවට සම්පූර්ණ චක්‍රයම යන්නෙත් නෑ, ඉක්මනින් මේ ගමන ඉවර වෙනවා.' },
-    { img: '/lifeCycle/LC-8.png', text: 'රෝගී වීම', desc: 'වේදනාව. අවසානය ළඟා වෙන බව දැනෙනවා. රැස් කරපු කිසි දෙයක් අරගෙන යන්න බෑ කියලා තේරෙනවා.' },
-    { img: '/lifeCycle/LC-9.png', text: 'මරණය', desc: 'ආයෙත් නොපෙනී යනවා. ඉපදුණේ ඇයි දන්නේ නෑ, මැරිලා කොහෙටද යන්නේ කියලවත් දන්නේ නෑ. සම්පූර්ණයෙන්ම අවිනිශ්චිතයි.' },
-    { img: '/lifeCycle/LC-10.png', text: 'අනාථයි', desc: 'ආවේ කොහෙන්ද, යන්නේ කොහෙටද කියලා දන්නේ නෑ... සම්පූර්ණයෙන්ම අතරමං වෙලා. ඒ කියන්නේ ඇත්තටම අපි අනාථයි!' },
-    { img: '/lifeCycle/LC-11.png', text: 'සත්‍යය', desc: '"මේ මොකක්ද මට මේ වෙන්නේ?" යන්න තේරුම් ගැනීම පමණක්ම නේද අපි කළ යුත්තේ?' }
+    { text: 'නොදැනුවත්කම', desc: 'ඉපදෙන්න කලින් කිසි දෙයක් අපි දන්නේ නෑ. අපි කොහේ හිටියද, මොනවද කළේ කියලා කිසිම මතකයක් අපිට ඉතිරි වෙලා නෑ.' },
+    { text: 'ආරම්භය', desc: 'එකපාරටම අපි මේ ලෝකෙට එනවා. මේක අපි තෝරගෙන ආපු ගමනක් නෙවෙයි. ඒත් ගමන පටන් අරන් ඉවරයි.' },
+    { text: 'ළමා විය', desc: 'ලෝකය අලුත්. හැමදේම සුන්දරයි වගේ පේනවා. විවිධ දේවල් පස්සේ දුවනවා. මේ චක්‍රයේ පළමු පියවර.' },
+    { text: 'තරුණ විය', desc: 'බලාපොරොත්තු ගොඩක් එක්ක ජීවිතේ ගොඩනඟන්න හදනවා. ගොඩක් දේවල් කරනවා, අත්පත් කරගන්න උත්සාහ කරනවා.' },
+    { text: 'බැඳීම්', desc: 'විවිධ අය මුණගැහෙනවා, අපිට නමක් ලැබෙනවා, අපිව අඳුරන අය හැදෙනවා. බැඳීම් එක්ක ජීවිතේ තවත් සංකීර්ණ වෙනවා.' },
+    { text: 'වෙහෙස', desc: 'මේ ජීවිතේ අස්සේ ගොඩක් දේවල් කරනවා. සතුටු වෙනවා වගේම ගොඩක් දුකට පත්වෙනවා.' },
+    { text: 'මහලු විය', desc: 'කාලය ගෙවිලා ගිහින්. ශරීරය දුර්වල වෙනවා. සමහර වෙලාවට සම්පූර්ණ චක්‍රයම යන්නෙත් නෑ, ඉක්මනින් මේ ගමන ඉවර වෙනවා.' },
+    { text: 'රෝගී වීම', desc: 'වේදනාව. අවසානය ළඟා වෙන බව දැනෙනවා. රැස් කරපු කිසි දෙයක් අරගෙන යන්න බෑ කියලා තේරෙනවා.' },
+    { text: 'මරණය', desc: 'ආයෙත් නොපෙනී යනවා. ඉපදුණේ ඇයි දන්නේ නෑ, මැරිලා කොහෙටද යන්නේ කියලවත් දන්නේ නෑ. සම්පූර්ණයෙන්ම අවිනිශ්චිතයි.' },
+    { text: 'අනාථයි', desc: 'ආවේ කොහෙන්ද, යන්නේ කොහෙටද කියලා දන්නේ නෑ... සම්පූර්ණයෙන්ම අතරමං වෙලා. ඒ කියන්නේ ඇත්තටම අපි අනාථයි!' },
+    { text: 'සත්‍යය', desc: '"මේ මොකක්ද මට මේ වෙන්නේ?" යන්න තේරුම් ගැනීම පමණක්ම නේද අපි කළ යුත්තේ?' }
   ];
 
   return (
-    <div ref={containerRef} style={{ height: '1500vh', backgroundColor: 'var(--bg-main)', position: 'relative' }}>
+    <div ref={containerRef} style={{ height: '1500vh', backgroundColor: '#020202', position: 'relative' }}>
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        background: 'radial-gradient(circle at center, transparent 30%, #020202 100%)',
+        pointerEvents: 'none',
+        zIndex: 5
+      }} />
+
       <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden' }}>
-        
-        {/* WebGL Canvas for Cinematic Depth & Camera Flythrough */}
-        <Canvas camera={{ position: [0, 0, CAMERA_START_Z], fov: 60 }} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1 }}>
+        <Canvas 
+          camera={{ position: [0, 0, RADIUS + 15], fov: 45 }} 
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1 }}
+        >
+          <fog attach="fog" args={['#020202', 10, 40]} />
           <ambientLight intensity={1} />
           <Suspense fallback={null}>
-            {stages.map((stage, i) => (
-              <ImagePlane key={i} url={stage.img} index={i} />
-            ))}
-            <CameraFlyThrough scrollYProgress={scrollYProgress} totalStages={stages.length} />
+            <Carousel scrollYProgress={scrollYProgress} totalStages={stages.length} />
           </Suspense>
         </Canvas>
 
-        {/* Floating HTML Text Overlays synced with Camera Z */}
         {stages.map((stage, i) => (
           <StoryText 
             key={i}
@@ -187,7 +181,6 @@ export default function LifeCycleHero() {
           />
         ))}
 
-        {/* The Final Climax Black Screen */}
         <motion.div
           style={{
             position: 'absolute',
@@ -200,8 +193,8 @@ export default function LifeCycleHero() {
             justifyContent: 'center',
             alignItems: 'center',
             zIndex: 30,
-            opacity: useTransform(scrollYProgress, [0.94, 1], [0, 1]),
-            background: 'var(--bg-main)'
+            opacity: useTransform(scrollYProgress, [0.92, 1], [0, 1]),
+            background: '#000000'
           }}
         >
           <div style={{ textAlign: 'center', maxWidth: '900px', padding: '0 24px' }}>
