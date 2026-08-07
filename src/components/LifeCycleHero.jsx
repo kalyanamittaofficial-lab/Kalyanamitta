@@ -166,52 +166,116 @@ export default function LifeCycleHero() {
             top: 0,
             left: 0,
             width: '100%',
-          }}
-        >
-          <div style={{ textAlign: 'center', maxWidth: '900px', padding: '0 24px' }}>
-            <motion.h1 
-              style={{ 
-                color: 'var(--text-main)', 
-                fontSize: 'clamp(3.5rem, 7vw, 6rem)',
-                fontFamily: 'var(--font-serif)',
-                marginBottom: '1rem',
-                fontWeight: '800',
-                letterSpacing: '-0.03em'
-              }}
+            height: '100%',
+            background: 'radial-gradient(circle at center, transparent 30%, #000000 100%)',
+            pointerEvents: 'none',
+            zIndex: 5
+          }} />
+
+          <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden' }}>
+            <Canvas 
+              camera={{ position: [0, 0, RADIUS + 15], fov: 45 }} 
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1 }}
             >
-              ඉතින්, ඔබ කවුද?
-            </motion.h1>
+              <fog attach="fog" args={['#000000', 10, 40]} />
+              <ambientLight intensity={1} />
+              <Suspense fallback={null}>
+                <Carousel scrollYProgress={scrollYProgress} totalStages={stages.length} />
+              </Suspense>
+            </Canvas>
+
+            {stages.map((stage, i) => (
+              <StoryText 
+                key={i}
+                text={stage.text}
+                desc={stage.desc}
+                progress={scrollYProgress}
+                index={i}
+                total={stages.length}
+              />
+            ))}
+
             <motion.div
               style={{
-                color: 'var(--primary)',
-                fontSize: 'clamp(2.5rem, 5vw, 4rem)',
-                fontFamily: 'var(--font-sinhala)',
-                lineHeight: 1.2,
-                fontWeight: '800',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em'
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100vh',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                zIndex: 30,
+                opacity: useTransform(scrollYProgress, [0.92, 1], [0, 1]),
+                background: '#000000'
               }}
             >
-              ඔබ අනාථයෙක්!
+              <div style={{ textAlign: 'center', maxWidth: '900px', padding: '0 24px' }}>
+                <motion.h1 
+                  style={{ 
+                    color: '#ffffff', 
+                    fontSize: 'clamp(3rem, 7vw, 6rem)',
+                    fontFamily: 'var(--font-serif)',
+                    marginBottom: '1rem',
+                    fontWeight: '600',
+                    letterSpacing: '-0.02em'
+                  }}
+                >
+                  ඉතින්, ඔබ කවුද?
+                </motion.h1>
+                <motion.div
+                  style={{
+                    color: 'var(--primary)',
+                    fontSize: 'clamp(2rem, 4vw, 3rem)',
+                    fontFamily: 'var(--font-sinhala)',
+                    lineHeight: 1.2,
+                    fontWeight: '600',
+                    letterSpacing: '0.1em'
+                  }}
+                >
+                  ඔබ අනාථයෙක්!
+                </motion.div>
+                <motion.p
+                  style={{
+                    color: 'rgba(255,255,255,0.6)',
+                    fontSize: 'clamp(1rem, 2vw, 1.4rem)',
+                    fontFamily: 'var(--font-sinhala)',
+                    lineHeight: 1.8,
+                    marginTop: '3rem',
+                    fontWeight: '400',
+                    maxWidth: '600px',
+                    marginInline: 'auto'
+                  }}
+                >
+                  මෙය තේරුම් ගෙන, මේ සසර ගමනින් එතෙර වීමට මාර්ගය සොයා ගැනීම පමණක්ම ජීවිතයේ එකම අරමුණ කරගන්න...
+                </motion.p>
+              </div>
             </motion.div>
-            <motion.p
-              style={{
-                color: 'var(--text-muted)',
-                fontSize: '1.4rem',
-                fontFamily: 'var(--font-sinhala)',
-                lineHeight: 1.8,
-                marginTop: '3rem',
-                fontWeight: '500',
-                maxWidth: '600px',
-                marginInline: 'auto'
-              }}
-            >
-              මෙය තේරුම් ගෙන, මේ සසර ගමනින් එතෙර වීමට මාර්ගය සොයා ගැනීම පමණක්ම ජීවිතයේ එකම අරමුණ කරගන්න...
-            </motion.p>
           </div>
-        </motion.div>
-
+        </div>
       </div>
-    </div>
+
+      {/* FULL STORY SECTION (Respects Light/Dark mode) */}
+      <section className="py-24 bg-[var(--bg-main)] text-[var(--text-main)]">
+        <div className="max-w-4xl mx-auto px-6">
+          <h2 className="text-3xl md:text-5xl font-serif font-bold mb-16 text-center text-[var(--primary)]">
+            ජීවන චක්‍රයේ සත්‍යය
+          </h2>
+          <div className="space-y-12">
+            {stages.map((stage, i) => (
+              <div key={i} className="flex flex-col md:flex-row gap-4 border-b border-[var(--border-color)] pb-8">
+                <div className="md:w-1/3">
+                  <h3 className="text-2xl md:text-3xl font-serif font-semibold">{stage.text}</h3>
+                </div>
+                <div className="md:w-2/3 flex items-center">
+                  <p className="text-lg md:text-xl opacity-80 leading-relaxed font-sinhala">{stage.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
