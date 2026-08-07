@@ -152,19 +152,20 @@ export default function LifeCycleHero() {
              display: flex;
              flex-direction: column;
           }
-          .lc-stage-num {
-             color: var(--primary);
-             font-family: var(--font-serif);
-             font-size: 1.2rem;
-             opacity: 0.5;
-             letter-spacing: 0.2em;
-             margin-bottom: 0.5rem;
-          }
           .lc-stage h3 {
              font-family: var(--font-serif);
-             font-size: 2rem;
+             font-size: 2.2rem;
              font-weight: 700;
-             margin-bottom: 1rem;
+             margin-bottom: 1.5rem;
+             display: flex;
+             align-items: baseline;
+             gap: 1rem;
+          }
+          .lc-stage-num {
+             color: var(--primary);
+             font-size: 1.5rem;
+             opacity: 0.5;
+             font-weight: 400;
           }
           .lc-stage p {
              font-family: var(--font-sinhala);
@@ -204,6 +205,7 @@ export default function LifeCycleHero() {
           @media (min-width: 1024px) {
              .lc-hero-container {
                 flex-direction: row;
+                align-items: flex-start;
              }
              .lc-text-side {
                 width: 50%;
@@ -255,10 +257,10 @@ export default function LifeCycleHero() {
               viewport={{ once: true }}
               className="lc-intro"
             >
-               <h2>ජීවන චක්‍රයේ සත්‍යය</h2>
-               <p>
-                 අපි කවුද? කොහෙන්ද ආවේ? කොහෙටද යන්නේ? මේ සසර ගමනේ සැබෑ ස්වභාවය විමසා බලමු...
-               </p>
+               <h2>ඔබ කවුද කියලා ඔබ දන්නවාද?</h2>
+             <p>
+               අපි කවුද? කොහෙන්ද ආවේ? කොහෙටද යන්නේ? මේ සසර ගමනේ සැබෑ ස්වභාවය විමසා බලමු...
+             </p>
             </motion.div>
 
             <div className="lc-stages">
@@ -271,10 +273,10 @@ export default function LifeCycleHero() {
                   transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                   className="lc-stage"
                 >
-                  <div className="lc-stage-num">
-                     {String(i + 1).padStart(2, '0')} / {String(stages.length).padStart(2, '0')}
-                  </div>
-                  <h3>{stage.text}</h3>
+                  <h3>
+                  <span className="lc-stage-num">{String(i + 1).padStart(2, '0')}.</span>
+                  {stage.text}
+                </h3>
                   <p>{stage.desc}</p>
                 </motion.div>
               ))}
