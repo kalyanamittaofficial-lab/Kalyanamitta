@@ -2,10 +2,9 @@ import React, { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
 const StoryStage = ({ image, text, desc, progress, index, total }) => {
-  // Each stage occupies a fraction of the scroll
   const start = index / total;
   const end = (index + 1) / total;
-  const pad = 1 / (total * 4); // safely smaller than (end - start) / 2
+  const pad = 1 / (total * 4);
   
   const opacity = useTransform(
     progress,
@@ -16,7 +15,7 @@ const StoryStage = ({ image, text, desc, progress, index, total }) => {
   const scale = useTransform(
     progress,
     [start, end],
-    [1, 1.1]
+    [1, 1.15]
   );
 
   const y = useTransform(
@@ -51,7 +50,7 @@ const StoryStage = ({ image, text, desc, progress, index, total }) => {
           objectFit: 'contain',
           scale,
           zIndex: 1,
-          opacity: 0.6
+          opacity: 0.8
         }}
       />
       
@@ -59,18 +58,20 @@ const StoryStage = ({ image, text, desc, progress, index, total }) => {
         position: 'relative',
         zIndex: 10,
         textAlign: 'center',
-        padding: '0 24px',
+        padding: '32px',
         maxWidth: '800px',
-        background: 'radial-gradient(circle, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 70%)',
-        borderRadius: '20px'
+        background: 'var(--glass-bg)',
+        backdropFilter: 'blur(12px)',
+        borderRadius: '24px',
+        border: '1px solid var(--glass-border)',
+        boxShadow: '0 10px 40px rgba(0,0,0,0.05)'
       }}>
         <motion.h2 
           style={{ 
             fontSize: 'clamp(2.5rem, 5vw, 4rem)', 
-            color: '#fff', 
+            color: 'var(--primary)', 
             fontFamily: 'var(--font-serif)', 
             margin: '0 0 24px 0', 
-            textShadow: '0 4px 20px rgba(0,0,0,0.9)',
             y
           }}
         >
@@ -78,12 +79,12 @@ const StoryStage = ({ image, text, desc, progress, index, total }) => {
         </motion.h2>
         <motion.p
           style={{ 
-            color: 'rgba(255,255,255,0.85)', 
+            color: 'var(--text-main)', 
             fontSize: '1.4rem', 
             fontFamily: 'var(--font-sinhala)', 
             margin: 0, 
             lineHeight: 1.8,
-            textShadow: '0 2px 10px rgba(0,0,0,0.8)',
+            fontWeight: '500',
             y
           }}
         >
@@ -150,26 +151,26 @@ export default function LifeCycleHero() {
     {
       img: '/lifeCycle/10.png',
       text: 'අනාථයි',
-      desc: 'ඉතින් ඔබ කවුද? ඇත්තටම බැලුවොත්... මම අනාථයෙක්. ආවේ කොහෙන්ද, යන්නේ කොහෙටද දන්නේ නැති අනාථයෙක්.'
+      desc: 'ආවේ කොහෙන්ද, යන්නේ කොහෙටද කියලා දන්නේ නෑ... සම්පූර්ණයෙන්ම අතරමං වෙලා. ඒ කියන්නේ ඇත්තටම අපි අනාථයි!'
     },
     {
       img: '/lifeCycle/11.png',
       text: 'සෙවීම',
-      desc: 'හැමෝම විවිධ දේවල් කරනවා. හැබැයි ඇත්තටම හොයන්න ඕනේ දේ මොකක්ද?'
+      desc: 'සෑම දෙයක්ම මේතරම් අවිනිශ්චිත නම්, අපි මේ ජීවිතේ ඇතුළේ ඇත්තටම හොයන්න ඕනේ මොකක්ද?'
     },
     {
       img: '/lifeCycle/12.png',
       text: 'සත්‍යය',
-      desc: '"මේ මොකක්ද මට මේ වෙන්නේ?" කියන එක නේද අපි ඇත්තටම හොයන්න ඕනේ?'
+      desc: '"මේ මොකක්ද මට මේ වෙන්නේ?" යන්න තේරුම් ගැනීම පමණක්ම නේද අපි කළ යුත්තේ?'
     }
   ];
 
   return (
-    <div ref={containerRef} style={{ height: '1200vh', backgroundColor: '#050505', position: 'relative' }}>
+    <div ref={containerRef} style={{ height: '1200vh', backgroundColor: 'var(--bg-main)', position: 'relative' }}>
       <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden' }}>
         
-        {/* Particle/Starry Background subtle effect */}
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'radial-gradient(circle at center, #1a1a1a 0%, #050505 100%)', zIndex: 0 }} />
+        {/* Background gradient utilizing CSS variables for theme matching */}
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'var(--bg-main)', zIndex: 0 }} />
 
         {stages.map((stage, i) => (
           <StoryStage 
@@ -196,31 +197,44 @@ export default function LifeCycleHero() {
             justifyContent: 'center',
             alignItems: 'center',
             zIndex: 20,
-            opacity: useTransform(scrollYProgress, [0.93, 1], [0, 1]),
-            background: '#000'
+            opacity: useTransform(scrollYProgress, [0.94, 1], [0, 1]),
+            background: 'var(--bg-main)' // Solid theme background
           }}
         >
-          <div style={{ textAlign: 'center', maxWidth: '800px', padding: '0 24px' }}>
+          <div style={{ textAlign: 'center', maxWidth: '900px', padding: '40px', background: 'var(--glass-bg)', backdropFilter: 'blur(20px)', borderRadius: '30px', border: '1px solid var(--glass-border)' }}>
             <motion.h1 
               style={{ 
-                color: '#fff', 
-                fontSize: 'clamp(3rem, 6vw, 5rem)',
+                color: 'var(--primary)', 
+                fontSize: 'clamp(3.5rem, 7vw, 6rem)',
                 fontFamily: 'var(--font-serif)',
-                marginBottom: '2rem'
+                marginBottom: '1rem',
+                fontWeight: '800'
               }}
             >
-              ඔබ කවුද?
+              ඉතින්, ඔබ කවුද?
             </motion.h1>
+            <motion.div
+              style={{
+                color: 'var(--text-main)',
+                fontSize: '2rem',
+                fontFamily: 'var(--font-sinhala)',
+                lineHeight: 1.6,
+                fontWeight: '700'
+              }}
+            >
+              ඔබ අනාථයෙක්!
+            </motion.div>
             <motion.p
               style={{
-                color: '#aaa',
-                fontSize: '1.5rem',
+                color: 'var(--text-muted)',
+                fontSize: '1.4rem',
                 fontFamily: 'var(--font-sinhala)',
-                lineHeight: 1.8
+                lineHeight: 1.8,
+                marginTop: '2rem',
+                fontWeight: '500'
               }}
             >
-              මේ සියල්ල තේරුම් ගන්න... <br/>
-              ඔබට තවමත් කාලය තිබේ.
+              මෙය තේරුම් ගෙන, මේ සසර ගමනින් එතෙර වීමට මාර්ගය සොයා ගැනීම පමණක්ම ජීවිතයේ එකම අරමුණ කරගන්න...
             </motion.p>
           </div>
         </motion.div>
