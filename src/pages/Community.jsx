@@ -11,83 +11,113 @@ export default function Community() {
         }
         .cm-hero {
           width: 100%;
-          padding: 12rem 2rem 6rem;
+          padding: 8rem 2rem 4rem;
           text-align: center;
           position: relative;
         }
         .cm-hero h1 {
           font-family: var(--font-serif);
-          font-size: clamp(3.5rem, 8vw, 6rem);
+          font-size: clamp(3rem, 8vw, 5rem);
           font-weight: 700;
           color: var(--primary);
-          margin-bottom: 2rem;
+          margin-bottom: 1.5rem;
           letter-spacing: 0.05em;
         }
         .cm-hero-subtitle {
           font-family: var(--font-sinhala);
-          font-size: clamp(1.2rem, 3vw, 1.8rem);
+          font-size: clamp(1.1rem, 3vw, 1.5rem);
           opacity: 0.7;
           max-width: 800px;
           margin: 0 auto;
-          line-height: 1.8;
+          line-height: 1.6;
         }
+        
         .cm-split-section {
           display: flex;
           flex-direction: column;
           width: 100%;
-          padding: 4rem 2rem;
-          gap: 4rem;
+          padding: 2rem 1.5rem 4rem;
+          gap: 3rem;
         }
         .cm-quote-side {
-          flex: 1.2;
+          flex: 1;
           display: flex;
           flex-direction: column;
-          justify-content: center;
         }
         .cm-quote-pali {
-          font-family: var(--font-sinhala);
-          font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+          font-family: var(--font-serif);
+          font-size: clamp(2rem, 6vw, 3rem);
           font-weight: 700;
-          line-height: 1.4;
-          color: var(--text-main);
-          margin-bottom: 2.5rem;
+          line-height: 1.3;
+          color: var(--primary);
+          margin-bottom: 1.5rem;
           opacity: 0.9;
         }
         .cm-quote-sinhala {
           font-family: var(--font-sinhala);
-          font-size: clamp(1.2rem, 2vw, 1.6rem);
-          color: var(--primary);
+          font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+          color: var(--text-main);
           font-weight: 500;
-          line-height: 1.8;
-          padding-left: 2rem;
-          border-left: 3px solid var(--primary);
+          line-height: 1.6;
+          padding-left: 1.2rem;
+          border-left: 2px solid var(--primary);
         }
         .cm-content-side {
-          flex: 1;
+          flex: 1.2;
           display: flex;
           flex-direction: column;
-          justify-content: center;
           font-family: var(--font-sinhala);
-          font-size: clamp(1.2rem, 1.8vw, 1.5rem);
-          line-height: 2;
-          opacity: 0.8;
+          font-size: clamp(1.1rem, 2vw, 1.3rem);
+          line-height: 1.8;
+          opacity: 0.85;
           gap: 2rem;
         }
+        
         .cm-divider {
           width: 1px;
-          height: 100px;
+          height: 80px;
           background: var(--glass-border);
-          margin: 8rem auto;
+          margin: 4rem auto;
         }
+
+        .cm-scroll-spacer {
+           display: none;
+        }
+
         @media (min-width: 1024px) {
+          .cm-hero {
+            padding: 12rem 4rem 6rem;
+          }
           .cm-split-section {
             flex-direction: row;
-            padding: 8rem 6rem;
-            gap: 8rem;
-            align-items: center;
+            padding: 4rem 6rem 8rem;
+            gap: 6rem;
+            align-items: flex-start;
           }
-          .cm-hero {
-            padding: 14rem 4rem 8rem;
+          .cm-quote-side {
+            position: sticky;
+            top: 140px;
+            height: fit-content;
+          }
+          .cm-quote-pali {
+            font-size: 3.5rem;
+          }
+          .cm-quote-sinhala {
+            border-left: 3px solid var(--primary);
+            padding-left: 2rem;
+            font-size: 1.4rem;
+          }
+          .cm-content-side {
+            padding-top: 1rem;
+            gap: 3rem;
+          }
+          .cm-scroll-spacer {
+             display: block;
+             height: 20vh;
+          }
+          .cm-divider {
+             margin: 6rem auto;
+             height: 120px;
           }
         }
       `}</style>
@@ -112,46 +142,64 @@ export default function Community() {
         </div>
 
         <div className="cm-split-section">
-          <motion.div 
-            className="cm-quote-side"
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="cm-quote-pali">
+          <div className="cm-quote-side">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-10%" }}
+              transition={{ duration: 0.8 }}
+              className="cm-quote-pali"
+            >
               "සකලමේව හිදං ආනන්ද, බ්‍රහ්මචරියං යදිදං කල්‍යාණමිත්තතා..."
-            </div>
-            <div className="cm-quote-sinhala">
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-10%" }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="cm-quote-sinhala"
+            >
               "ආනන්දය, එසේ නොකියන්න. එසේ නොකියන්න. බ්‍රහ්මචරියාවේ අඩක් පමණක් නොව, මුළු බ්‍රහ්මචරියාවම කල්‍යාණ මිත්‍රත්වය මත රඳා පවතී."
-              <div style={{ marginTop: '1.5rem', fontSize: '1rem', opacity: 0.6, fontWeight: 400, letterSpacing: '0.05em' }}>
+              <div style={{ marginTop: '1.2rem', fontSize: '0.9rem', opacity: 0.6, fontWeight: 400, letterSpacing: '0.05em' }}>
                 — උපද්ධ සූත්‍රය (සංයුත්ත නිකාය)
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
 
-          <motion.div 
-            className="cm-content-side"
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            <p>
+          <div className="cm-content-side">
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-15%" }}
+              transition={{ duration: 0.8 }}
+            >
               බුදුරජාණන් වහන්සේට අනුව කල්‍යාණ මිත්‍රයෙකු යනු සාමාන්‍ය යහළුවෙකු නොවේ.
-            </p>
-            <p>
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-15%" }}
+              transition={{ duration: 0.8 }}
+            >
               ඔබගේ ලෞකික ජීවිතය දියුණු කරන පුද්ගලයෙකුට වඩා, දුකින් මිදෙන මාර්ගය පෙන්වන පුද්ගලයා කල්‍යාණ මිත්‍රයෙකි. ඔහු ඔබ වෙනුවෙන් නිවන් ලබා දිය නොහැක. නමුත්, ඔබට සත්‍යය දැකගත හැකි මාර්ගය පෙන්වා දිය හැක.
-            </p>
-            <p style={{ color: 'var(--primary)', fontWeight: 500, fontSize: '1.1em', marginTop: '1rem' }}>
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-15%" }}
+              transition={{ duration: 0.8 }}
+              style={{ color: 'var(--primary)', fontWeight: 500, fontSize: '1.1em', marginTop: '0.5rem' }}
+            >
               අඳුරු මාර්ගයකදී පහනක් මෙන්, නොමඟ යන විට දිශාව පෙන්වන මඟපෙන්වන්නෙකු මෙන්, කල්‍යාණ මිත්‍රයා ඔබව ධර්මය දෙසට යොමු කරයි.
-            </p>
-          </motion.div>
+            </motion.p>
+
+            <div className="cm-scroll-spacer"></div>
+          </div>
         </div>
 
         <div className="cm-divider" />
 
-        <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 2rem 12rem', display: 'flex', flexDirection: 'column', gap: '8rem' }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 2rem 10rem', display: 'flex', flexDirection: 'column', gap: '6rem' }}>
           <SimpleSection title="අප 'Kalyanamitta' යන නාමය තෝරාගත්තේ ඇයි?" />
           <SimpleSection title="නිවන් දැකීමේ අවශ්‍යතාවය කුමක් ද?" />
           <SimpleSection title="නිවන් දකින්නට කල්‍යාණ මිත්‍රයෙකු වැදගත් වන්නේ ඇයි?" />
@@ -172,19 +220,19 @@ const SimpleSection = ({ title, children }) => (
     style={{ textAlign: 'center' }}
   >
     <h2 style={{ 
-      fontSize: 'clamp(2rem, 4vw, 3rem)', 
+      fontSize: 'clamp(1.8rem, 4vw, 2.5rem)', 
       fontFamily: 'var(--font-serif)', 
       fontWeight: '600', 
       color: 'var(--text-main)', 
-      marginBottom: '2rem',
+      marginBottom: '1.5rem',
       lineHeight: '1.4'
     }}>
       {title}
     </h2>
     <div style={{ 
       fontFamily: 'var(--font-sinhala)', 
-      fontSize: '1.2rem', 
-      lineHeight: '2', 
+      fontSize: '1.1rem', 
+      lineHeight: '1.8', 
       color: 'var(--text-main)', 
       fontWeight: '400',
       opacity: 0.7
