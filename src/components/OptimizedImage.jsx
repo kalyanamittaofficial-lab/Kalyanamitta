@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function OptimizedImage({ src, alt, style, className }) {
+export default function OptimizedImage({ src, alt, style, className, imgStyle }) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
 
@@ -37,7 +37,8 @@ export default function OptimizedImage({ src, alt, style, className }) {
             position: 'absolute',
             top: 0,
             left: 0,
-            zIndex: 2
+            zIndex: 2,
+            ...imgStyle
           }}
         />
       ) : (

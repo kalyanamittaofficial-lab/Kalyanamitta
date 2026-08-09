@@ -63,9 +63,15 @@ export default function SingleBlog() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            style={{ width: '100%', height: '400px', borderRadius: '24px', overflow: 'hidden', marginBottom: '3rem', boxShadow: '0 20px 40px rgba(0,0,0,0.1)', position: 'relative' }}
+            className="single-blog-cover-wrapper"
           >
-            <OptimizedImage src={blog.cover} alt={blog.title} />
+            <OptimizedImage 
+              src={blog.cover} 
+              alt={blog.title} 
+              className="single-blog-cover-img"
+              style={{ position: 'relative', height: 'auto', display: 'flex' }}
+              imgStyle={{ position: 'relative', height: 'auto', objectFit: 'contain' }}
+            />
           </motion.div>
         )}
 
@@ -106,8 +112,13 @@ export default function SingleBlog() {
                   <blockquote style={{ borderLeft: '4px solid var(--primary)', paddingLeft: '1.5rem', margin: '2rem 0', fontStyle: 'italic', opacity: 0.8 }} {...props} />
                 ),
                 img: ({node, ...props}) => (
-                  <div style={{ width: '100%', borderRadius: '12px', overflow: 'hidden', margin: '2rem 0', display: 'block', position: 'relative', minHeight: '300px' }}>
-                     <OptimizedImage src={props.src} alt={props.alt} style={{ width: '100%', height: 'auto', position: 'static' }} />
+                  <div style={{ width: '100%', borderRadius: '12px', overflow: 'hidden', margin: '2rem 0', display: 'block', position: 'relative' }}>
+                     <OptimizedImage 
+                       src={props.src} 
+                       alt={props.alt} 
+                       style={{ position: 'relative', height: 'auto', display: 'flex' }}
+                       imgStyle={{ position: 'relative', height: 'auto', objectFit: 'contain' }}
+                     />
                   </div>
                 ),
               }}
@@ -117,6 +128,37 @@ export default function SingleBlog() {
           </div>
         </motion.div>
       </div>
+
+      <style>{`
+        .single-blog-cover-wrapper {
+          width: 100%;
+          border-radius: 8px; /* Academic style is sharper */
+          overflow: hidden;
+          margin-bottom: 3rem;
+          border: 1px solid var(--glass-border);
+          position: relative;
+          background: rgba(128,128,128,0.05);
+          /* Height is auto to prevent cropping */
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        /* Make markdown images also responsive and non-cropped */
+        .blog-content img {
+          width: 100%;
+          height: auto;
+          border-radius: 8px;
+          object-fit: contain;
+        }
+
+        @media (max-width: 768px) {
+          .single-blog-cover-wrapper {
+            margin-bottom: 2rem;
+            border-radius: 4px;
+          }
+        }
+      `}</style>
     </div>
   );
 }
