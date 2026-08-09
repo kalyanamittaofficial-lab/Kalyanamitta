@@ -10,7 +10,7 @@ export default function BookReader() {
   const [book, setBook] = useState(null);
   
   // Reader Settings State
-  const [fontSize, setFontSize] = useState(1.4);
+  const [fontSize, setFontSize] = useState(1.8);
   const [lineHeight, setLineHeight] = useState(2.2);
   const [theme, setTheme] = useState('sepia'); // 'dark' | 'sepia' | 'light'
   
@@ -261,23 +261,24 @@ export default function BookReader() {
         {/* Center: Book Title & Author (Premium Style) */}
         <div style={{ flex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
           <h1 style={{ 
-            fontSize: '1.2rem', 
+            fontSize: '1.6rem', 
             fontFamily: 'var(--font-serif)', 
-            color: theme === 'dark' ? 'var(--gold-primary)' : currentTheme.text,
+            color: theme === 'dark' ? 'var(--gold-primary)' : 'var(--primary)',
             margin: 0,
-            letterSpacing: '0.02em',
-            fontWeight: '500'
+            letterSpacing: '0.05em',
+            fontWeight: '600'
           }}>
             {book.title}
           </h1>
           <span style={{ 
-            fontSize: '0.75rem', 
-            fontFamily: 'var(--font-sinhala)', 
+            fontSize: '0.8rem', 
+            fontFamily: 'var(--font-sans)', 
             color: currentTheme.text, 
-            opacity: 0.6,
-            letterSpacing: '0.1em',
-            marginTop: '2px',
-            textTransform: 'uppercase'
+            opacity: 0.7,
+            letterSpacing: '0.15em',
+            marginTop: '4px',
+            textTransform: 'uppercase',
+            fontWeight: '500'
           }}>
             {book.author}
           </span>
@@ -519,7 +520,7 @@ export default function BookReader() {
             }}>
               පටුන (Table of Contents)
             </h3>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
               {book.content && book.content.map((sec, i) => (
                 <li key={sec.id || i}>
                   <button 
@@ -529,19 +530,31 @@ export default function BookReader() {
                     style={{
                       background: 'transparent',
                       border: 'none',
+                      borderLeft: '3px solid transparent',
                       textAlign: 'left',
                       fontFamily: 'var(--font-sinhala)',
-                      fontSize: '1.1rem',
+                      fontSize: '1.15rem',
                       color: currentTheme.text,
-                      opacity: 0.7,
+                      opacity: 0.75,
                       cursor: 'pointer',
                       transition: 'all 0.2s',
-                      padding: '8px 0',
-                      borderBottom: `1px solid ${currentTheme.border}`,
-                      width: '100%'
+                      padding: '10px 16px',
+                      borderRadius: '0 8px 8px 0',
+                      width: '100%',
+                      fontWeight: '500'
                     }}
-                    onMouseEnter={(e) => { e.target.style.opacity = 1; e.target.style.color = 'var(--primary)'; }}
-                    onMouseLeave={(e) => { e.target.style.opacity = 0.7; e.target.style.color = currentTheme.text; }}
+                    onMouseEnter={(e) => { 
+                      e.target.style.opacity = 1; 
+                      e.target.style.color = 'var(--primary)'; 
+                      e.target.style.background = 'rgba(128,128,128,0.08)';
+                      e.target.style.borderLeft = '3px solid var(--primary)';
+                    }}
+                    onMouseLeave={(e) => { 
+                      e.target.style.opacity = 0.75; 
+                      e.target.style.color = currentTheme.text; 
+                      e.target.style.background = 'transparent';
+                      e.target.style.borderLeft = '3px solid transparent';
+                    }}
                   >
                     {sec.title}
                   </button>
@@ -578,7 +591,7 @@ export default function BookReader() {
                         {secIndex !== 0 && (
                           <div style={{ color: theme === 'dark' ? 'var(--gold-primary)' : 'var(--primary)', opacity: 0.5, marginBottom: '8px', letterSpacing: '0.2em' }}>✧ ✧ ✧</div>
                         )}
-                        <h2 style={{ fontSize: `${fontSize * 1.5}rem`, color: theme === 'dark' ? 'var(--gold-primary)' : currentTheme.text, margin: 0, fontWeight: '600' }}>
+                        <h2 style={{ fontSize: `${fontSize * 1.5}rem`, color: theme === 'dark' ? 'var(--gold-primary)' : 'var(--primary)', margin: 0, fontWeight: '600' }}>
                           {section.title}
                         </h2>
                       </motion.div>
@@ -898,7 +911,7 @@ export default function BookReader() {
                     )}
                     <h2 style={{ 
                       fontSize: `${fontSize * 1.5}rem`,
-                      color: theme === 'dark' ? 'var(--gold-primary)' : currentTheme.text,
+                      color: theme === 'dark' ? 'var(--gold-primary)' : 'var(--primary)',
                       margin: 0,
                       fontWeight: '600'
                     }}>
