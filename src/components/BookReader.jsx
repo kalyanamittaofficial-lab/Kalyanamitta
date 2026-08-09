@@ -522,7 +522,7 @@ export default function BookReader() {
             </h3>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
               {book.content && book.content.map((sec, i) => (
-                <li key={sec.id || i}>
+                <li key={sec.id || i} style={{ display: 'flex', flexDirection: 'column' }}>
                   <button 
                     onClick={() => {
                       document.getElementById(`section-${sec.id || i}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -558,6 +558,47 @@ export default function BookReader() {
                   >
                     {sec.title}
                   </button>
+                  {sec.type === 'interactive-options' && sec.options && (
+                    <div style={{ display: 'flex', flexDirection: 'column', paddingLeft: '1.5rem', marginTop: '0.2rem', gap: '0.2rem' }}>
+                      {sec.options.map(opt => {
+                        const isOptSelected = (selectedOptions[sec.id] || sec.options[0].id) === opt.id;
+                        return (
+                          <button
+                            key={opt.id}
+                            onClick={() => {
+                              handleOptionToggle(sec.id, opt.id);
+                              setTimeout(() => {
+                                document.getElementById(`section-${sec.id || i}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                              }, 100);
+                            }}
+                            style={{
+                              background: 'transparent',
+                              border: 'none',
+                              borderLeft: isOptSelected ? `2px solid var(--primary)` : '2px solid transparent',
+                              textAlign: 'left',
+                              fontFamily: 'var(--font-sinhala)',
+                              fontSize: '1rem',
+                              color: isOptSelected ? 'var(--primary)' : currentTheme.text,
+                              opacity: isOptSelected ? 1 : 0.6,
+                              cursor: 'pointer',
+                              transition: 'all 0.2s',
+                              padding: '6px 12px',
+                              borderRadius: '0 6px 6px 0',
+                              fontWeight: isOptSelected ? '600' : '400',
+                            }}
+                            onMouseEnter={(e) => { e.target.style.opacity = 1; e.target.style.color = 'var(--primary)'; e.target.style.background = 'rgba(128,128,128,0.05)'; }}
+                            onMouseLeave={(e) => { 
+                              e.target.style.opacity = isOptSelected ? 1 : 0.6; 
+                              e.target.style.color = isOptSelected ? 'var(--primary)' : currentTheme.text; 
+                              e.target.style.background = 'transparent';
+                            }}
+                          >
+                            - {opt.title}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
