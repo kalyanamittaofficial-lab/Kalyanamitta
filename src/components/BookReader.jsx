@@ -193,8 +193,8 @@ export default function BookReader() {
 
   const themeStyles = {
     dark: { bg: '#060709', text: '#f0ebd8', topbar: 'rgba(6,7,9,0.98)', menuBg: '#11141a', border: 'rgba(255,255,255,0.1)' },
-    sepia: { bg: '#f4ebd8', text: '#3b2f2f', topbar: 'rgba(244,235,216,0.98)', menuBg: '#ebe1ce', border: 'rgba(0,0,0,0.08)' },
-    light: { bg: '#faf9f6', text: '#1a1a1a', topbar: 'rgba(250,249,246,0.98)', menuBg: '#f0efe9', border: 'rgba(0,0,0,0.06)' }
+    sepia: { bg: '#FDFBF7', text: '#2C2A29', topbar: 'rgba(253,251,247,0.98)', menuBg: '#F5F2EB', border: 'rgba(0,0,0,0.06)' },
+    light: { bg: '#ffffff', text: '#1a1a1a', topbar: 'rgba(255,255,255,0.98)', menuBg: '#f8f9fa', border: 'rgba(0,0,0,0.06)' }
   };
 
   const currentTheme = themeStyles[theme];
@@ -451,30 +451,106 @@ export default function BookReader() {
       {/* Clean, Distraction-Free Reading Area */}
       <div style={{ 
         flex: 1, 
-        padding: '140px 5vw 40px 5vw', 
+        padding: '120px 5vw 40px 5vw', 
         display: 'flex', 
         justifyContent: 'center' 
       }}>
-        <article style={{
-          width: '100%',
-          maxWidth: '1200px', 
-          fontFamily: 'var(--font-serif)',
-          fontSize: `${fontSize}rem`,
-          lineHeight: lineHeight,
-          letterSpacing: '0.02em',
-          color: currentTheme.text,
-          transition: 'font-size 0.2s ease, line-height 0.2s ease'
-        }}>
-          
-          {/* Main Content - Clean Chanting Format */}
-          <div style={{ opacity: 0.9 }}>
+        <style>{`
+          .global-layout {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1400px;
+          }
+          @media (min-width: 1024px) {
+            .global-layout {
+              flex-direction: row;
+              gap: 4rem;
+            }
+            .global-sidebar {
+              width: 300px;
+              flex-shrink: 0;
+              position: sticky;
+              top: 140px;
+              height: calc(100vh - 160px);
+              overflow-y: auto;
+              border-right: 1px solid ${currentTheme.border};
+              padding-right: 2rem;
+              padding-bottom: 2rem;
+              scrollbar-width: none;
+            }
+            .global-sidebar::-webkit-scrollbar {
+              display: none;
+            }
+            .global-content {
+              flex: 1;
+              max-width: 850px;
+            }
+          }
+        `}</style>
+        
+        <div className="global-layout">
+          {/* Global Table of Contents */}
+          <nav className="global-sidebar hide-on-mobile">
+            <h3 style={{ 
+              fontSize: '0.9rem', 
+              textTransform: 'uppercase', 
+              letterSpacing: '0.15em', 
+              color: 'var(--primary)', 
+              marginBottom: '2rem',
+              fontWeight: '600',
+              fontFamily: 'var(--font-sans)'
+            }}>
+              පටුන (Table of Contents)
+            </h3>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+              {book.content && book.content.map((sec, i) => (
+                <li key={sec.id || i}>
+                  <button 
+                    onClick={() => {
+                      document.getElementById(`section-${sec.id || i}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      textAlign: 'left',
+                      fontFamily: 'var(--font-sinhala)',
+                      fontSize: '1.1rem',
+                      color: currentTheme.text,
+                      opacity: 0.7,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      padding: '8px 0',
+                      borderBottom: `1px solid ${currentTheme.border}`,
+                      width: '100%'
+                    }}
+                    onMouseEnter={(e) => { e.target.style.opacity = 1; e.target.style.color = 'var(--primary)'; }}
+                    onMouseLeave={(e) => { e.target.style.opacity = 0.7; e.target.style.color = currentTheme.text; }}
+                  >
+                    {sec.title}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Main Content Area */}
+          <article className="global-content" style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: `${fontSize}rem`,
+            lineHeight: lineHeight,
+            letterSpacing: '0.02em',
+            color: currentTheme.text,
+            transition: 'font-size 0.2s ease, line-height 0.2s ease'
+          }}>
+            <div style={{ opacity: 0.9 }}>
             {book.content && book.content.length > 0 ? (
               book.content.map((section, secIndex) => {
                 if (section.type === 'pirith-router') {
                   const currentSelection = pirithSelections[section.id];
                   
                   return (
-                    <div key={section.id || secIndex} ref={el => interactiveRefs.current[section.id] = el} style={{ marginTop: '80px', marginBottom: '80px', maxWidth: '700px', margin: '80px auto' }}>
+                    <div id={`section-${section.id || secIndex}`} key={section.id || secIndex} ref={el => interactiveRefs.current[section.id] = el} style={{ marginTop: '80px', marginBottom: '80px', maxWidth: '850px', margin: '40px auto' }}>
                       {/* Section Title */}
                       <motion.div 
                         initial={{ opacity: 0, y: 20 }}
@@ -652,7 +728,7 @@ export default function BookReader() {
                   const activeOptData = section.options.find(o => o.id === activeOptId);
 
                   return (
-                    <div key={section.id || secIndex} ref={el => interactiveRefs.current[section.id] = el} style={{ marginTop: '80px', marginBottom: '80px', width: '100%' }}>
+                    <div id={`section-${section.id || secIndex}`} key={section.id || secIndex} ref={el => interactiveRefs.current[section.id] = el} style={{ marginTop: '80px', marginBottom: '80px', width: '100%', maxWidth: '850px', margin: '40px auto' }}>
                       <style>{`
                         .br-split-${section.id} {
                           display: flex;
@@ -669,28 +745,6 @@ export default function BookReader() {
                         }
                         .br-nav-${section.id}::-webkit-scrollbar {
                           display: none;
-                        }
-                        @media (min-width: 1024px) {
-                          .br-split-${section.id} {
-                            flex-direction: row;
-                            gap: 6rem;
-                            align-items: flex-start;
-                          }
-                          .br-nav-${section.id} {
-                            flex: 1;
-                            flex-direction: column;
-                            position: sticky;
-                            top: 140px;
-                            max-width: 320px;
-                            border-right: 1px solid ${currentTheme.border};
-                            padding-right: 2rem;
-                            max-height: calc(100vh - 160px);
-                            overflow-y: auto;
-                          }
-                          .br-content-${section.id} {
-                            flex: 2;
-                            max-width: 750px;
-                          }
                         }
                       `}</style>
 
@@ -805,7 +859,7 @@ export default function BookReader() {
                 }
 
                 return (
-                  <div key={section.id || secIndex} style={{ maxWidth: '700px', margin: '0 auto' }}>
+                  <div id={`section-${section.id || secIndex}`} key={section.id || secIndex} style={{ maxWidth: '850px', margin: '40px auto' }}>
                   {/* Section Title */}
                   <motion.div 
                     initial={{ opacity: 0, y: 20 }}
