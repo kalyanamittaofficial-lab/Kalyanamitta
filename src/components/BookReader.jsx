@@ -55,7 +55,17 @@ export default function BookReader() {
   const interactiveRefs = useRef({});
 
   const handleOptionToggle = (sectionId, optionId) => {
-    setSelectedOptions(prev => ({ ...prev, [sectionId]: [optionId] }));
+    setSelectedOptions(prev => {
+      const section = book.content.find(s => s.id === sectionId);
+      const allOptionIds = section?.options?.map(o => o.id) || [];
+      const current = prev[sectionId] || allOptionIds; // Default to all selected
+      
+      if (current.includes(optionId)) {
+        return { ...prev, [sectionId]: current.filter(id => id !== optionId) };
+      } else {
+        return { ...prev, [sectionId]: [...current, optionId] };
+      }
+    });
   };
 
   const renderContentItem = (item, itemIndex, prefix = '') => {
@@ -590,36 +600,41 @@ export default function BookReader() {
                   {sec.type === 'interactive-options' && sec.options && (
                     <div style={{ display: 'flex', flexDirection: 'column', paddingLeft: '1.5rem', marginTop: '0.2rem', gap: '0.2rem' }}>
                       {sec.options.map(opt => {
-                        const isOptSelected = (selectedOptions[sec.id] || sec.options[0].id) === opt.id;
+                        const currentSelected = selectedOptions[sec.id] || sec.options.map(o => o.id);
+                        const isOptSelected = currentSelected.includes(opt.id);
+                        const isActiveSub = activeSectionId === `${sec.id}-opt-${opt.id}`;
+                        
                         return (
                           <button
                             key={opt.id}
                             onClick={() => {
-                              handleOptionToggle(sec.id, opt.id);
+                              if (!isOptSelected) {
+                                handleOptionToggle(sec.id, opt.id);
+                              }
                               setTimeout(() => {
-                                document.getElementById(`section-${sec.id || i}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                              }, 100);
+                                document.getElementById(`section-${sec.id}-opt-${opt.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                              }, 150);
                             }}
                             style={{
-                              background: 'transparent',
+                              background: isActiveSub ? 'rgba(128,128,128,0.08)' : 'transparent',
                               border: 'none',
-                              borderLeft: isOptSelected ? `2px solid var(--primary)` : '2px solid transparent',
+                              borderLeft: isActiveSub ? `2px solid var(--primary)` : '2px solid transparent',
                               textAlign: 'left',
                               fontFamily: 'var(--font-sinhala)',
                               fontSize: '1rem',
-                              color: isOptSelected ? 'var(--primary)' : currentTheme.text,
-                              opacity: isOptSelected ? 1 : 0.6,
+                              color: isOptSelected ? (isActiveSub ? 'var(--primary)' : currentTheme.text) : currentTheme.text,
+                              opacity: isOptSelected ? 1 : 0.4,
                               cursor: 'pointer',
                               transition: 'all 0.2s',
                               padding: '6px 12px',
                               borderRadius: '0 6px 6px 0',
-                              fontWeight: isOptSelected ? '600' : '400',
+                              fontWeight: isActiveSub ? '600' : (isOptSelected ? '500' : '400'),
                             }}
                             onMouseEnter={(e) => { e.target.style.opacity = 1; e.target.style.color = 'var(--primary)'; e.target.style.background = 'rgba(128,128,128,0.05)'; }}
                             onMouseLeave={(e) => { 
-                              e.target.style.opacity = isOptSelected ? 1 : 0.6; 
-                              e.target.style.color = isOptSelected ? 'var(--primary)' : currentTheme.text; 
-                              e.target.style.background = 'transparent';
+                              e.target.style.opacity = isOptSelected ? 1 : 0.4; 
+                              e.target.style.color = isOptSelected ? (isActiveSub ? 'var(--primary)' : currentTheme.text) : currentTheme.text; 
+                              e.target.style.background = isActiveSub ? 'rgba(128,128,128,0.08)' : 'transparent';
                             }}
                           >
                             - {opt.title}
@@ -822,9 +837,8 @@ export default function BookReader() {
                 }
 
                 if (section.type === 'interactive-options') {
-                  const currentSelected = selectedOptions[section.id] || [];
-                  const activeOptId = currentSelected.length > 0 ? currentSelected[0] : section.options[0]?.id;
-                  const activeOptData = section.options.find(o => o.id === activeOptId);
+                  const currentSelected = selectedOptions[section.id] || section.options.map(o => o.id);
+                  const selectedOptionsData = section.options.filter(o => currentSelected.includes(o.id));
 
                   return (
                     <div id={`section-${section.id || secIndex}`} className="book-section" key={section.id || secIndex} ref={el => interactiveRefs.current[section.id] = el} style={{ marginTop: '80px', marginBottom: '80px', width: '100%', maxWidth: '850px', margin: '40px auto' }}>
@@ -837,13 +851,10 @@ export default function BookReader() {
                         .br-nav-${section.id} {
                           display: flex;
                           flex-direction: row;
-                          overflow-x: auto;
+                          flex-wrap: wrap;
+                          justify-content: center;
                           padding-bottom: 1rem;
-                          gap: 1.5rem;
-                          scrollbar-width: none;
-                        }
-                        .br-nav-${section.id}::-webkit-scrollbar {
-                          display: none;
+                          gap: 1rem;
                         }
                       `}</style>
 
@@ -872,7 +883,7 @@ export default function BookReader() {
                         {/* Interactive Options Tab Bar */}
                         <div className={`br-nav-${section.id}`}>
                           {section.options && section.options.map((opt) => {
-                            const isSelected = activeOptId === opt.id;
+                            const isSelected = currentSelected.includes(opt.id);
                             return (
                               <button
                                 key={opt.id}
@@ -882,39 +893,45 @@ export default function BookReader() {
                                   border: `1px solid ${isSelected ? (theme === 'dark' ? 'var(--gold-primary)' : 'var(--primary)') : (theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')}`,
                                   borderRadius: '30px',
                                   textAlign: 'center',
-                                  padding: '10px 24px',
+                                  padding: '8px 20px',
                                   cursor: 'pointer',
                                   fontFamily: 'var(--font-sinhala)',
-                                  fontSize: '1.1rem',
+                                  fontSize: '1rem',
                                   color: isSelected ? (theme === 'dark' ? 'var(--gold-primary)' : 'var(--primary)') : currentTheme.text,
-                                  opacity: isSelected ? 1 : 0.7,
+                                  opacity: isSelected ? 1 : 0.6,
                                   transition: 'all 0.3s ease',
                                   fontWeight: isSelected ? '600' : '400',
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
-                                  whiteSpace: 'nowrap',
-                                  flexShrink: 0
+                                  whiteSpace: 'nowrap'
                                 }}
                               >
+                                {isSelected && <Check size={14} style={{ marginRight: '6px' }} />}
                                 {opt.title}
                               </button>
                             );
                           })}
                         </div>
 
-                        {/* Elite Right Content Area */}
+                        {/* Selected Options Content Stacked */}
                         <div className={`br-content-${section.id}`}>
-                          <AnimatePresence mode="wait">
-                            {activeOptData && (
+                          <AnimatePresence>
+                            {selectedOptionsData.map((activeOptData, activeOptIndex) => (
                               <motion.div
+                                id={`section-${section.id}-opt-${activeOptData.id}`}
+                                className="book-section"
                                 key={activeOptData.id}
-                                initial={{ opacity: 0, y: 10 }}
+                                initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                transition={{ duration: 0.4 }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.5 }}
+                                style={{
+                                  padding: '40px 0',
+                                  borderBottom: activeOptIndex < selectedOptionsData.length - 1 ? `1px dashed ${currentTheme.border}` : 'none'
+                                }}
                               >
-                                <h4 style={{ color: theme === 'dark' ? 'var(--gold-primary)' : 'var(--primary)', marginBottom: '40px', fontSize: `${fontSize * 1.3}rem`, fontWeight: '600', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <h4 style={{ color: theme === 'dark' ? 'var(--gold-primary)' : 'var(--primary)', marginBottom: '40px', fontSize: `${fontSize * 1.3}rem`, fontWeight: '600', display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'center' }}>
                                   <span style={{ opacity: 0.5 }}>✧</span>
                                   {activeOptData.title}
                                 </h4>
@@ -926,38 +943,8 @@ export default function BookReader() {
                                   </p>
                                 )}
                               </motion.div>
-                            )}
+                            ))}
                           </AnimatePresence>
-                          
-                          {/* Next Button for UX */}
-                          <div style={{ marginTop: '80px', display: 'flex', justifyContent: 'center' }}>
-                            <button
-                              onClick={() => {
-                                const currentIndex = section.options.findIndex(o => o.id === activeOptId);
-                                if (currentIndex < section.options.length - 1) {
-                                  handleOptionToggle(section.id, section.options[currentIndex + 1].id);
-                                } else {
-                                  setIsAutoScrolling(true);
-                                }
-                              }}
-                              style={{
-                                padding: '12px 30px',
-                                background: 'transparent',
-                                color: currentTheme.text,
-                                border: `1px solid ${currentTheme.border}`,
-                                borderRadius: '30px',
-                                fontFamily: 'var(--font-sinhala)',
-                                fontSize: '1.1rem',
-                                cursor: 'pointer',
-                                opacity: 0.8,
-                                transition: 'opacity 0.3s'
-                              }}
-                              onMouseEnter={(e) => e.target.style.opacity = 1}
-                              onMouseLeave={(e) => e.target.style.opacity = 0.8}
-                            >
-                              {section.options.findIndex(o => o.id === activeOptId) < section.options.length - 1 ? 'මීළඟ කොටස (Next)' : 'ඉදිරියට යන්න (Continue)'}
-                            </button>
-                          </div>
                         </div>
                       </div>
                     </div>
