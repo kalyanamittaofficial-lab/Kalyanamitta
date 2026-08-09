@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Moon, Sun, BookOpen, Settings, Check, Type, Play, Pause, Minus, Plus } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, BookOpen, Settings, Check, Type, Play, Pause, Minus, Plus, Maximize, Minimize } from 'lucide-react';
 import { booksData } from '../data/books';
 
 export default function BookReader() {
@@ -12,7 +12,7 @@ export default function BookReader() {
   // Reader Settings State
   const [fontSize, setFontSize] = useState(1.4);
   const [lineHeight, setLineHeight] = useState(2.2);
-  const [theme, setTheme] = useState('light'); // 'dark' | 'sepia' | 'light'
+  const [theme, setTheme] = useState('sepia'); // 'dark' | 'sepia' | 'light'
   
   // Auto-Scroll State
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
@@ -24,7 +24,28 @@ export default function BookReader() {
   const [showControls, setShowControls] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const settingsRef = useRef(null);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => {
+        console.error(`Error attempting to enable fullscreen: ${err.message}`);
+      });
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   // Interactive Options State
   const [selectedOptions, setSelectedOptions] = useState({});
@@ -178,7 +199,7 @@ export default function BookReader() {
 
   const themeStyles = {
     dark: { bg: '#060709', text: '#f0ebd8', topbar: 'rgba(6,7,9,0.98)', menuBg: '#11141a', border: 'rgba(255,255,255,0.1)' },
-    sepia: { bg: '#fbf0d9', text: '#433422', topbar: 'rgba(251,240,217,0.98)', menuBg: '#f4e5c3', border: 'rgba(0,0,0,0.1)' },
+    sepia: { bg: '#f4ebd8', text: '#3b2f2f', topbar: 'rgba(244,235,216,0.98)', menuBg: '#ebe1ce', border: 'rgba(0,0,0,0.08)' },
     light: { bg: '#faf9f6', text: '#1a1a1a', topbar: 'rgba(250,249,246,0.98)', menuBg: '#f0efe9', border: 'rgba(0,0,0,0.06)' }
   };
 
@@ -259,6 +280,26 @@ export default function BookReader() {
         {/* Right Side: Settings & AutoScroll */}
         <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', position: 'relative', gap: '8px' }} ref={settingsRef}>
           
+          {/* Fullscreen Toggle */}
+          <button 
+            onClick={toggleFullscreen}
+            style={{ 
+              background: 'transparent',
+              color: currentTheme.text,
+              border: `1px solid ${currentTheme.border}`,
+              padding: '8px 12px',
+              borderRadius: '20px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s ease',
+            }}
+            title="Full Screen"
+          >
+            {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
+          </button>
+
           {/* Auto Scroll Toggle */}
           <button 
             onClick={() => setIsAutoScrolling(!isAutoScrolling)}
