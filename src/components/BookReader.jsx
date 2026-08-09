@@ -113,7 +113,6 @@ export default function BookReader() {
   useEffect(() => {
     const handleScroll = () => {
       setLastScrollY(window.scrollY);
-      setShowSettings(false); // Only close the settings popup on scroll
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -840,7 +839,7 @@ export default function BookReader() {
                       </div>
 
                       <div className={`br-split-${section.id}`}>
-                        {/* Elite Left Navigation */}
+                        {/* Interactive Options Tab Bar */}
                         <div className={`br-nav-${section.id}`}>
                           {section.options && section.options.map((opt) => {
                             const isSelected = activeOptId === opt.id;
@@ -849,20 +848,21 @@ export default function BookReader() {
                                 key={opt.id}
                                 onClick={() => handleOptionToggle(section.id, opt.id)}
                                 style={{
-                                  background: 'transparent',
-                                  border: 'none',
-                                  textAlign: 'left',
-                                  padding: '12px 16px',
+                                  background: isSelected ? (theme === 'dark' ? 'rgba(212,175,55,0.15)' : 'rgba(140,21,21,0.08)') : 'transparent',
+                                  border: `1px solid ${isSelected ? (theme === 'dark' ? 'var(--gold-primary)' : 'var(--primary)') : (theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')}`,
+                                  borderRadius: '30px',
+                                  textAlign: 'center',
+                                  padding: '10px 24px',
                                   cursor: 'pointer',
                                   fontFamily: 'var(--font-sinhala)',
-                                  fontSize: '1.2rem',
+                                  fontSize: '1.1rem',
                                   color: isSelected ? (theme === 'dark' ? 'var(--gold-primary)' : 'var(--primary)') : currentTheme.text,
-                                  opacity: isSelected ? 1 : 0.5,
-                                  borderLeft: isSelected ? `3px solid ${theme === 'dark' ? 'var(--gold-primary)' : 'var(--primary)'}` : '3px solid transparent',
+                                  opacity: isSelected ? 1 : 0.7,
                                   transition: 'all 0.3s ease',
                                   fontWeight: isSelected ? '600' : '400',
                                   display: 'flex',
                                   alignItems: 'center',
+                                  justifyContent: 'center',
                                   whiteSpace: 'nowrap',
                                   flexShrink: 0
                                 }}
