@@ -1097,6 +1097,7 @@ export default function BookReader() {
             )}
           </AnimatePresence>
         </article>
+        </div>
       </div>
     </motion.div>
   );
