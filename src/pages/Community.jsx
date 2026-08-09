@@ -185,33 +185,31 @@ export default function Community() {
 
         <div className="cm-divider" />
 
-        <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 2rem 10rem', display: 'flex', flexDirection: 'column', gap: '6rem' }}>
-          <SimpleSection title="අප 'Kalyanamitta' යන නාමය තෝරාගත්තේ ඇයි?">
+        <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 2rem 10rem', display: 'flex', flexDirection: 'column' }}>
+          <EditorialSection index={0} title="අප 'Kalyanamitta' යන නාමය තෝරාගත්තේ ඇයි?">
             <p>
               අවිද්‍යා අන්ධකාරයෙන් මුළාවට පත් වී සිටින බොහෝ දෙනා, තමන් මේ ඝෝර සංසාරයේ අතරමං වී ඇති බවවත් නොදැන ලෞකික දියුණුව පමණක් හඹා යමින් උතුම් ධර්ම මාර්ගයෙන් ඈත් වෙති. අපගේ අභිලාෂය වන්නේ, එසේ සසර මඟ අතරමං වූ සියලු සත්ත්වයන් උදෙසාම ධර්මයේ ආලෝකය ලබා දෙමින්, ලෞකික ජීවිතය දැහැමිව ගත කරන අතරතුරදීම සංසාර විමුක්තිය හෙවත් නිවන අරමුණු කරගත් කුසල ධර්මයන් දියුණු කරගැනීමට අවශ්‍ය වටපිටාව සකසා දීමයි.
             </p>
-            <p style={{ marginTop: '1.2rem' }}>
+            <p>
               ඒ සඳහා ධර්ම දේශනා ශ්‍රවණයට සහ පුණ්‍ය කර්මයන්ට අවස්ථාව සලසා දෙමින්, එකිනෙකාව අකුසලයෙන් වළක්වා කුසලයෙහි පිහිටුවීම අපගේ අපේක්ෂාවයි. මෙසේ අනෙකාට අර්ථය සහ ධර්මය පෙන්වා දෙමින්, මෙලොව පරලොව උභයාර්ථය සලසමින් නිවන් දොරටුව කරා යන ගමනට අත්වැලක් වන උතුම් මිත්‍රයාගේ කාර්යභාරය ඉටු කිරීම උදෙසාම, අපි අපගේ මෙම එකමුතුවට 'Kalyanamitta' යන උතුම් නාමය තෝරා ගත්තෙමු.
             </p>
-          </SimpleSection>
-          <SimpleSection title="නිවන් දැකීමේ අවශ්‍යතාවය කුමක් ද?">
+          </EditorialSection>
+          <EditorialSection index={1} title="නිවන් දැකීමේ අවශ්‍යතාවය කුමක් ද?">
             <p>
               භාග්‍යවතුන් වහන්සේ අනාමතග්ග සංයුත්තයේදී දේශනා කොට වදාළේ, "අනාමතග්ගොයං භික්ඛවෙ සංසාරො... පුබ්බා කෝටි න පඤ්ඤායති" (මහණෙනි, මේ සංසාරය අවසන් කළ නොහැකි තරම් දිගු ය. එහි මුලක් කෙළවරක් දැකිය නොහැක) යනුවෙනි. මේ දීර්ඝ සංසාර ගමන තුළ අප නොවැටුණු අපායක් නැත. දුකට පත්ව නොහඬපු වාරයක් නැත.
             </p>
-            <p style={{ marginTop: '1.2rem' }}>
+            <p>
               ඉපදීම, ලෙඩ වීම, මහලු වීම සහ මරණයට පත්වීම යන අනන්ත වූ ජාති, ජරා, ව්‍යාධි, මරණ දුක් කන්දරාවෙන් සදහටම මිදීමට ඇති එකම සහ අවසාන මාර්ගය වන්නේ භව ගමන නතර කිරීම හෙවත් උතුම් වූ අමා මහා නිවන් සුවය අවබෝධ කරගැනීමයි. සියලු කෙලෙස් ගිනි නිවී ගිය ඒ පරම සුවය සාක්ෂාත් කරගැනීම, බුද්ධ ශ්‍රාවකයෙකුගේ එකම ඉලක්කය විය යුතුය.
             </p>
-          </SimpleSection>
-          <SimpleSection title="නිවන් දකින්නට කල්‍යාණ මිත්‍රයෙකු වැදගත් වන්නේ ඇයි?">
+          </EditorialSection>
+          <EditorialSection index={2} title="නිවන් දකින්නට කල්‍යාණ මිත්‍රයෙකු වැදගත් වන්නේ ඇයි?">
             <p>
               භාග්‍යවතුන් වහන්සේගේ නිර්මල බුද්ධ ශාසනය ලෝකයේ විද්‍යාමානව පවතින මේ අතිශය දුර්ලභ මොහොතේ, සෝවාන් ආදී මාර්ග ඵලයන්ට පත්වී නිවන් දොරටුව විවර කර ගැනීම සසර ගමනේ අපට සාක්ෂාත් කරගත හැකි උසස්ම ඵලයයි.
             </p>
-            <p style={{ marginTop: '1.2rem' }}>
+            <p>
               එලෙස සෝවාන් ඵලයට පත්වීම සඳහා අනිවාර්යයෙන්ම සම්පූර්ණ විය යුතු අංග හතරක් (සෝතාපන්න අංග) භාග්‍යවතුන් වහන්සේ දේශනා කොට වදාළ සේක. එනම්,
             </p>
             <ul style={{ 
-              marginTop: '1.5rem', 
-              marginBottom: '1.5rem', 
               paddingLeft: '1rem', 
               listStyle: 'none',
               display: 'flex',
@@ -233,11 +231,11 @@ export default function Community() {
             <p>
               මෙම අංග සතර අතුරින් පළමු සහ වැදගත්ම අංග දෙක වන 'කල්‍යාණ මිත්‍ර ආශ්‍රය' සහ 'සද්ධර්ම ශ්‍රවණය' යන අංග ද්විත්වය සියලු සත්ත්වයන්ගේ හිත සුව පිණිස ඇතිකර දීම 'Kalyanamitta' හි අපගේ ප්‍රධානතම අපේක්ෂාවයි. කල්‍යාණ මිත්‍රයෙකුගේ මඟ පෙන්වීමක් නොමැතිව, කෙනෙකුට කිසිදා සැබෑ ශ්‍රී සද්ධර්මය ශ්‍රවණය කිරීමට අවස්ථාවක් නොලැබේ. ධර්මය ශ්‍රවණය නොකර, යෝනිසෝමනසිකාරය දියුණු කරගැනීමටවත්, ධම්මානුධම්ම පටිපදාවට පිවිසීමටවත් නොහැකිය.
             </p>
-            <p style={{ marginTop: '1.2rem' }}>
+            <p>
               සංසාරයේ අතරමං වූ සත්ත්වයාට කල්ප ගණනකින් හෝ ලබාගැනීමට අතිශය දුර්ලභ වූ මේ උතුම් කල්‍යාණ මිත්‍ර සම්පත්තියත්, සද්ධර්ම ශ්‍රවණය කිරීමේ භාග්‍යයත් උදාකර දෙමින්, ආර්ය අෂ්ටාංගික මාර්ගයට පිවිසීමට අවශ්‍ය මූලිකම පදනම සකසා දීම කල්‍යාණ මිත්‍රයාගෙන් ඉටුවන උත්තරීතරම කාර්යභාරයයි.
             </p>
-          </SimpleSection>
-          <SimpleSection title="මඟ පෙන්වීම" />
+          </EditorialSection>
+          <EditorialSection index={3} title="මඟ පෙන්වීම" />
         </div>
 
       </div>
@@ -245,57 +243,94 @@ export default function Community() {
   );
 }
 
-const SimpleSection = ({ title, children }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 30 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: "-100px" }}
-    transition={{ duration: 0.8 }}
-    style={{ 
-      position: 'relative',
-      padding: '3.5rem 3.5rem',
-      background: 'rgba(128,128,128,0.03)',
-      border: '1px solid rgba(128,128,128,0.15)',
-      borderRadius: '24px',
-      boxShadow: '0 10px 40px rgba(0,0,0,0.02)',
-      textAlign: 'left'
-    }}
-  >
-    <div style={{
-      position: 'absolute',
-      top: 0, left: '3.5rem', width: '60px', height: '3px',
-      background: 'var(--gold-primary, var(--primary))',
-      borderBottomLeftRadius: '3px',
-      borderBottomRightRadius: '3px'
-    }} />
-    
-    <h2 style={{ 
-      fontSize: 'clamp(1.6rem, 3.5vw, 2.2rem)', 
-      fontFamily: 'var(--font-serif)', 
-      fontWeight: '600', 
-      color: 'var(--text-main)', 
-      marginBottom: '2rem',
-      lineHeight: '1.4',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '1rem'
-    }}>
-      {title}
-    </h2>
-    <div style={{ 
-      fontFamily: 'var(--font-sinhala)', 
-      fontSize: '1.15rem', 
-      lineHeight: '2.0', 
-      color: 'var(--text-main)', 
-      fontWeight: '400',
-      opacity: 0.85,
-      textAlign: 'justify'
-    }}>
-      {children ? children : (
-        <p style={{ fontStyle: 'italic', margin: 0, opacity: 0.5 }}>
-          [ මෙම ස්ථානයට අදාළ අන්තර්ගතය ඇතුළත් කෙරේ ]
-        </p>
-      )}
-    </div>
-  </motion.div>
-);
+const EditorialSection = ({ title, children, index }) => {
+  const isEven = index % 2 === 0;
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, margin: "-10%" }}
+      transition={{ duration: 1 }}
+      style={{ 
+        position: 'relative',
+        padding: '6rem 0',
+        display: 'flex',
+        flexDirection: 'column',
+        borderTop: index === 0 ? 'none' : '1px solid rgba(128,128,128,0.15)',
+      }}
+    >
+      {/* Large Watermark Number */}
+      <div style={{
+        position: 'absolute',
+        top: '2rem',
+        left: isEven ? '-2rem' : 'auto',
+        right: isEven ? 'auto' : '-2rem',
+        fontSize: 'clamp(8rem, 15vw, 14rem)',
+        fontFamily: 'var(--font-serif)',
+        fontWeight: '700',
+        color: 'var(--text-main)',
+        opacity: 0.03,
+        zIndex: 0,
+        pointerEvents: 'none',
+        userSelect: 'none',
+        lineHeight: 1
+      }}>
+        {String(index + 1).padStart(2, '0')}
+      </div>
+
+      <div style={{
+        display: 'flex',
+        flexDirection: isEven ? 'row' : 'row-reverse',
+        flexWrap: 'wrap',
+        gap: '4rem',
+        position: 'relative',
+        zIndex: 1
+      }}>
+        {/* Left/Right side: Sticky Title */}
+        <div style={{ flex: '1 1 350px', position: 'relative' }}>
+          <div style={{ position: 'sticky', top: '120px' }}>
+            <div style={{
+              width: '40px', height: '3px',
+              background: 'var(--gold-primary, var(--primary))',
+              marginBottom: '1.5rem',
+              marginLeft: isEven ? '0' : 'auto'
+            }} />
+            <h2 style={{ 
+              fontSize: 'clamp(2rem, 4vw, 2.8rem)', 
+              fontFamily: 'var(--font-serif)', 
+              fontWeight: '600', 
+              color: 'var(--text-main)', 
+              lineHeight: '1.3',
+              textAlign: isEven ? 'left' : 'right'
+            }}>
+              {title}
+            </h2>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div style={{ flex: '2 1 500px' }}>
+          <div style={{ 
+            fontFamily: 'var(--font-sinhala)', 
+            fontSize: '1.15rem', 
+            lineHeight: '2.0', 
+            color: 'var(--text-main)', 
+            fontWeight: '400',
+            opacity: 0.85,
+            textAlign: 'justify',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1.5rem'
+          }}>
+            {children ? children : (
+              <p style={{ fontStyle: 'italic', margin: 0, opacity: 0.5 }}>
+                [ මෙම ස්ථානයට අදාළ අන්තර්ගතය ඇතුළත් කෙරේ ]
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
