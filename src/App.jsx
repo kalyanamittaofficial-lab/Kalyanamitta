@@ -7,7 +7,8 @@ import Meditation from './pages/Meditation';
 import Words from './pages/Words';
 import Sermons from './pages/Sermons';
 import Path from './pages/Path';
-import Life from './pages/Life';
+import BlogArchive from './pages/BlogArchive';
+import SingleBlog from './pages/SingleBlog';
 import Community from './pages/Community';
 import Profile from './pages/Profile';
 import DharmaDhana from './pages/DharmaDhana';
@@ -60,7 +61,8 @@ function App() {
           <Route path="sermons" element={<Sermons />} />
           <Route path="meditation" element={<Meditation />} />
           <Route path="path" element={<Path />} />
-          <Route path="life" element={<Life />} />
+          <Route path="life" element={<BlogArchive />} />
+          <Route path="life/:slug" element={<SingleBlog />} />
           <Route path="lifecycle" element={<LifeCycle />} />
           <Route path="community" element={<Community />} />
           <Route path="dharmadhana" element={<DharmaDhana />} />
