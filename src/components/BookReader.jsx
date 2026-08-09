@@ -239,10 +239,22 @@ export default function BookReader() {
         <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start' }}>
           <button 
             onClick={() => navigate('/dharmadhana')} 
-            style={{ background: 'none', border: 'none', color: currentTheme.text, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.8 }}
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              color: currentTheme.text, 
+              cursor: 'pointer', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px', 
+              opacity: 0.6,
+              transition: 'opacity 0.2s ease, color 0.2s ease'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.opacity = 1; e.currentTarget.style.color = 'var(--primary)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.opacity = 0.6; e.currentTarget.style.color = currentTheme.text; }}
           >
-            <ArrowLeft size={20} />
-            <span style={{ fontFamily: 'var(--font-sinhala)', fontSize: '1rem' }} className="hide-on-mobile">ආපසු</span>
+            <ArrowLeft size={18} strokeWidth={1.5} />
+            <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: '500' }} className="hide-on-mobile">ආපසු (Back)</span>
           </button>
         </div>
 
@@ -272,7 +284,7 @@ export default function BookReader() {
         </div>
 
         {/* Right Side: Settings & AutoScroll */}
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', position: 'relative', gap: '8px' }} ref={settingsRef}>
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', position: 'relative', gap: '4px' }} ref={settingsRef}>
           
           {/* Fullscreen Toggle */}
           <button 
@@ -280,40 +292,44 @@ export default function BookReader() {
             style={{ 
               background: 'transparent',
               color: currentTheme.text,
-              border: `1px solid ${currentTheme.border}`,
-              padding: '8px 12px',
-              borderRadius: '20px',
+              border: 'none',
+              padding: '8px',
+              borderRadius: '8px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              opacity: 0.6,
               transition: 'all 0.2s ease',
             }}
+            onMouseEnter={(e) => { e.currentTarget.style.opacity = 1; e.currentTarget.style.background = 'rgba(128,128,128,0.1)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.opacity = 0.6; e.currentTarget.style.background = 'transparent'; }}
             title="Full Screen"
           >
-            {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
+            {isFullscreen ? <Minimize size={20} strokeWidth={1.5} /> : <Maximize size={20} strokeWidth={1.5} />}
           </button>
 
           {/* Auto Scroll Toggle */}
           <button 
             onClick={() => setIsAutoScrolling(!isAutoScrolling)}
             style={{ 
-              background: isAutoScrolling ? 'var(--gold-primary)' : 'transparent',
-              color: isAutoScrolling ? '#000' : currentTheme.text,
-              border: `1px solid ${isAutoScrolling ? 'var(--gold-primary)' : currentTheme.border}`,
-              padding: '8px 16px',
-              borderRadius: '20px',
+              background: isAutoScrolling ? (theme === 'dark' ? 'rgba(212,175,55,0.15)' : 'rgba(140,21,21,0.08)') : 'transparent',
+              color: isAutoScrolling ? (theme === 'dark' ? 'var(--gold-primary)' : 'var(--primary)') : currentTheme.text,
+              border: 'none',
+              padding: '8px 12px',
+              borderRadius: '8px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              fontFamily: 'sans-serif',
-              fontWeight: '600',
+              gap: '6px',
+              opacity: isAutoScrolling ? 1 : 0.6,
               transition: 'all 0.2s ease',
             }}
+            onMouseEnter={(e) => { if (!isAutoScrolling) { e.currentTarget.style.opacity = 1; e.currentTarget.style.background = 'rgba(128,128,128,0.1)'; } }}
+            onMouseLeave={(e) => { if (!isAutoScrolling) { e.currentTarget.style.opacity = 0.6; e.currentTarget.style.background = 'transparent'; } }}
           >
-            {isAutoScrolling ? <Pause size={18} /> : <Play size={18} />}
-            <span className="hide-on-mobile" style={{ fontSize: '0.85rem' }}>{isAutoScrolling ? 'Pause' : 'Scroll'}</span>
+            {isAutoScrolling ? <Pause size={20} strokeWidth={1.5} /> : <Play size={20} strokeWidth={1.5} />}
+            <span className="hide-on-mobile" style={{ fontSize: '0.8rem', fontFamily: 'var(--font-sans)', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{isAutoScrolling ? 'Pause' : 'Scroll'}</span>
           </button>
 
           {/* Settings Toggle */}
@@ -323,24 +339,24 @@ export default function BookReader() {
             }}
             disabled={isAutoScrolling}
             style={{ 
-              background: showSettings ? 'var(--gold-primary)' : 'transparent',
-              color: showSettings ? '#000' : currentTheme.text,
-              border: `1px solid ${showSettings ? 'var(--gold-primary)' : currentTheme.border}`,
-              padding: '8px 16px',
-              borderRadius: '20px',
+              background: showSettings ? (theme === 'dark' ? 'rgba(212,175,55,0.15)' : 'rgba(140,21,21,0.08)') : 'transparent',
+              color: showSettings ? (theme === 'dark' ? 'var(--gold-primary)' : 'var(--primary)') : currentTheme.text,
+              border: 'none',
+              padding: '8px 12px',
+              borderRadius: '8px',
               cursor: isAutoScrolling ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              fontFamily: 'sans-serif',
-              fontWeight: '600',
+              gap: '6px',
+              opacity: isAutoScrolling ? 0.3 : (showSettings ? 1 : 0.6),
+              pointerEvents: isAutoScrolling ? 'none' : 'auto',
               transition: 'all 0.2s ease',
-              opacity: isAutoScrolling ? 0.3 : 1,
-              pointerEvents: isAutoScrolling ? 'none' : 'auto'
             }}
+            onMouseEnter={(e) => { if (!showSettings && !isAutoScrolling) { e.currentTarget.style.opacity = 1; e.currentTarget.style.background = 'rgba(128,128,128,0.1)'; } }}
+            onMouseLeave={(e) => { if (!showSettings && !isAutoScrolling) { e.currentTarget.style.opacity = 0.6; e.currentTarget.style.background = 'transparent'; } }}
           >
-            <Type size={18} />
-            <span className="hide-on-mobile" style={{ fontSize: '0.85rem' }}>Aa</span>
+            <Type size={20} strokeWidth={1.5} />
+            <span className="hide-on-mobile" style={{ fontSize: '0.85rem', fontFamily: 'var(--font-serif)', fontWeight: '500' }}>Aa</span>
           </button>
 
           <AnimatePresence>
