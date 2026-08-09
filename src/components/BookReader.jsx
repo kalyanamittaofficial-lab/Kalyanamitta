@@ -55,13 +55,7 @@ export default function BookReader() {
   const interactiveRefs = useRef({});
 
   const handleOptionToggle = (sectionId, optionId) => {
-    setSelectedOptions(prev => {
-      const currentSelected = prev[sectionId] || [];
-      if (currentSelected.includes(optionId)) {
-        return { ...prev, [sectionId]: currentSelected.filter(id => id !== optionId) };
-      }
-      return { ...prev, [sectionId]: [...currentSelected, optionId] };
-    });
+    setSelectedOptions(prev => ({ ...prev, [sectionId]: [optionId] }));
   };
 
   const renderContentItem = (item, itemIndex, prefix = '') => {
@@ -462,8 +456,8 @@ export default function BookReader() {
         justifyContent: 'center' 
       }}>
         <article style={{
-          maxWidth: '680px', 
           width: '100%',
+          maxWidth: '1200px', 
           fontFamily: 'var(--font-serif)',
           fontSize: `${fontSize}rem`,
           lineHeight: lineHeight,
@@ -480,7 +474,7 @@ export default function BookReader() {
                   const currentSelection = pirithSelections[section.id];
                   
                   return (
-                    <div key={section.id || secIndex} ref={el => interactiveRefs.current[section.id] = el} style={{ marginTop: '80px', marginBottom: '80px' }}>
+                    <div key={section.id || secIndex} ref={el => interactiveRefs.current[section.id] = el} style={{ marginTop: '80px', marginBottom: '80px', maxWidth: '700px', margin: '80px auto' }}>
                       {/* Section Title */}
                       <motion.div 
                         initial={{ opacity: 0, y: 20 }}
@@ -654,8 +648,52 @@ export default function BookReader() {
 
                 if (section.type === 'interactive-options') {
                   const currentSelected = selectedOptions[section.id] || [];
+                  const activeOptId = currentSelected.length > 0 ? currentSelected[0] : section.options[0]?.id;
+                  const activeOptData = section.options.find(o => o.id === activeOptId);
+
                   return (
-                    <div key={section.id || secIndex} ref={el => interactiveRefs.current[section.id] = el} style={{ marginTop: '80px', marginBottom: '80px' }}>
+                    <div key={section.id || secIndex} ref={el => interactiveRefs.current[section.id] = el} style={{ marginTop: '80px', marginBottom: '80px', width: '100%' }}>
+                      <style>{`
+                        .br-split-${section.id} {
+                          display: flex;
+                          flex-direction: column;
+                          gap: 2rem;
+                        }
+                        .br-nav-${section.id} {
+                          display: flex;
+                          flex-direction: row;
+                          overflow-x: auto;
+                          padding-bottom: 1rem;
+                          gap: 1.5rem;
+                          scrollbar-width: none;
+                        }
+                        .br-nav-${section.id}::-webkit-scrollbar {
+                          display: none;
+                        }
+                        @media (min-width: 1024px) {
+                          .br-split-${section.id} {
+                            flex-direction: row;
+                            gap: 6rem;
+                            align-items: flex-start;
+                          }
+                          .br-nav-${section.id} {
+                            flex: 1;
+                            flex-direction: column;
+                            position: sticky;
+                            top: 140px;
+                            max-width: 320px;
+                            border-right: 1px solid ${currentTheme.border};
+                            padding-right: 2rem;
+                            max-height: calc(100vh - 160px);
+                            overflow-y: auto;
+                          }
+                          .br-content-${section.id} {
+                            flex: 2;
+                            max-width: 750px;
+                          }
+                        }
+                      `}</style>
+
                       {/* Section Title */}
                       <motion.div 
                         initial={{ opacity: 0, y: 20 }}
@@ -673,124 +711,101 @@ export default function BookReader() {
                       </motion.div>
 
                       {/* Intro Items */}
-                      {section.introItems && section.introItems.map((item, i) => renderContentItem(item, i))}
+                      <div style={{ maxWidth: '700px', margin: '0 auto 60px auto' }}>
+                        {section.introItems && section.introItems.map((item, i) => renderContentItem(item, i))}
+                      </div>
 
-                      {/* Interactive Options Grid - Premium Glassmorphic Cards */}
-                      <div style={{ 
-                        display: 'grid', 
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', 
-                        gap: '16px', 
-                        margin: '60px 0', 
-                        padding: '0 10px' 
-                      }}>
-                        {section.options && section.options.map((opt) => {
-                          const isSelected = currentSelected.includes(opt.id);
-                          return (
-                            <motion.button
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              key={opt.id}
-                              onClick={() => handleOptionToggle(section.id, opt.id)}
+                      <div className={`br-split-${section.id}`}>
+                        {/* Elite Left Navigation */}
+                        <div className={`br-nav-${section.id}`}>
+                          {section.options && section.options.map((opt) => {
+                            const isSelected = activeOptId === opt.id;
+                            return (
+                              <button
+                                key={opt.id}
+                                onClick={() => handleOptionToggle(section.id, opt.id)}
+                                style={{
+                                  background: 'transparent',
+                                  border: 'none',
+                                  textAlign: 'left',
+                                  padding: '12px 16px',
+                                  cursor: 'pointer',
+                                  fontFamily: 'var(--font-sinhala)',
+                                  fontSize: '1.2rem',
+                                  color: isSelected ? (theme === 'dark' ? 'var(--gold-primary)' : 'var(--primary)') : currentTheme.text,
+                                  opacity: isSelected ? 1 : 0.5,
+                                  borderLeft: isSelected ? `3px solid ${theme === 'dark' ? 'var(--gold-primary)' : 'var(--primary)'}` : '3px solid transparent',
+                                  transition: 'all 0.3s ease',
+                                  fontWeight: isSelected ? '600' : '400',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  whiteSpace: 'nowrap',
+                                  flexShrink: 0
+                                }}
+                              >
+                                {opt.title}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Elite Right Content Area */}
+                        <div className={`br-content-${section.id}`}>
+                          <AnimatePresence mode="wait">
+                            {activeOptData && (
+                              <motion.div
+                                key={activeOptData.id}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.4 }}
+                              >
+                                <h4 style={{ color: theme === 'dark' ? 'var(--gold-primary)' : 'var(--primary)', marginBottom: '40px', fontSize: `${fontSize * 1.3}rem`, fontWeight: '600', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                  <span style={{ opacity: 0.5 }}>✧</span>
+                                  {activeOptData.title}
+                                </h4>
+                                {activeOptData.items.map((item, i) => renderContentItem(item, i, `${activeOptData.id}-`))}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                          
+                          {/* Next Button for UX */}
+                          <div style={{ marginTop: '80px', display: 'flex', justifyContent: 'center' }}>
+                            <button
+                              onClick={() => {
+                                const currentIndex = section.options.findIndex(o => o.id === activeOptId);
+                                if (currentIndex < section.options.length - 1) {
+                                  handleOptionToggle(section.id, section.options[currentIndex + 1].id);
+                                } else {
+                                  setIsAutoScrolling(true);
+                                }
+                              }}
                               style={{
-                                position: 'relative',
-                                padding: '16px 20px',
-                                borderRadius: '16px',
-                                background: isSelected 
-                                  ? (theme === 'dark' ? 'rgba(196,152,79,0.15)' : 'rgba(196,152,79,0.1)') 
-                                  : (theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'),
-                                border: `1px solid ${isSelected ? 'var(--gold-primary)' : (theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')}`,
-                                color: isSelected ? 'var(--gold-primary)' : currentTheme.text,
+                                padding: '12px 30px',
+                                background: 'transparent',
+                                color: currentTheme.text,
+                                border: `1px solid ${currentTheme.border}`,
+                                borderRadius: '30px',
                                 fontFamily: 'var(--font-sinhala)',
                                 fontSize: '1.1rem',
                                 cursor: 'pointer',
-                                transition: 'all 0.3s ease',
-                                boxShadow: isSelected ? '0 8px 32px rgba(196,152,79,0.15)' : 'none',
-                                fontWeight: isSelected ? '500' : '400',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                overflow: 'hidden',
-                                textAlign: 'left'
+                                opacity: 0.8,
+                                transition: 'opacity 0.3s'
                               }}
+                              onMouseEnter={(e) => e.target.style.opacity = 1}
+                              onMouseLeave={(e) => e.target.style.opacity = 0.8}
                             >
-                              <span style={{ zIndex: 2 }}>{opt.title}</span>
-                              {isSelected && (
-                                <motion.div 
-                                  initial={{ scale: 0, rotate: -45 }}
-                                  animate={{ scale: 1, rotate: 0 }}
-                                  style={{ zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                >
-                                  <Check size={20} color="var(--gold-primary)" />
-                                </motion.div>
-                              )}
-                              
-                              {/* Glowing background for selected state */}
-                              {isSelected && (
-                                <div style={{
-                                  position: 'absolute',
-                                  top: 0, left: 0, right: 0, bottom: 0,
-                                  background: 'linear-gradient(45deg, transparent, rgba(196,152,79,0.1), transparent)',
-                                  zIndex: 1
-                                }} />
-                              )}
-                            </motion.button>
-                          );
-                        })}
-                      </div>
-
-                      {/* Render Selected Content */}
-                      <AnimatePresence>
-                        {currentSelected.map(optId => {
-                          const optData = section.options.find(o => o.id === optId);
-                          if (!optData) return null;
-                          return (
-                            <motion.div
-                              key={optId}
-                              initial={{ opacity: 0, height: 0, y: -20 }}
-                              animate={{ opacity: 1, height: 'auto', y: 0 }}
-                              exit={{ opacity: 0, height: 0, y: -20 }}
-                              transition={{ duration: 0.5, ease: "easeOut" }}
-                              style={{ overflow: 'hidden', marginTop: '40px', padding: '30px 20px', background: theme === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)', borderRadius: '20px', border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}` }}
-                            >
-                              <h4 style={{ textAlign: 'center', color: theme === 'dark' ? 'var(--gold-primary)' : 'var(--primary)', marginBottom: '30px', fontSize: `${fontSize * 1.2}rem`, fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-                                <span style={{ opacity: 0.5 }}>✧</span>
-                                {optData.title}
-                                <span style={{ opacity: 0.5 }}>✧</span>
-                              </h4>
-                              {optData.items.map((item, i) => renderContentItem(item, i, `${optId}-`))}
-                            </motion.div>
-                          );
-                        })}
-                      </AnimatePresence>
-
-                      {/* Skip/Continue Action */}
-                      <div style={{ textAlign: 'center', marginTop: '60px' }}>
-                        <button
-                          onClick={() => setIsAutoScrolling(true)}
-                          style={{
-                            padding: '12px 30px',
-                            background: 'transparent',
-                            color: currentTheme.text,
-                            border: `1px solid ${currentTheme.border}`,
-                            borderRadius: '20px',
-                            fontFamily: 'var(--font-sinhala)',
-                            fontSize: '1rem',
-                            cursor: 'pointer',
-                            opacity: 0.7,
-                            transition: 'opacity 0.3s'
-                          }}
-                          onMouseEnter={(e) => e.target.style.opacity = 1}
-                          onMouseLeave={(e) => e.target.style.opacity = 0.7}
-                        >
-                          ඉදිරියට යන්න (Continue / Skip)
-                        </button>
+                              {section.options.findIndex(o => o.id === activeOptId) < section.options.length - 1 ? 'මීළඟ කොටස (Next)' : 'ඉදිරියට යන්න (Continue)'}
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   );
                 }
 
                 return (
-                  <div key={section.id || secIndex}>
+                  <div key={section.id || secIndex} style={{ maxWidth: '700px', margin: '0 auto' }}>
                   {/* Section Title */}
                   <motion.div 
                     initial={{ opacity: 0, y: 20 }}
