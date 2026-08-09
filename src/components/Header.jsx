@@ -59,6 +59,31 @@ const NavDropdown = ({ item, location }) => {
           >
             {item.subItems.map(sub => {
               const isSubActive = location.pathname === sub.path;
+              if (sub.disabled) {
+                return (
+                  <div
+                    key={sub.name}
+                    style={{
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      color: 'var(--text-muted)',
+                      opacity: 0.6,
+                      background: 'transparent',
+                      fontFamily: 'var(--font-sinhala)',
+                      fontSize: '0.95rem',
+                      fontWeight: '500',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      cursor: 'not-allowed'
+                    }}
+                    title="ඉදිරියේදී බලාපොරොත්තු වන්න"
+                  >
+                    <span>{sub.name}</span>
+                    <span style={{ fontSize: '0.7rem', padding: '2px 6px', background: 'var(--glass-border)', borderRadius: '4px' }}>ළඟදීම</span>
+                  </div>
+                );
+              }
               return (
                 <Link
                   key={sub.name}
@@ -146,7 +171,7 @@ export default function Header() {
       name: 'සම්පත්', 
       isDropdown: true,
       subItems: [
-        { name: 'කල්‍යාණමිත්ත පුස්තකාලය', path: '/words' },
+        { name: 'කල්‍යාණමිත්ත පුස්තකාලය', path: '/words', disabled: true },
         { name: 'ධර්ම දාන', path: '/dharmadhana' }
       ]
     },
@@ -343,6 +368,28 @@ export default function Header() {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '8px' }}>
                         {item.subItems.map(sub => {
                           const isActive = location.pathname === sub.path;
+                          if (sub.disabled) {
+                            return (
+                              <div
+                                key={sub.name}
+                                style={{
+                                  fontSize: '1.2rem',
+                                  fontWeight: '500',
+                                  color: 'var(--text-muted)',
+                                  opacity: 0.6,
+                                  fontFamily: 'var(--font-sinhala)',
+                                  padding: '8px 0',
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  cursor: 'not-allowed'
+                                }}
+                              >
+                                <span>{sub.name}</span>
+                                <span style={{ fontSize: '0.75rem', padding: '2px 6px', background: 'var(--glass-border)', borderRadius: '4px' }}>ළඟදීම</span>
+                              </div>
+                            );
+                          }
                           return (
                             <Link
                               key={sub.name}
