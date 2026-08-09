@@ -1,3 +1,5 @@
+import { Client } from '@notionhq/client';
+
 export default async function handler(req, res) {
   // Check for GET method
   if (req.method !== 'GET') {
@@ -5,7 +7,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { Client } = require('@notionhq/client');
     const notion = new Client({ auth: process.env.NOTION_SECRET });
     const databaseId = process.env.NOTION_DATABASE_ID;
 

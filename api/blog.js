@@ -1,3 +1,6 @@
+import { Client } from '@notionhq/client';
+import { NotionToMarkdown } from 'notion-to-md';
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ message: 'Method Not Allowed' });
@@ -10,9 +13,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { Client } = require('@notionhq/client');
-    const { NotionToMarkdown } = require('notion-to-md');
-    
     const notion = new Client({ auth: process.env.NOTION_SECRET });
     const databaseId = process.env.NOTION_DATABASE_ID;
 
