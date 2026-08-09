@@ -155,24 +155,31 @@ export default function BookReader() {
   }, [isAutoScrolling]);
 
   const [activeSectionId, setActiveSectionId] = useState('');
+  const intersectionRatios = useRef({});
 
   // Track active section for TOC
   useEffect(() => {
     if (!book) return;
     
     const observer = new IntersectionObserver((entries) => {
-      let visibleId = null;
-      let maxRatio = 0;
       entries.forEach(entry => {
-        if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
-          maxRatio = entry.intersectionRatio;
-          visibleId = entry.target.id.replace('section-', '');
+        const id = entry.target.id.replace('section-', '');
+        intersectionRatios.current[id] = entry.isIntersecting ? entry.intersectionRatio : 0;
+      });
+      
+      let maxRatio = 0;
+      let visibleId = null;
+      Object.entries(intersectionRatios.current).forEach(([id, ratio]) => {
+        if (ratio > maxRatio) {
+          maxRatio = ratio;
+          visibleId = id;
         }
       });
+      
       if (visibleId) {
         setActiveSectionId(visibleId);
       }
-    }, { threshold: [0.1, 0.3, 0.5, 0.7, 0.9], rootMargin: '-20% 0px -50% 0px' });
+    }, { threshold: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], rootMargin: '-10% 0px -40% 0px' });
 
     setTimeout(() => {
       document.querySelectorAll('.book-section').forEach(node => {
@@ -849,12 +856,10 @@ export default function BookReader() {
                           gap: 2rem;
                         }
                         .br-nav-${section.id} {
-                          display: flex;
-                          flex-direction: row;
-                          flex-wrap: wrap;
-                          justify-content: center;
-                          padding-bottom: 1rem;
-                          gap: 1rem;
+                          display: grid;
+                          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                          gap: 1.5rem;
+                          margin-bottom: 3rem;
                         }
                       `}</style>
 
@@ -880,7 +885,7 @@ export default function BookReader() {
                       </div>
 
                       <div className={`br-split-${section.id}`}>
-                        {/* Interactive Options Tab Bar */}
+                        {/* Interactive Options Grid */}
                         <div className={`br-nav-${section.id}`}>
                           {section.options && section.options.map((opt) => {
                             const isSelected = currentSelected.includes(opt.id);
@@ -889,26 +894,48 @@ export default function BookReader() {
                                 key={opt.id}
                                 onClick={() => handleOptionToggle(section.id, opt.id)}
                                 style={{
-                                  background: isSelected ? (theme === 'dark' ? 'rgba(212,175,55,0.15)' : 'rgba(140,21,21,0.08)') : 'transparent',
-                                  border: `1px solid ${isSelected ? (theme === 'dark' ? 'var(--gold-primary)' : 'var(--primary)') : (theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')}`,
-                                  borderRadius: '30px',
-                                  textAlign: 'center',
-                                  padding: '8px 20px',
-                                  cursor: 'pointer',
-                                  fontFamily: 'var(--font-sinhala)',
-                                  fontSize: '1rem',
-                                  color: isSelected ? (theme === 'dark' ? 'var(--gold-primary)' : 'var(--primary)') : currentTheme.text,
-                                  opacity: isSelected ? 1 : 0.6,
-                                  transition: 'all 0.3s ease',
-                                  fontWeight: isSelected ? '600' : '400',
                                   display: 'flex',
                                   alignItems: 'center',
-                                  justifyContent: 'center',
-                                  whiteSpace: 'nowrap'
+                                  justifyContent: 'space-between',
+                                  padding: '16px 20px',
+                                  background: isSelected ? (theme === 'dark' ? 'rgba(212,175,55,0.08)' : 'rgba(140,21,21,0.05)') : 'transparent',
+                                  border: isSelected ? `1px solid ${theme === 'dark' ? 'var(--gold-primary)' : 'var(--primary)'}` : `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
+                                  borderRadius: '16px',
+                                  color: isSelected ? (theme === 'dark' ? 'var(--gold-primary)' : 'var(--primary)') : currentTheme.text,
+                                  fontFamily: 'var(--font-sinhala)',
+                                  fontSize: '1.15rem',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                  boxShadow: isSelected ? '0 4px 15px rgba(0,0,0,0.05)' : 'none',
+                                  textAlign: 'left'
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (!isSelected) {
+                                    e.currentTarget.style.borderColor = theme === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
+                                  }
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (!isSelected) {
+                                    e.currentTarget.style.borderColor = theme === 'dark' ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)';
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                  }
                                 }}
                               >
-                                {isSelected && <Check size={14} style={{ marginRight: '6px' }} />}
-                                {opt.title}
+                                <span style={{ fontWeight: isSelected ? '600' : '400', opacity: isSelected ? 1 : 0.7 }}>{opt.title}</span>
+                                <div style={{ 
+                                  width: '24px', 
+                                  height: '24px', 
+                                  borderRadius: '50%', 
+                                  border: isSelected ? 'none' : `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}`,
+                                  background: isSelected ? (theme === 'dark' ? 'var(--gold-primary)' : 'var(--primary)') : 'transparent',
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  justifyContent: 'center',
+                                  flexShrink: 0
+                                }}>
+                                  {isSelected && <Check size={14} color={theme === 'dark' ? '#000' : '#fff'} />}
+                                </div>
                               </button>
                             );
                           })}
