@@ -144,6 +144,35 @@ export default function BookReader() {
     return () => observer.disconnect();
   }, [isAutoScrolling]);
 
+  const [activeSectionId, setActiveSectionId] = useState('');
+
+  // Track active section for TOC
+  useEffect(() => {
+    if (!book) return;
+    
+    const observer = new IntersectionObserver((entries) => {
+      let visibleId = null;
+      let maxRatio = 0;
+      entries.forEach(entry => {
+        if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
+          maxRatio = entry.intersectionRatio;
+          visibleId = entry.target.id.replace('section-', '');
+        }
+      });
+      if (visibleId) {
+        setActiveSectionId(visibleId);
+      }
+    }, { threshold: [0.1, 0.3, 0.5, 0.7, 0.9], rootMargin: '-20% 0px -50% 0px' });
+
+    setTimeout(() => {
+      document.querySelectorAll('.book-section').forEach(node => {
+        observer.observe(node);
+      });
+    }, 500);
+
+    return () => observer.disconnect();
+  }, [book, isAutoScrolling]);
+
   // The Smooth Auto-Scroll Engine (Fixed for natural speed and buttery smoothness)
   useEffect(() => {
     let lastTime = 0;
@@ -527,20 +556,20 @@ export default function BookReader() {
                       document.getElementById(`section-${sec.id || i}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }}
                     style={{
-                      background: 'transparent',
+                      background: activeSectionId === (sec.id || `${i}`) ? 'rgba(128,128,128,0.08)' : 'transparent',
                       border: 'none',
-                      borderLeft: '3px solid transparent',
+                      borderLeft: activeSectionId === (sec.id || `${i}`) ? `3px solid var(--primary)` : '3px solid transparent',
                       textAlign: 'left',
                       fontFamily: 'var(--font-sinhala)',
                       fontSize: '1.15rem',
-                      color: currentTheme.text,
-                      opacity: 0.75,
+                      color: activeSectionId === (sec.id || `${i}`) ? 'var(--primary)' : currentTheme.text,
+                      opacity: activeSectionId === (sec.id || `${i}`) ? 1 : 0.75,
                       cursor: 'pointer',
                       transition: 'all 0.2s',
                       padding: '10px 16px',
                       borderRadius: '0 8px 8px 0',
                       width: '100%',
-                      fontWeight: '500'
+                      fontWeight: activeSectionId === (sec.id || `${i}`) ? '600' : '500'
                     }}
                     onMouseEnter={(e) => { 
                       e.target.style.opacity = 1; 
@@ -549,10 +578,11 @@ export default function BookReader() {
                       e.target.style.borderLeft = '3px solid var(--primary)';
                     }}
                     onMouseLeave={(e) => { 
-                      e.target.style.opacity = 0.75; 
-                      e.target.style.color = currentTheme.text; 
-                      e.target.style.background = 'transparent';
-                      e.target.style.borderLeft = '3px solid transparent';
+                      const isActive = activeSectionId === (sec.id || `${i}`);
+                      e.target.style.opacity = isActive ? 1 : 0.75; 
+                      e.target.style.color = isActive ? 'var(--primary)' : currentTheme.text; 
+                      e.target.style.background = isActive ? 'rgba(128,128,128,0.08)' : 'transparent';
+                      e.target.style.borderLeft = isActive ? '3px solid var(--primary)' : '3px solid transparent';
                     }}
                   >
                     {sec.title}
@@ -619,7 +649,7 @@ export default function BookReader() {
                   const currentSelection = pirithSelections[section.id];
                   
                   return (
-                    <div id={`section-${section.id || secIndex}`} key={section.id || secIndex} ref={el => interactiveRefs.current[section.id] = el} style={{ marginTop: '80px', marginBottom: '80px', maxWidth: '850px', margin: '40px auto' }}>
+                    <div id={`section-${section.id || secIndex}`} className="book-section" key={section.id || secIndex} ref={el => interactiveRefs.current[section.id] = el} style={{ marginTop: '80px', marginBottom: '80px', maxWidth: '850px', margin: '40px auto' }}>
                       {/* Section Title */}
                       <motion.div 
                         initial={{ opacity: 0, y: 20 }}
@@ -797,7 +827,7 @@ export default function BookReader() {
                   const activeOptData = section.options.find(o => o.id === activeOptId);
 
                   return (
-                    <div id={`section-${section.id || secIndex}`} key={section.id || secIndex} ref={el => interactiveRefs.current[section.id] = el} style={{ marginTop: '80px', marginBottom: '80px', width: '100%', maxWidth: '850px', margin: '40px auto' }}>
+                    <div id={`section-${section.id || secIndex}`} className="book-section" key={section.id || secIndex} ref={el => interactiveRefs.current[section.id] = el} style={{ marginTop: '80px', marginBottom: '80px', width: '100%', maxWidth: '850px', margin: '40px auto' }}>
                       <style>{`
                         .br-split-${section.id} {
                           display: flex;
@@ -888,7 +918,13 @@ export default function BookReader() {
                                   <span style={{ opacity: 0.5 }}>✧</span>
                                   {activeOptData.title}
                                 </h4>
-                                {activeOptData.items.map((item, i) => renderContentItem(item, i, `${activeOptData.id}-`))}
+                                {activeOptData.items && activeOptData.items.length > 0 ? (
+                                  activeOptData.items.map((item, i) => renderContentItem(item, i, `${activeOptData.id}-`))
+                                ) : (
+                                  <p style={{ textAlign: 'center', color: currentTheme.text, opacity: 0.6, fontStyle: 'italic', fontSize: '1.1rem', margin: '40px 0' }}>
+                                    මෙම කොටස තවම ඇතුළත් කර නොමැත. ඉදිරියේදී යාවත්කාලීන වනු ඇත. (Content not available yet.)
+                                  </p>
+                                )}
                               </motion.div>
                             )}
                           </AnimatePresence>
@@ -929,7 +965,7 @@ export default function BookReader() {
                 }
 
                 return (
-                  <div id={`section-${section.id || secIndex}`} key={section.id || secIndex} style={{ maxWidth: '850px', margin: '40px auto' }}>
+                  <div id={`section-${section.id || secIndex}`} className="book-section" key={section.id || secIndex} style={{ maxWidth: '850px', margin: '40px auto' }}>
                   {/* Section Title */}
                   <motion.div 
                     initial={{ opacity: 0, y: 20 }}
