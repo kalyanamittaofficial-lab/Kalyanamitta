@@ -11,7 +11,8 @@ export default function Community() {
         }
         .cm-hero {
           width: 100%;
-          height: 80vh;
+          min-height: 40vh;
+          padding: 8rem 2rem 4rem;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -84,7 +85,7 @@ export default function Community() {
 
         @media (min-width: 1024px) {
           .cm-hero {
-            height: 90vh;
+            padding: 10rem 4rem 6rem;
           }
           .cm-split-section {
             flex-direction: row;
@@ -129,7 +130,7 @@ export default function Community() {
             transition={{ duration: 2, ease: "easeOut" }}
             style={{
               position: 'absolute',
-              fontSize: '25vw',
+              fontSize: '15vw',
               fontFamily: 'var(--font-serif)',
               fontWeight: 900,
               color: 'var(--text-main)',
@@ -151,20 +152,10 @@ export default function Community() {
             transition={{ duration: 1, delay: 0.2 }}
             style={{ zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
           >
-            <div style={{ 
-              color: 'var(--gold-primary)', 
-              letterSpacing: '0.4em', 
-              fontSize: '0.9rem', 
-              textTransform: 'uppercase', 
-              marginBottom: '1.5rem',
-              fontWeight: 600
-            }}>
-              The Ultimate Guidance
-            </div>
             <motion.h1>
               කල්‍යාණ මිත්‍රත්වය
             </motion.h1>
-            <div style={{ width: '100px', height: '2px', background: 'var(--gold-primary, var(--primary))', marginTop: '2.5rem', opacity: 0.8 }} />
+            <div style={{ width: '100px', height: '2px', background: 'var(--gold-primary, var(--primary))', marginTop: '1.5rem', opacity: 0.8 }} />
           </motion.div>
         </div>
 
