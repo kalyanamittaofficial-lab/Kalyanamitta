@@ -37,8 +37,8 @@ export default function BlogArchive() {
   if (isLoading) {
     return (
       <div className="flex-center" style={{ minHeight: '100vh', background: 'var(--bg-main)' }}>
-        <div style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', fontSize: '1rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-          Loading Archive...
+        <div style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', fontSize: '1.2rem', letterSpacing: '0.05em' }}>
+          ලිපි කියවමින් පවතී...
         </div>
       </div>
     );
@@ -53,7 +53,7 @@ export default function BlogArchive() {
           <div className="academic-header-content">
             <h1 className="academic-title">ජීවිතයට ධර්මය</h1>
             <p className="academic-subtitle">
-              The Kalyanamitta Journal of Buddhist Philosophy and Practice.
+              බෞද්ධ දර්ශනය සහ ප්‍රතිපදාව පිළිබඳ විශේෂාංග ලිපි එකතුව.
             </p>
           </div>
         </header>
@@ -65,26 +65,26 @@ export default function BlogArchive() {
             <input 
               type="text" 
               className="academic-search-input" 
-              placeholder="Search by title or author..."
+              placeholder="මාතෘකාව හෝ කතෘ නමින් සොයන්න..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <div className="academic-sort-wrapper">
-            <label className="academic-sort-label">Sort by:</label>
+            <label className="academic-sort-label">පිළිවෙළ:</label>
             <button 
               className={`academic-sort-btn ${sortOrder === 'newest' ? 'active' : ''}`}
               onClick={() => setSortOrder('newest')}
-              title="Newest First"
+              title="අලුත්ම ලිපි මුලින්"
             >
-              <ArrowDownAZ size={16} /> Newest
+              <ArrowDownAZ size={16} /> අලුත්ම
             </button>
             <button 
               className={`academic-sort-btn ${sortOrder === 'oldest' ? 'active' : ''}`}
               onClick={() => setSortOrder('oldest')}
-              title="Oldest First"
+              title="පැරණිම ලිපි මුලින්"
             >
-              <ArrowUpZA size={16} /> Oldest
+              <ArrowUpZA size={16} /> පැරණිම
             </button>
           </div>
         </div>
@@ -93,8 +93,8 @@ export default function BlogArchive() {
         <main className="academic-main">
           {filteredAndSortedBlogs.length === 0 ? (
             <div className="academic-empty-state">
-              <p>No articles found matching your criteria.</p>
-              <button className="academic-reset-btn" onClick={() => setSearchQuery('')}>Clear Search</button>
+              <p>ඔබගේ සෙවුමට ගැළපෙන ලිපි කිසිවක් හමු නොවිණි.</p>
+              <button className="academic-reset-btn" onClick={() => setSearchQuery('')}>සෙවුම මකන්න</button>
             </div>
           ) : (
             <div className="academic-grid">
@@ -111,7 +111,7 @@ export default function BlogArchive() {
                       {blog.cover ? (
                         <OptimizedImage src={blog.cover} alt={blog.title} className="academic-img" />
                       ) : (
-                        <div className="academic-no-image flex-center">No Image Available</div>
+                        <div className="academic-no-image flex-center">පින්තූරයක් නොමැත</div>
                       )}
                     </div>
                     
@@ -131,7 +131,7 @@ export default function BlogArchive() {
                       <h2 className="academic-card-title">{blog.title}</h2>
                       
                       <div className="academic-read-more">
-                        Read Article <ArrowRight size={14} className="academic-arrow" />
+                        ලිපිය කියවන්න <ArrowRight size={14} className="academic-arrow" />
                       </div>
                     </div>
                   </Link>
@@ -175,12 +175,11 @@ export default function BlogArchive() {
         }
 
         .academic-subtitle {
-          font-family: var(--font-sans);
-          font-size: 1.1rem;
+          font-family: var(--font-sinhala);
+          font-size: 1rem;
           color: var(--text-muted);
           margin: 0;
           font-weight: 400;
-          letter-spacing: 0.02em;
         }
 
         .academic-toolbar {
@@ -231,11 +230,9 @@ export default function BlogArchive() {
         }
 
         .academic-sort-label {
-          font-family: var(--font-sans);
-          font-size: 0.85rem;
+          font-family: var(--font-sinhala);
+          font-size: 1rem;
           color: var(--text-muted);
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
         }
 
         .academic-sort-btn {
@@ -247,8 +244,8 @@ export default function BlogArchive() {
           padding: 6px 12px;
           border-radius: 4px;
           color: var(--text-muted);
-          font-family: var(--font-sans);
-          font-size: 0.9rem;
+          font-family: var(--font-sinhala);
+          font-size: 1rem;
           cursor: pointer;
           transition: all 0.2s ease;
         }
@@ -356,11 +353,9 @@ export default function BlogArchive() {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          font-family: var(--font-sans);
-          font-size: 0.85rem;
+          font-family: var(--font-sinhala);
+          font-size: 1.1rem;
           font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
           color: var(--text-main);
           transition: gap 0.2s ease;
         }
