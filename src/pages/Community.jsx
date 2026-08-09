@@ -11,17 +11,21 @@ export default function Community() {
         }
         .cm-hero {
           width: 100%;
-          padding: 8rem 2rem 4rem;
-          text-align: center;
+          height: 80vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           position: relative;
+          overflow: hidden;
         }
         .cm-hero h1 {
           font-family: var(--font-serif);
-          font-size: clamp(3rem, 8vw, 5rem);
+          font-size: clamp(3.5rem, 8vw, 6rem);
           font-weight: 700;
           color: var(--primary);
-          margin-bottom: 1.5rem;
+          margin-bottom: 0;
           letter-spacing: 0.05em;
+          text-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
         
         .cm-split-section {
@@ -80,7 +84,7 @@ export default function Community() {
 
         @media (min-width: 1024px) {
           .cm-hero {
-            padding: 12rem 4rem 6rem;
+            height: 90vh;
           }
           .cm-split-section {
             flex-direction: row;
@@ -118,66 +122,116 @@ export default function Community() {
       
       <div className="cm-wrapper">
         <div className="cm-hero">
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+          {/* Background huge text */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 0.03, scale: 1 }}
+            transition={{ duration: 2, ease: "easeOut" }}
+            style={{
+              position: 'absolute',
+              fontSize: '25vw',
+              fontFamily: 'var(--font-serif)',
+              fontWeight: 900,
+              color: 'var(--text-main)',
+              whiteSpace: 'nowrap',
+              pointerEvents: 'none',
+              userSelect: 'none',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 0
+            }}
           >
-            කල්‍යාණ මිත්‍රත්වය
-          </motion.h1>
+            KALYANAMITTA
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.2 }}
+            style={{ zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+          >
+            <div style={{ 
+              color: 'var(--gold-primary)', 
+              letterSpacing: '0.4em', 
+              fontSize: '0.9rem', 
+              textTransform: 'uppercase', 
+              marginBottom: '1.5rem',
+              fontWeight: 600
+            }}>
+              The Ultimate Guidance
+            </div>
+            <motion.h1>
+              කල්‍යාණ මිත්‍රත්වය
+            </motion.h1>
+            <div style={{ width: '100px', height: '2px', background: 'var(--gold-primary, var(--primary))', marginTop: '2.5rem', opacity: 0.8 }} />
+          </motion.div>
         </div>
 
         <div className="cm-split-section">
           <div className="cm-quote-side">
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, x: -40 }}
+              whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-10%" }}
-              transition={{ duration: 0.8 }}
-              className="cm-quote-pali"
+              transition={{ duration: 1 }}
+              style={{ position: 'relative' }}
             >
-              "සකලමේව හිදං ආනන්ද, බ්‍රහ්මචරියං යදිදං කල්‍යාණමිත්තතා..."
-            </motion.div>
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-10%" }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="cm-quote-sinhala"
-            >
-              "ආනන්දය, එසේ නොකියන්න. එසේ නොකියන්න. බ්‍රහ්මචරියාවේ අඩක් පමණක් නොව, මුළු බ්‍රහ්මචරියාවම කල්‍යාණ මිත්‍රත්වය මත රඳා පවතී."
-              <div style={{ marginTop: '1.2rem', fontSize: '0.9rem', opacity: 0.6, fontWeight: 400, letterSpacing: '0.05em' }}>
-                — උපද්ධ සූත්‍රය (සංයුත්ත නිකාය)
+              {/* Giant decorative quote mark */}
+              <div style={{
+                position: 'absolute',
+                top: '-4rem',
+                left: '-2rem',
+                fontSize: '12rem',
+                fontFamily: 'var(--font-serif)',
+                color: 'var(--gold-primary, var(--primary))',
+                opacity: 0.1,
+                lineHeight: 1,
+                zIndex: -1,
+                userSelect: 'none'
+              }}>
+                "
+              </div>
+              
+              <div className="cm-quote-pali">
+                "සකලමේව හිදං ආනන්ද, බ්‍රහ්මචරියං යදිදං කල්‍යාණමිත්තතා..."
+              </div>
+              <div className="cm-quote-sinhala">
+                "ආනන්දය, එසේ නොකියන්න. එසේ නොකියන්න. බ්‍රහ්මචරියාවේ අඩක් පමණක් නොව, මුළු බ්‍රහ්මචරියාවම කල්‍යාණ මිත්‍රත්වය මත රඳා පවතී."
+                <div style={{ marginTop: '1.2rem', fontSize: '0.9rem', opacity: 0.6, fontWeight: 400, letterSpacing: '0.05em' }}>
+                  — උපද්ධ සූත්‍රය (සංයුත්ත නිකාය)
+                </div>
               </div>
             </motion.div>
           </div>
 
           <div className="cm-content-side">
-            <motion.p
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-15%" }}
-              transition={{ duration: 0.8 }}
-            >
-              භාග්‍යවතුන් වහන්සේ දේශනා කළ පරිදි, කල්‍යාණ මිත්‍රයෙකු යනු සාමාන්‍ය යහළුවෙකු නොවේ.
-            </motion.p>
-            <motion.p
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-15%" }}
-              transition={{ duration: 0.8 }}
-            >
-              ඔබගේ ලෞකික ජීවිතය දියුණු කරන පුද්ගලයෙකුට වඩා, දුකින් මිදෙන මාර්ගය පෙන්වන පුද්ගලයා කල්‍යාණ මිත්‍රයෙකි. ඔහුට ඔබ වෙනුවෙන් නිවන් ලබා දිය නොහැක. නමුත්, ඔබට සත්‍යය දැකගත හැකි මාර්ගය පෙන්වා දිය හැක.
-            </motion.p>
-            <motion.p
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-15%" }}
-              transition={{ duration: 0.8 }}
-              style={{ color: 'var(--primary)', fontWeight: 500, fontSize: '1.1em', marginTop: '0.5rem' }}
-            >
-              අඳුරු මාර්ගයකදී පහනක් මෙන්, නොමඟ යන විට දිශාව පෙන්වන මඟපෙන්වන්නෙකු මෙන්, කල්‍යාණ මිත්‍රයා ඔබව ධර්මය දෙසට යොමු කරයි.
-            </motion.p>
+            {[
+              "භාග්‍යවතුන් වහන්සේ දේශනා කළ පරිදි, කල්‍යාණ මිත්‍රයෙකු යනු සාමාන්‍ය යහළුවෙකු නොවේ.",
+              "ඔබගේ ලෞකික ජීවිතය දියුණු කරන පුද්ගලයෙකුට වඩා, දුකින් මිදෙන මාර්ගය පෙන්වන පුද්ගලයා කල්‍යාණ මිත්‍රයෙකි. ඔහුට ඔබ වෙනුවෙන් නිවන් ලබා දිය නොහැක. නමුත්, ඔබට සත්‍යය දැකගත හැකි මාර්ගය පෙන්වා දිය හැක.",
+              "අඳුරු මාර්ගයකදී පහනක් මෙන්, නොමඟ යන විට දිශාව පෙන්වන මඟපෙන්වන්නෙකු මෙන්, කල්‍යාණ මිත්‍රයා ඔබව ධර්මය දෙසට යොමු කරයි."
+            ].map((text, i) => (
+              <motion.p
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-15%" }}
+                transition={{ duration: 0.8, delay: i * 0.2 }}
+                style={i === 2 ? { 
+                  color: 'var(--primary)', 
+                  fontWeight: 500, 
+                  fontSize: '1.1em', 
+                  marginTop: '1rem',
+                  padding: '1.5rem 2rem',
+                  background: 'rgba(128,128,128,0.03)',
+                  borderLeft: '3px solid var(--gold-primary, var(--primary))',
+                  borderRadius: '0 16px 16px 0',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.02)'
+                } : {}}
+              >
+                {text}
+              </motion.p>
+            ))}
 
             <div className="cm-scroll-spacer"></div>
           </div>
