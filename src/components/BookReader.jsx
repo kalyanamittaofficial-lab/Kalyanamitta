@@ -56,9 +56,7 @@ export default function BookReader() {
 
   const handleOptionToggle = (sectionId, optionId) => {
     setSelectedOptions(prev => {
-      const section = book.content.find(s => s.id === sectionId);
-      const allOptionIds = section?.options?.map(o => o.id) || [];
-      const current = prev[sectionId] || allOptionIds; // Default to all selected
+      const current = prev[sectionId] || []; // Default to none selected
       
       if (current.includes(optionId)) {
         return { ...prev, [sectionId]: current.filter(id => id !== optionId) };
@@ -161,34 +159,35 @@ export default function BookReader() {
   useEffect(() => {
     if (!book) return;
     
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        const id = entry.target.id.replace('section-', '');
-        intersectionRatios.current[id] = entry.isIntersecting ? entry.intersectionRatio : 0;
-      });
-      
-      let maxRatio = 0;
-      let visibleId = null;
-      Object.entries(intersectionRatios.current).forEach(([id, ratio]) => {
-        if (ratio > maxRatio) {
-          maxRatio = ratio;
-          visibleId = id;
-        }
-      });
-      
-      if (visibleId) {
-        setActiveSectionId(visibleId);
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const sections = document.querySelectorAll('.book-section');
+          let current = '';
+          const triggerPoint = window.innerHeight * 0.4; // 40% down the screen
+          
+          sections.forEach(section => {
+            const rect = section.getBoundingClientRect();
+            if (rect.top <= triggerPoint) {
+              current = section.id.replace('section-', '');
+            }
+          });
+          
+          if (current) {
+            setActiveSectionId(prev => prev !== current ? current : prev);
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
-    }, { threshold: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], rootMargin: '-10% 0px -40% 0px' });
+    };
 
-    setTimeout(() => {
-      document.querySelectorAll('.book-section').forEach(node => {
-        observer.observe(node);
-      });
-    }, 500);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    setTimeout(handleScroll, 500); // Check once after render
 
-    return () => observer.disconnect();
-  }, [book, isAutoScrolling]);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [book]);
 
   // The Smooth Auto-Scroll Engine (Fixed for natural speed and buttery smoothness)
   useEffect(() => {
@@ -607,7 +606,7 @@ export default function BookReader() {
                   {sec.type === 'interactive-options' && sec.options && (
                     <div style={{ display: 'flex', flexDirection: 'column', paddingLeft: '1.5rem', marginTop: '0.2rem', gap: '0.2rem' }}>
                       {sec.options.map(opt => {
-                        const currentSelected = selectedOptions[sec.id] || sec.options.map(o => o.id);
+                        const currentSelected = selectedOptions[sec.id] || [];
                         const isOptSelected = currentSelected.includes(opt.id);
                         const isActiveSub = activeSectionId === `${sec.id}-opt-${opt.id}`;
                         
@@ -844,7 +843,7 @@ export default function BookReader() {
                 }
 
                 if (section.type === 'interactive-options') {
-                  const currentSelected = selectedOptions[section.id] || section.options.map(o => o.id);
+                  const currentSelected = selectedOptions[section.id] || [];
                   const selectedOptionsData = section.options.filter(o => currentSelected.includes(o.id));
 
                   return (
