@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { getBlogs } from '../services/blogService';
-import { Calendar, User, Search, ArrowRight, ArrowDownAZ, ArrowUpZA } from 'lucide-react';
+import { Calendar, User, Search, ArrowRight, ArrowDownAZ, ArrowUpZA, LayoutGrid, List } from 'lucide-react';
 import OptimizedImage from '../components/OptimizedImage';
 
 export default function BlogArchive() {
@@ -10,6 +10,7 @@ export default function BlogArchive() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState('newest'); // 'newest' | 'oldest'
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
 
   useEffect(() => {
     const fetchBlogs = async () => {
@@ -70,22 +71,44 @@ export default function BlogArchive() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="academic-sort-wrapper">
-            <label className="academic-sort-label">පිළිවෙළ:</label>
-            <button 
-              className={`academic-sort-btn ${sortOrder === 'newest' ? 'active' : ''}`}
-              onClick={() => setSortOrder('newest')}
-              title="අලුත්ම ලිපි මුලින්"
-            >
-              <ArrowDownAZ size={16} /> අලුත්ම
-            </button>
-            <button 
-              className={`academic-sort-btn ${sortOrder === 'oldest' ? 'active' : ''}`}
-              onClick={() => setSortOrder('oldest')}
-              title="පැරණිම ලිපි මුලින්"
-            >
-              <ArrowUpZA size={16} /> පැරණිම
-            </button>
+          
+          <div className="academic-controls-wrapper">
+            <div className="academic-view-toggles">
+              <button 
+                className={`academic-icon-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                onClick={() => setViewMode('grid')}
+                title="Grid View"
+              >
+                <LayoutGrid size={18} />
+              </button>
+              <button 
+                className={`academic-icon-btn ${viewMode === 'list' ? 'active' : ''}`}
+                onClick={() => setViewMode('list')}
+                title="List View"
+              >
+                <List size={18} />
+              </button>
+            </div>
+
+            <div className="academic-sort-divider"></div>
+
+            <div className="academic-sort-wrapper">
+              <label className="academic-sort-label">පිළිවෙළ:</label>
+              <button 
+                className={`academic-sort-btn ${sortOrder === 'newest' ? 'active' : ''}`}
+                onClick={() => setSortOrder('newest')}
+                title="අලුත්ම ලිපි මුලින්"
+              >
+                <ArrowDownAZ size={16} /> අලුත්ම
+              </button>
+              <button 
+                className={`academic-sort-btn ${sortOrder === 'oldest' ? 'active' : ''}`}
+                onClick={() => setSortOrder('oldest')}
+                title="පැරණිම ලිපි මුලින්"
+              >
+                <ArrowUpZA size={16} /> පැරණිම
+              </button>
+            </div>
           </div>
         </div>
 
@@ -97,7 +120,7 @@ export default function BlogArchive() {
               <button className="academic-reset-btn" onClick={() => setSearchQuery('')}>සෙවුම මකන්න</button>
             </div>
           ) : (
-            <div className="academic-grid">
+            <div className={`academic-grid ${viewMode}-view`}>
               {filteredAndSortedBlogs.map((blog, idx) => (
                 <motion.article
                   key={blog.id}
@@ -235,6 +258,50 @@ export default function BlogArchive() {
           color: var(--text-muted);
         }
 
+        .academic-controls-wrapper {
+          display: flex;
+          align-items: center;
+          gap: 1.5rem;
+          flex-wrap: wrap;
+        }
+
+        .academic-view-toggles {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .academic-icon-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: transparent;
+          border: 1px solid transparent;
+          width: 36px;
+          height: 36px;
+          border-radius: 4px;
+          color: var(--text-muted);
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .academic-icon-btn:hover {
+          color: var(--text-main);
+          background: rgba(128, 128, 128, 0.05);
+        }
+
+        .academic-icon-btn.active {
+          border-color: var(--glass-border);
+          color: var(--text-main);
+          background: rgba(128, 128, 128, 0.1);
+        }
+
+        .academic-sort-divider {
+          width: 1px;
+          height: 24px;
+          background: var(--glass-border);
+        }
+
         .academic-sort-btn {
           display: flex;
           align-items: center;
@@ -260,21 +327,29 @@ export default function BlogArchive() {
           background: rgba(128, 128, 128, 0.05);
         }
 
-        .academic-grid {
+        .academic-grid.grid-view {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
           gap: 3rem 2rem;
         }
 
+        .academic-grid.list-view {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 2rem;
+        }
+
         .academic-card {
           border: 1px solid var(--glass-border);
-          border-radius: 4px;
+          border-radius: 6px;
           background: transparent;
-          transition: border-color 0.3s ease;
+          transition: border-color 0.3s ease, box-shadow 0.3s ease;
+          overflow: hidden;
         }
 
         .academic-card:hover {
           border-color: var(--text-muted);
+          box-shadow: 0 4px 20px rgba(0,0,0,0.05);
         }
 
         .academic-card-link {
@@ -285,12 +360,27 @@ export default function BlogArchive() {
           height: 100%;
         }
 
+        .list-view .academic-card-link {
+          flex-direction: row;
+          align-items: stretch;
+        }
+
         .academic-card-image {
           width: 100%;
-          height: 200px;
+          height: 220px;
           border-bottom: 1px solid var(--glass-border);
           overflow: hidden;
           background: rgba(128,128,128,0.05);
+          position: relative;
+        }
+
+        .list-view .academic-card-image {
+          width: 320px;
+          min-width: 320px;
+          height: auto;
+          min-height: 240px;
+          border-bottom: none;
+          border-right: 1px solid var(--glass-border);
         }
 
         .academic-img {
@@ -397,21 +487,79 @@ export default function BlogArchive() {
           opacity: 0.9;
         }
 
-        /* Responsive */
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+          .academic-archive-page {
+            padding-top: 120px;
+          }
+          
+          .academic-title {
+            font-size: 3rem;
+          }
+        }
+
         @media (max-width: 768px) {
+          .academic-archive-page {
+            padding: 100px 16px 60px;
+          }
+
           .academic-title {
             font-size: 2.2rem;
           }
+          
           .academic-toolbar {
             flex-direction: column;
-            align-items: flex-start;
+            align-items: stretch;
+            gap: 1.5rem;
           }
+          
           .academic-search-wrapper {
             max-width: 100%;
             width: 100%;
           }
-          .academic-grid {
+
+          .academic-controls-wrapper {
+            justify-content: space-between;
+          }
+          
+          /* Force List View back to Grid behavior on mobile */
+          .list-view .academic-card-link {
+            flex-direction: column;
+          }
+
+          .list-view .academic-card-image {
+            width: 100%;
+            min-width: 100%;
+            height: 200px;
+            min-height: 200px;
+            border-right: none;
+            border-bottom: 1px solid var(--glass-border);
+          }
+
+          .academic-grid.grid-view {
             grid-template-columns: 1fr;
+            gap: 2rem;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .academic-sort-wrapper {
+            width: 100%;
+            justify-content: space-between;
+          }
+          
+          .academic-sort-divider {
+            display: none;
+          }
+          
+          .academic-controls-wrapper {
+            flex-direction: column;
+            align-items: stretch;
+          }
+
+          .academic-view-toggles {
+            justify-content: center;
+            margin-bottom: 10px;
           }
         }
       `}</style>
