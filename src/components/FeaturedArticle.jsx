@@ -3,6 +3,7 @@ import { BookOpen, ArrowRight, Calendar, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { getBlogs } from '../services/blogService';
+import OptimizedImage from './OptimizedImage';
 
 export default function FeaturedArticle() {
   const [blogs, setBlogs] = useState([]);
@@ -60,9 +61,9 @@ export default function FeaturedArticle() {
                 onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.05)'; e.currentTarget.style.borderColor = 'var(--primary)'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'var(--glass-border)'; }}
                 >
-                  <div style={{ width: '100%', height: '180px', background: 'rgba(0,0,0,0.03)', position: 'relative' }}>
+                  <div style={{ width: '100%', height: '180px', background: 'rgba(0,0,0,0.03)', position: 'relative', overflow: 'hidden' }}>
                     {blog.cover ? (
-                      <img src={blog.cover} alt={blog.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <OptimizedImage src={blog.cover} alt={blog.title} />
                     ) : (
                       <div className="flex-center" style={{ width: '100%', height: '100%', color: 'var(--text-muted)', fontSize: '0.9rem' }}>No Cover</div>
                     )}

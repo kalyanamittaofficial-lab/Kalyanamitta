@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { getBlogs } from '../services/blogService';
 import { Calendar, User } from 'lucide-react';
+import OptimizedImage from '../components/OptimizedImage';
 
 export default function BlogArchive() {
   const [blogs, setBlogs] = useState([]);
@@ -77,9 +78,9 @@ export default function BlogArchive() {
                     e.currentTarget.style.boxShadow = 'none';
                   }}
                   >
-                    <div style={{ width: '100%', height: '220px', background: 'rgba(0,0,0,0.05)', position: 'relative' }}>
+                  <div style={{ width: '100%', height: '220px', background: 'rgba(0,0,0,0.05)', position: 'relative', overflow: 'hidden' }}>
                       {blog.cover ? (
-                        <img src={blog.cover} alt={blog.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <OptimizedImage src={blog.cover} alt={blog.title} />
                       ) : (
                         <div className="flex-center" style={{ width: '100%', height: '100%', color: 'var(--text-muted)', fontFamily: 'var(--font-serif)' }}>No Image</div>
                       )}

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import { getBlogBySlug } from '../services/blogService';
 import { Calendar, User, ArrowLeft } from 'lucide-react';
+import OptimizedImage from '../components/OptimizedImage';
 
 export default function SingleBlog() {
   const { slug } = useParams();
@@ -62,9 +63,9 @@ export default function SingleBlog() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            style={{ width: '100%', height: '400px', borderRadius: '24px', overflow: 'hidden', marginBottom: '3rem', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}
+            style={{ width: '100%', height: '400px', borderRadius: '24px', overflow: 'hidden', marginBottom: '3rem', boxShadow: '0 20px 40px rgba(0,0,0,0.1)', position: 'relative' }}
           >
-            <img src={blog.cover} alt={blog.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <OptimizedImage src={blog.cover} alt={blog.title} />
           </motion.div>
         )}
 
@@ -105,7 +106,9 @@ export default function SingleBlog() {
                   <blockquote style={{ borderLeft: '4px solid var(--primary)', paddingLeft: '1.5rem', margin: '2rem 0', fontStyle: 'italic', opacity: 0.8 }} {...props} />
                 ),
                 img: ({node, ...props}) => (
-                  <img style={{ maxWidth: '100%', borderRadius: '12px', margin: '2rem 0' }} {...props} />
+                  <div style={{ width: '100%', borderRadius: '12px', overflow: 'hidden', margin: '2rem 0', display: 'block', position: 'relative', minHeight: '300px' }}>
+                     <OptimizedImage src={props.src} alt={props.alt} style={{ width: '100%', height: 'auto', position: 'static' }} />
+                  </div>
                 ),
               }}
             >
