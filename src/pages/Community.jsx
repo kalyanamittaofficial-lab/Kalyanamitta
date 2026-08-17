@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import AnimatedExactLogo from '../components/AnimatedExactLogo';
 
 export default function Community() {
   return (
@@ -160,14 +161,7 @@ export default function Community() {
             transition={{ duration: 1, delay: 0.2 }}
             style={{ zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
           >
-            <motion.img 
-              src="/kalyanamitta-logo.png" 
-              alt="Kalyanamitta Logo" 
-              initial={{ opacity: 0, scale: 0.8, filter: 'brightness(0) invert(1)' }}
-              animate={{ opacity: 1, scale: 1, filter: 'brightness(1) invert(0)' }}
-              transition={{ duration: 2, ease: "easeOut" }}
-              style={{ width: '180px', height: 'auto', marginBottom: '1rem', mixBlendMode: 'plus-lighter' }}
-            />
+            <AnimatedExactLogo style={{ marginBottom: '1rem', mixBlendMode: 'plus-lighter' }} />
             <motion.h1 style={{ marginTop: '0.5rem' }}>
               කල්‍යාණ මිත්‍රත්වය
             </motion.h1>
