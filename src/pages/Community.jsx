@@ -201,6 +201,37 @@ export default function Community() {
                   — උපද්ධ සූත්‍රය (සංයුත්ත නිකාය)
                 </div>
               </div>
+              
+              {/* "Live Feel" Floating Image */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-10%" }}
+                transition={{ duration: 1, delay: 0.3 }}
+                style={{ marginTop: '3rem', position: 'relative', width: '100%', borderRadius: '12px', overflow: 'hidden' }}
+              >
+                <motion.img
+                  src="/kalyanamitrathwaya-section/kalyanamitratrawaya-page-uppattasuthra.png"
+                  alt="Upaddha Sutta"
+                  animate={{ 
+                    y: [0, -12, 0],
+                    scale: [1, 1.02, 1]
+                  }}
+                  transition={{ 
+                    repeat: Infinity, 
+                    duration: 6, 
+                    ease: "easeInOut" 
+                  }}
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    objectFit: 'cover',
+                    borderRadius: '12px',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
+                    border: '1px solid rgba(255,255,255,0.05)'
+                  }}
+                />
+              </motion.div>
             </motion.div>
           </div>
 
