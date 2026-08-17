@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { AnimationOne, AnimationTwo, AnimationThree, AnimationFour } from '../components/EditorialAnimations';
+import HeroLotusAnimation from '../components/HeroLotusAnimation';
 
 export default function Community() {
   return (
@@ -162,6 +163,7 @@ export default function Community() {
             transition={{ duration: 1, delay: 0.2 }}
             style={{ zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
           >
+            <HeroLotusAnimation />
             <motion.h1 style={{ marginTop: '0.5rem' }}>
               කල්‍යාණ මිත්‍රත්වය
             </motion.h1>
