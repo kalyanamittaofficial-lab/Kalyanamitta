@@ -1,9 +1,20 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-export default function HeroLotusAnimation({ color = 'var(--gold-primary, var(--primary))', size = 260 }) {
+export default function HeroLotusAnimation({ color = 'var(--gold-primary, var(--primary))', size = 320 }) {
   
-  // Animation for the drawing effect of the petals
+  const draw = {
+    hidden: { pathLength: 0, opacity: 0 },
+    visible: (custom) => ({
+      pathLength: 1,
+      opacity: custom.op || 0.85,
+      transition: {
+        pathLength: { delay: custom.delay, duration: 2.5, ease: "easeInOut" },
+        opacity: { delay: custom.delay, duration: 0.5 }
+      }
+    })
+  };
+
   const petalVariants = {
     hidden: { pathLength: 0, opacity: 0, scale: 0.2 },
     visible: (custom) => ({
@@ -13,16 +24,43 @@ export default function HeroLotusAnimation({ color = 'var(--gold-primary, var(--
       transition: {
         pathLength: { delay: custom.delay, duration: 2.5, ease: "easeInOut" },
         opacity: { delay: custom.delay, duration: 0.5 },
-        scale: { delay: custom.delay, type: "spring", stiffness: 30, damping: 10 }
+        scale: { delay: custom.delay, duration: 3, type: "spring", stiffness: 30, damping: 10 }
       }
     })
   };
 
+  // Reusable Lotus Component
+  const Lotus = ({ x, y, delay, scale = 1, opacity = 1 }) => (
+    <motion.g 
+      initial={{ opacity: 0 }}
+      animate={{ opacity }}
+      transition={{ delay: delay, duration: 1 }}
+      style={{ transform: `translate(${x}px, ${y}px) scale(${scale})` }}
+    >
+      <g style={{ transformOrigin: '0px 0px' }}>
+        {/* Back Petals */}
+        <motion.path d="M 0 0 C -40 -10 -60 -50 -35 -70 C -20 -50 -10 -20 0 0 Z" fill="none" stroke={color} strokeWidth="1.5" variants={petalVariants} custom={{ delay: delay + 0.5 }} />
+        <motion.path d="M 0 0 C 40 -10 60 -50 35 -70 C 20 -50 10 -20 0 0 Z" fill="none" stroke={color} strokeWidth="1.5" variants={petalVariants} custom={{ delay: delay + 0.5 }} />
+        
+        {/* Outer Drooping */}
+        <motion.path d="M 0 0 C -50 5 -75 -25 -65 -45 C -45 -25 -25 -5 0 0" fill="none" stroke={color} strokeWidth="1.5" variants={petalVariants} custom={{ delay: delay + 1.5 }} />
+        <motion.path d="M 0 0 C 50 5 75 -25 65 -45 C 45 -25 25 -5 0 0" fill="none" stroke={color} strokeWidth="1.5" variants={petalVariants} custom={{ delay: delay + 1.5 }} />
+        
+        {/* Inner Front */}
+        <motion.path d="M 0 0 C -30 -20 -45 -60 -30 -75 C -15 -55 -10 -20 0 0 Z" fill="none" stroke={color} strokeWidth="1.5" variants={petalVariants} custom={{ delay: delay + 2 }} />
+        <motion.path d="M 0 0 C 30 -20 45 -60 30 -75 C 15 -55 10 -20 0 0 Z" fill="none" stroke={color} strokeWidth="1.5" variants={petalVariants} custom={{ delay: delay + 2 }} />
+        
+        {/* Central Main */}
+        <motion.path d="M 0 0 C -20 -45 -10 -100 0 -110 C 10 -100 20 -45 0 0 Z" fill="none" stroke={color} strokeWidth="2.5" variants={petalVariants} custom={{ delay: delay + 2.5 }} />
+      </g>
+    </motion.g>
+  );
+
   return (
-    <div style={{ width: size, height: size, margin: '0 auto', marginBottom: '2rem' }}>
+    <div style={{ width: '100%', maxWidth: size, margin: '0 auto', marginBottom: '2rem' }}>
       <motion.svg 
         width="100%" height="100%" 
-        viewBox="0 0 200 200" 
+        viewBox="0 0 200 280" 
         initial="hidden" 
         animate="visible"
         style={{ overflow: 'visible' }}
@@ -32,75 +70,64 @@ export default function HeroLotusAnimation({ color = 'var(--gold-primary, var(--
         {/* 1. THE WATER RIPPLES (Bottom)  */}
         {/* ============================== */}
         {[
-          { cx: 100, cy: 175, rx: 40, delay: 0 },
-          { cx: 100, cy: 182, rx: 65, delay: 1 },
-          { cx: 100, cy: 189, rx: 90, delay: 2 },
+          { cx: 100, cy: 260, rx: 50, delay: 0 },
+          { cx: 100, cy: 268, rx: 75, delay: 1 },
+          { cx: 100, cy: 276, rx: 100, delay: 2 },
         ].map((ripple, i) => (
           <motion.ellipse
             key={`ripple-${i}`}
             cx={ripple.cx} cy={ripple.cy}
-            rx={ripple.rx} ry={2.5}
+            rx={ripple.rx} ry={3}
             fill="none" stroke={color} strokeWidth="1"
             initial={{ scaleX: 0, opacity: 0 }}
-            animate={{ 
-              scaleX: [0, 1.2, 0.8, 1],
-              opacity: [0, 0.5, 0.1, 0.4] 
-            }}
-            transition={{
-              delay: ripple.delay,
-              duration: 8,
-              repeat: Infinity,
-              repeatType: "reverse",
-              ease: "easeInOut"
-            }}
+            animate={{ scaleX: [0, 1.2, 0.8, 1], opacity: [0, 0.5, 0.1, 0.4] }}
+            transition={{ delay: ripple.delay, duration: 8, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
           />
         ))}
 
         {/* ============================== */}
-        {/* 2. THE BLOOMING LOTUS (Back)   */}
+        {/* 2. SECONDARY LOTUSES (Bottom)  */}
         {/* ============================== */}
-        {/* Stem */}
-        <motion.path 
-          d="M 100 190 Q 103 175 100 160" 
-          fill="none" stroke={color} strokeWidth="2" 
-          variants={petalVariants} custom={{ delay: 0.5 }} 
-        />
+        {/* Left Secondary Lotus Stem */}
+        <motion.path d="M 80 260 Q 55 240 50 190" fill="none" stroke={color} strokeWidth="1.5" variants={draw} custom={{ delay: 8, op: 0.6 }} />
+        {/* Right Secondary Lotus Stem */}
+        <motion.path d="M 120 260 Q 145 240 150 190" fill="none" stroke={color} strokeWidth="1.5" variants={draw} custom={{ delay: 9, op: 0.6 }} />
         
-        <g style={{ transformOrigin: '100px 160px' }}>
-          {/* Back Left Petal */}
-          <motion.path 
-            d="M 100 160 C 60 150 40 110 65 90 C 80 110 90 140 100 160 Z" 
-            fill="none" stroke={color} strokeWidth="1.5" 
-            variants={petalVariants} custom={{ delay: 1.5 }} 
-          />
-          {/* Back Right Petal */}
-          <motion.path 
-            d="M 100 160 C 140 150 160 110 135 90 C 120 110 110 140 100 160 Z" 
-            fill="none" stroke={color} strokeWidth="1.5" 
-            variants={petalVariants} custom={{ delay: 1.5 }} 
-          />
-        </g>
+        <Lotus x={50} y={190} scale={0.5} delay={9} opacity={0.7} />
+        <Lotus x={150} y={190} scale={0.5} delay={10} opacity={0.7} />
 
         {/* ============================== */}
-        {/* 3. EMERGING DHARMA CHAKRA      */}
+        {/* 3. PRIMARY LOTUS (Center Top)  */}
         {/* ============================== */}
+        {/* Main Tall Stem */}
+        <motion.path 
+          d="M 100 260 Q 105 180 100 100" 
+          fill="none" stroke={color} strokeWidth="2" 
+          variants={draw} custom={{ delay: 0.5 }} 
+        />
+        
+        {/* Primary Lotus Blooms at y=100 */}
+        <Lotus x={100} y={100} scale={0.8} delay={2} />
+
+        {/* ============================== */}
+        {/* 4. EMERGING DHARMA CHAKRA      */}
+        {/* ============================== */}
+        {/* It rises from the top of the main lotus (y=50) up to y=20 */}
         <motion.g
-          initial={{ y: 60, scale: 0.2, opacity: 0 }}
-          animate={{ y: 0, scale: 1, opacity: 0.9, rotate: 360 }}
+          initial={{ y: 50, scale: 0.2, opacity: 0 }}
+          animate={{ y: -30, scale: 1, opacity: 0.9, rotate: 360 }}
           transition={{
-            y: { delay: 4, duration: 4, ease: [0.2, 0.8, 0.2, 1] },
-            scale: { delay: 4, duration: 4, type: "spring", stiffness: 40 },
-            opacity: { delay: 4, duration: 2 },
-            rotate: { delay: 6, duration: 60, repeat: Infinity, ease: "linear" }
+            y: { delay: 5.5, duration: 4, ease: [0.2, 0.8, 0.2, 1] },
+            scale: { delay: 5.5, duration: 4, type: "spring", stiffness: 30 },
+            opacity: { delay: 5.5, duration: 2 },
+            rotate: { delay: 8, duration: 40, repeat: Infinity, ease: "linear" }
           }}
           style={{ transformOrigin: '100px 80px' }}
         >
-          {/* Inner & Outer Rings */}
           <circle cx="100" cy="80" r="35" fill="none" stroke={color} strokeWidth="2" />
           <circle cx="100" cy="80" r="28" fill="none" stroke={color} strokeWidth="1" />
           <circle cx="100" cy="80" r="7" fill="none" stroke={color} strokeWidth="2" />
           
-          {/* 8 Spokes */}
           {[...Array(8)].map((_, i) => {
             const angle = (i * 45 * Math.PI) / 180;
             const x1 = 100 + 7 * Math.cos(angle);
@@ -110,44 +137,6 @@ export default function HeroLotusAnimation({ color = 'var(--gold-primary, var(--
             return <line key={`spoke-${i}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth="1.5" />
           })}
         </motion.g>
-
-        {/* ============================== */}
-        {/* 4. THE BLOOMING LOTUS (Front)  */}
-        {/* ============================== */}
-        <g style={{ transformOrigin: '100px 160px' }}>
-          {/* Outer Drooping Left */}
-          <motion.path 
-            d="M 100 160 C 50 165 25 135 35 115 C 55 135 75 155 100 160" 
-            fill="none" stroke={color} strokeWidth="1.5" 
-            variants={petalVariants} custom={{ delay: 2.5 }} 
-          />
-          {/* Outer Drooping Right */}
-          <motion.path 
-            d="M 100 160 C 150 165 175 135 165 115 C 145 135 125 155 100 160" 
-            fill="none" stroke={color} strokeWidth="1.5" 
-            variants={petalVariants} custom={{ delay: 2.5 }} 
-          />
-          
-          {/* Inner Front Left */}
-          <motion.path 
-            d="M 100 160 C 70 140 55 100 70 85 C 85 105 90 140 100 160 Z" 
-            fill="none" stroke={color} strokeWidth="1.5" 
-            variants={petalVariants} custom={{ delay: 3 }} 
-          />
-          {/* Inner Front Right */}
-          <motion.path 
-            d="M 100 160 C 130 140 145 100 130 85 C 115 105 110 140 100 160 Z" 
-            fill="none" stroke={color} strokeWidth="1.5" 
-            variants={petalVariants} custom={{ delay: 3 }} 
-          />
-          
-          {/* Central Main Petal */}
-          <motion.path 
-            d="M 100 160 C 80 115 90 60 100 50 C 110 60 120 115 100 160 Z" 
-            fill="none" stroke={color} strokeWidth="2.5" 
-            variants={petalVariants} custom={{ delay: 3.5 }} 
-          />
-        </g>
         
       </motion.svg>
     </div>
