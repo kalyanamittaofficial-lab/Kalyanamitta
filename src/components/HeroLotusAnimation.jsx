@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-export default function HeroLotusAnimation({ color = 'var(--gold-primary, var(--primary))', size = 320 }) {
+export default function HeroLotusAnimation({ color = 'var(--gold-primary, var(--primary))', size = 500 }) {
   
   const draw = {
     hidden: { pathLength: 0, opacity: 0 },
@@ -60,7 +60,7 @@ export default function HeroLotusAnimation({ color = 'var(--gold-primary, var(--
     <div style={{ width: '100%', maxWidth: size, margin: '0 auto', marginBottom: '2rem' }}>
       <motion.svg 
         width="100%" height="100%" 
-        viewBox="0 0 200 280" 
+        viewBox="0 0 400 300" 
         initial="hidden" 
         animate="visible"
         style={{ overflow: 'visible' }}
@@ -70,14 +70,14 @@ export default function HeroLotusAnimation({ color = 'var(--gold-primary, var(--
         {/* 1. THE WATER RIPPLES (Bottom)  */}
         {/* ============================== */}
         {[
-          { cx: 100, cy: 260, rx: 50, delay: 0 },
-          { cx: 100, cy: 268, rx: 75, delay: 1 },
-          { cx: 100, cy: 276, rx: 100, delay: 2 },
+          { cx: 200, cy: 280, rx: 80, delay: 0 },
+          { cx: 200, cy: 288, rx: 120, delay: 1 },
+          { cx: 200, cy: 296, rx: 160, delay: 2 },
         ].map((ripple, i) => (
           <motion.ellipse
             key={`ripple-${i}`}
             cx={ripple.cx} cy={ripple.cy}
-            rx={ripple.rx} ry={3}
+            rx={ripple.rx} ry={4}
             fill="none" stroke={color} strokeWidth="1"
             initial={{ scaleX: 0, opacity: 0 }}
             animate={{ scaleX: [0, 1.2, 0.8, 1], opacity: [0, 0.5, 0.1, 0.4] }}
@@ -89,32 +89,32 @@ export default function HeroLotusAnimation({ color = 'var(--gold-primary, var(--
         {/* 2. SECONDARY LOTUSES (Bottom)  */}
         {/* ============================== */}
         {/* Left Secondary Lotus Stem */}
-        <motion.path d="M 80 260 Q 55 240 50 190" fill="none" stroke={color} strokeWidth="1.5" variants={draw} custom={{ delay: 8, op: 0.6 }} />
+        <motion.path d="M 80 280 Q 75 230 80 180" fill="none" stroke={color} strokeWidth="1.5" variants={draw} custom={{ delay: 8, op: 0.6 }} />
         {/* Right Secondary Lotus Stem */}
-        <motion.path d="M 120 260 Q 145 240 150 190" fill="none" stroke={color} strokeWidth="1.5" variants={draw} custom={{ delay: 9, op: 0.6 }} />
+        <motion.path d="M 320 280 Q 325 230 320 180" fill="none" stroke={color} strokeWidth="1.5" variants={draw} custom={{ delay: 9, op: 0.6 }} />
         
-        <Lotus x={50} y={190} scale={0.5} delay={9} opacity={0.7} />
-        <Lotus x={150} y={190} scale={0.5} delay={10} opacity={0.7} />
+        <Lotus x={80} y={180} scale={0.65} delay={9} opacity={0.7} />
+        <Lotus x={320} y={180} scale={0.65} delay={10} opacity={0.7} />
 
         {/* ============================== */}
         {/* 3. PRIMARY LOTUS (Center Top)  */}
         {/* ============================== */}
         {/* Main Tall Stem */}
         <motion.path 
-          d="M 100 260 Q 105 180 100 100" 
-          fill="none" stroke={color} strokeWidth="2" 
+          d="M 200 280 Q 205 200 200 120" 
+          fill="none" stroke={color} strokeWidth="2.5" 
           variants={draw} custom={{ delay: 0.5 }} 
         />
         
-        {/* Primary Lotus Blooms at y=100 */}
-        <Lotus x={100} y={100} scale={0.8} delay={2} />
+        {/* Primary Lotus Blooms at y=120 */}
+        <Lotus x={200} y={120} scale={1.1} delay={2} />
 
         {/* ============================== */}
         {/* 4. EMERGING DHARMA CHAKRA      */}
         {/* ============================== */}
-        {/* It rises from the top of the main lotus (y=50) up to y=20 */}
+        {/* It rises completely out of the lotus (from y=100 up to y=10) */}
         <motion.g
-          initial={{ y: 50, scale: 0.2, opacity: 0 }}
+          initial={{ y: 100, scale: 0.2, opacity: 0 }}
           animate={{ y: -30, scale: 1, opacity: 0.9, rotate: 360 }}
           transition={{
             y: { delay: 5.5, duration: 4, ease: [0.2, 0.8, 0.2, 1] },
@@ -122,18 +122,18 @@ export default function HeroLotusAnimation({ color = 'var(--gold-primary, var(--
             opacity: { delay: 5.5, duration: 2 },
             rotate: { delay: 8, duration: 40, repeat: Infinity, ease: "linear" }
           }}
-          style={{ transformOrigin: '100px 80px' }}
+          style={{ transformOrigin: '200px 40px' }}
         >
-          <circle cx="100" cy="80" r="35" fill="none" stroke={color} strokeWidth="2" />
-          <circle cx="100" cy="80" r="28" fill="none" stroke={color} strokeWidth="1" />
-          <circle cx="100" cy="80" r="7" fill="none" stroke={color} strokeWidth="2" />
+          <circle cx="200" cy="40" r="35" fill="none" stroke={color} strokeWidth="2" />
+          <circle cx="200" cy="40" r="28" fill="none" stroke={color} strokeWidth="1" />
+          <circle cx="200" cy="40" r="7" fill="none" stroke={color} strokeWidth="2" />
           
           {[...Array(8)].map((_, i) => {
             const angle = (i * 45 * Math.PI) / 180;
-            const x1 = 100 + 7 * Math.cos(angle);
-            const y1 = 80 + 7 * Math.sin(angle);
-            const x2 = 100 + 28 * Math.cos(angle);
-            const y2 = 80 + 28 * Math.sin(angle);
+            const x1 = 200 + 7 * Math.cos(angle);
+            const y1 = 40 + 7 * Math.sin(angle);
+            const x2 = 200 + 28 * Math.cos(angle);
+            const y2 = 40 + 28 * Math.sin(angle);
             return <line key={`spoke-${i}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke={color} strokeWidth="1.5" />
           })}
         </motion.g>
