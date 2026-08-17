@@ -123,60 +123,24 @@ export default function Community() {
       
       <div className="cm-wrapper">
         <div className="cm-hero">
-          {/* Background Video */}
-          <video 
-            autoPlay 
-            loop 
-            muted 
-            playsInline
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              zIndex: 0,
-              opacity: 0.6
-            }}
-          >
-            <source src="/herovideo1.mp4" type="video/mp4" />
-          </video>
-
-          {/* Dark Overlay with subtle Golden Gradient */}
-          <div style={{
-            position: 'absolute',
-            top: 0, left: 0, width: '100%', height: '100%',
-            background: 'linear-gradient(180deg, rgba(20,20,22,0.7) 0%, rgba(20,20,22,0.9) 60%, var(--bg-main) 100%)',
-            zIndex: 1
-          }}></div>
-          
-          <div style={{
-            position: 'absolute',
-            top: 0, left: 0, width: '100%', height: '100%',
-            background: 'radial-gradient(circle at 50% 30%, rgba(212,175,55,0.15) 0%, transparent 60%)',
-            zIndex: 2,
-            mixBlendMode: 'screen'
-          }}></div>
-
           {/* Background huge text */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 0.05, scale: 1 }}
+            animate={{ opacity: 0.03, scale: 1 }}
             transition={{ duration: 2, ease: "easeOut" }}
             style={{
               position: 'absolute',
               fontSize: '15vw',
               fontFamily: 'var(--font-serif)',
               fontWeight: 900,
-              color: 'var(--gold-primary)',
+              color: 'var(--text-main)',
               whiteSpace: 'nowrap',
               pointerEvents: 'none',
               userSelect: 'none',
               top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
-              zIndex: 3
+              zIndex: 0
             }}
           >
             KALYANAMITTA
@@ -186,12 +150,12 @@ export default function Community() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.2 }}
-            style={{ zIndex: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+            style={{ zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
           >
-            <motion.h1 style={{ textShadow: '0 10px 40px rgba(0,0,0,0.8)' }}>
+            <motion.h1>
               කල්‍යාණ මිත්‍රත්වය
             </motion.h1>
-            <div style={{ width: '100px', height: '2px', background: 'var(--gold-primary)', marginTop: '1.5rem', opacity: 1, boxShadow: '0 0 10px rgba(212,175,55,0.5)' }} />
+            <div style={{ width: '100px', height: '2px', background: 'var(--gold-primary, var(--primary))', marginTop: '1.5rem', opacity: 0.8 }} />
           </motion.div>
         </div>
 
