@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import LotusAnimation from '../components/LotusAnimation';
 
 export default function Community() {
   return (
@@ -9,6 +10,12 @@ export default function Community() {
           width: 100%;
           color: var(--text-main);
         }
+
+        @keyframes marqueeScroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+
         .cm-hero {
           width: 100%;
           min-height: 40vh;
@@ -123,28 +130,30 @@ export default function Community() {
       
       <div className="cm-wrapper">
         <div className="cm-hero">
-          {/* Background huge text */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 0.03, scale: 1 }}
-            transition={{ duration: 2, ease: "easeOut" }}
-            style={{
-              position: 'absolute',
-              fontSize: '15vw',
-              fontFamily: 'var(--font-serif)',
-              fontWeight: 900,
-              color: 'var(--text-main)',
-              whiteSpace: 'nowrap',
-              pointerEvents: 'none',
-              userSelect: 'none',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              zIndex: 0
-            }}
-          >
-            KALYANAMITTA
-          </motion.div>
+          {/* Continuous Auto-Scrolling Background Text */}
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: 0,
+            transform: 'translateY(-50%)',
+            width: '200%',
+            display: 'flex',
+            whiteSpace: 'nowrap',
+            animation: 'marqueeScroll 40s linear infinite',
+            opacity: 0.03,
+            fontSize: '15vw',
+            fontFamily: 'var(--font-serif)',
+            fontWeight: 900,
+            color: 'var(--text-main)',
+            pointerEvents: 'none',
+            userSelect: 'none',
+            zIndex: 0
+          }}>
+            <span style={{ paddingRight: '5vw' }}>KALYANAMITTA</span>
+            <span style={{ paddingRight: '5vw' }}>KALYANAMITTA</span>
+            <span style={{ paddingRight: '5vw' }}>KALYANAMITTA</span>
+            <span style={{ paddingRight: '5vw' }}>KALYANAMITTA</span>
+          </div>
           
           <motion.div
             initial={{ opacity: 0, y: 50 }}
@@ -152,7 +161,8 @@ export default function Community() {
             transition={{ duration: 1, delay: 0.2 }}
             style={{ zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
           >
-            <motion.h1>
+            <LotusAnimation width={80} height={80} color="var(--primary)" />
+            <motion.h1 style={{ marginTop: '1rem' }}>
               කල්‍යාණ මිත්‍රත්වය
             </motion.h1>
             <div style={{ width: '100px', height: '2px', background: 'var(--gold-primary, var(--primary))', marginTop: '1.5rem', opacity: 0.8 }} />
