@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { AnimationOne, AnimationTwo, AnimationThree, AnimationFour } from '../components/EditorialAnimations';
 
 export default function Community() {
   return (
@@ -398,6 +399,18 @@ const EditorialSection = ({ title, children, index }) => {
             }}>
               {title}
             </h2>
+            
+            <div style={{
+              marginTop: '4rem',
+              display: 'flex',
+              justifyContent: isEven ? 'flex-start' : 'flex-end',
+              opacity: 0.9
+            }}>
+              {index === 0 && <AnimationOne />}
+              {index === 1 && <AnimationTwo />}
+              {index === 2 && <AnimationThree />}
+              {index === 3 && <AnimationFour />}
+            </div>
           </div>
         </div>
 
