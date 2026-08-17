@@ -100,8 +100,6 @@ export default function Community() {
             align-items: flex-start;
           }
           .cm-quote-side {
-            position: sticky;
-            top: 140px;
             height: fit-content;
           }
           .cm-quote-pali {
@@ -115,6 +113,9 @@ export default function Community() {
           .cm-content-side {
             padding-top: 1rem;
             gap: 3rem;
+            position: sticky;
+            top: 140px;
+            height: fit-content;
           }
           .cm-scroll-spacer {
              display: block;
@@ -262,38 +263,6 @@ export default function Community() {
                 {text}
               </motion.p>
             ))}
-
-            {/* Balancing Right Side Image */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-10%" }}
-              transition={{ duration: 1, delay: 0.5 }}
-              style={{ marginTop: '2rem', position: 'relative', width: '100%', borderRadius: '12px', overflow: 'hidden' }}
-            >
-              <motion.img
-                src="/buddha_ananda_hero.png"
-                alt="Buddha and Ananda"
-                animate={{ 
-                  y: [0, 12, 0],
-                  scale: [1, 1.015, 1]
-                }}
-                transition={{ 
-                  repeat: Infinity, 
-                  duration: 7, 
-                  ease: "easeInOut" 
-                }}
-                style={{
-                  width: '100%',
-                  height: 'auto',
-                  objectFit: 'cover',
-                  borderRadius: '12px',
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-                  border: '1px solid rgba(255,255,255,0.03)',
-                  opacity: 0.85
-                }}
-              />
-            </motion.div>
 
             <div className="cm-scroll-spacer"></div>
           </div>
