@@ -228,7 +228,7 @@ export default function DhammaLog() {
   const navigate = useNavigate();
 
   // Run the tracking hook locally so tracking continues to happen
-  const { liveStats } = useReadingTracker();
+  const { liveStats, clearHistory } = useReadingTracker();
 
   // Read fresh data from localStorage when panel opens
   const handleOpen = useCallback(() => {
@@ -361,10 +361,8 @@ export default function DhammaLog() {
                   <button
                     onClick={() => {
                       if (window.confirm("ඔබට මෙම කියවීම් ඉතිහාසය මකා දැමීමට අවශ්‍යද?")) {
-                        clearAllData();
+                        clearHistory();
                         setPages([]);
-                        // Clear the current active session in the hook by reloading page
-                        window.location.reload();
                       }
                     }}
                     style={{

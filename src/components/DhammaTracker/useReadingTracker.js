@@ -385,11 +385,19 @@ export function useReadingTracker() {
   // ── Clear all data ───────────────────────────────────────────────────
   const clearHistory = useCallback(() => {
     clearAllData();
-    setJourney({ sessions: [], totalReadingTimeMs: 0, createdAt: Date.now() });
+    const emptyJourney = { sessions: [], totalReadingTimeMs: 0, createdAt: Date.now() };
+    setJourney(emptyJourney);
+    journeyRef.current = emptyJourney; // crucial for preventing old data saving on unload
     setLastPosition(null);
     setLiveStats(null);
     _sessionId = `sess_${Date.now()}`; // new session after clear
     sessionId.current = _sessionId;
+    
+    // Also reset current page stats so we don't save the pre-clear time on unload
+    enteredAt.current = Date.now();
+    activeTimeMs.current = 0;
+    paraData.current = {};
+    scrollDepth.current = 0;
   }, []);
 
   // ── Computed views for UI ────────────────────────────────────────────
