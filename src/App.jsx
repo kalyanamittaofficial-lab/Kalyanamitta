@@ -20,6 +20,8 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ResourceLanding from './pages/ResourceLanding';
 import Onboarding from './pages/Onboarding';
+import History from './pages/History';
+import HistoryChapter from './pages/HistoryChapter';
 
 function ProtectedRoute({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -58,6 +60,8 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="words" element={<Words />} />
+          <Route path="history" element={<History />} />
+          <Route path="history/:chapterId" element={<HistoryChapter />} />
           <Route path="sermons" element={<Sermons />} />
           <Route path="meditation" element={<Meditation />} />
           <Route path="path" element={<Path />} />

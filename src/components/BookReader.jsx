@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Moon, Sun, BookOpen, Settings, Check, Type, Play, Pause, Minus, Plus, Maximize, Minimize } from 'lucide-react';
 import { booksData } from '../data/books';
+import DhammaLog from './DhammaLog';
 
 export default function BookReader() {
   const { bookId } = useParams();
@@ -1218,6 +1219,8 @@ export default function BookReader() {
         </article>
         </div>
       </div>
+      {/* Client log — clean reading log (bottom-right) */}
+      <DhammaLog />
     </motion.div>
   );
 }

@@ -1,6 +1,7 @@
 import React, { useLayoutEffect } from 'react';
 import { useLocation, useOutlet } from 'react-router-dom';
 import Header from './Header';
+import DhammaLog from './DhammaLog';
 
 export default function Layout() {
   const location = useLocation();
@@ -36,6 +37,9 @@ export default function Layout() {
            {outlet}
         </div>
       </main>
+
+      {/* Dhamma Reading Log — client version, floating bookmark (bottom-right) */}
+      <DhammaLog />
     </div>
   );
 }

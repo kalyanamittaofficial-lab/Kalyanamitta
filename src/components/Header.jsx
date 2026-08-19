@@ -175,6 +175,7 @@ export default function Header() {
         { name: 'ධර්ම දාන', path: '/dharmadhana' }
       ]
     },
+    { name: 'බෞද්ධ ඉතිහාසය', path: '/history' },
     { name: 'කල්‍යාණ මිත්‍රත්වය', path: '/community' },
     { name: 'ඔබ කවුද?', path: '/lifecycle' }
   ];
