@@ -157,11 +157,13 @@ export default function Header() {
   // Elite Grouped Nav Structure
   const allNavItems = [
     { name: 'මුල් පිටුව', path: '/' },
+    { name: 'ඔබ කවුද?', path: '/lifecycle' },
+    { name: 'කල්‍යාණ මිත්‍රත්වය', path: '/community' },
+    { name: 'ධර්ම මාර්ගය', path: '/path' },
     { 
       name: 'දහම් මග', 
       isDropdown: true,
       subItems: [
-        { name: 'ධර්ම මාර්ගය', path: '/path' },
         { name: 'ජීවිතයට ධර්මය', path: '/life' }, 
         { name: 'දේශනා', path: '/sermons' }, 
         { name: 'භාවනා', path: '/meditation' }
@@ -178,6 +180,7 @@ export default function Header() {
     { name: 'බෞද්ධ ඉතිහාසය', path: '/history' },
     { name: 'කල්‍යාණ මිත්‍රත්වය', path: '/community' },
     { name: 'ඔබ කවුද?', path: '/lifecycle' }
+    { name: 'ශාසනය සුරකිමු', path: '/sasanaya' }
   ];
 
   return (

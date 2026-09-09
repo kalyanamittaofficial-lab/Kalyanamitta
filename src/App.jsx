@@ -22,6 +22,7 @@ import ResourceLanding from './pages/ResourceLanding';
 import Onboarding from './pages/Onboarding';
 import History from './pages/History';
 import HistoryChapter from './pages/HistoryChapter';
+import Sasanaya from './pages/Sasanaya';
 
 function ProtectedRoute({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -70,6 +71,7 @@ function App() {
           <Route path="lifecycle" element={<LifeCycle />} />
           <Route path="community" element={<Community />} />
           <Route path="dharmadhana" element={<DharmaDhana />} />
+          <Route path="sasanaya" element={<Sasanaya />} />
           <Route path="profile" element={<Profile />} />
           <Route path="other-chantings" element={<OtherChantings />} />
           <Route path="library/:id" element={<ResourceLanding />} />
