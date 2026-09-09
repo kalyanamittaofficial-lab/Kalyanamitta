@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import HeroSection from '../components/HeroSection';
 import LatestSermons from '../components/LatestSermons';
 import FeaturedArticle from '../components/FeaturedArticle';
-import UpcomingEvents from '../components/UpcomingEvents';
+import NoticeBoard from '../components/NoticeBoard';
 
 export default function Home() {
   return (
@@ -16,7 +16,7 @@ export default function Home() {
         <HeroSection />
         <LatestSermons />
         <FeaturedArticle />
-        <UpcomingEvents />
+        <NoticeBoard />
       </div>
     </div>
   );
