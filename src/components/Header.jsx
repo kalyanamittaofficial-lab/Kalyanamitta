@@ -158,15 +158,17 @@ export default function Header() {
   const allNavItems = [
     { name: 'මුල් පිටුව', path: '/' },
     { name: 'ඔබ කවුද?', path: '/lifecycle' },
-    { name: 'කල්‍යාණ මිත්‍රත්වය', path: '/community' },
     { name: 'ධර්ම මාර්ගය', path: '/path' },
+    { name: 'කල්‍යාණ මිත්‍රත්වය', path: '/community' },
+    { name: 'LMS ද්වාරය', path: '/lms' },
     { 
       name: 'දහම් මග', 
       isDropdown: true,
       subItems: [
         { name: 'ජීවිතයට ධර්මය', path: '/life' }, 
         { name: 'දේශනා', path: '/sermons' }, 
-        { name: 'භාවනා', path: '/meditation' }
+        { name: 'භාවනා', path: '/meditation' },
+        { name: 'බෞද්ධ ඉතිහාසය', path: '/history' }
       ]
     },
     { 
@@ -177,9 +179,6 @@ export default function Header() {
         { name: 'ධර්ම දාන', path: '/dharmadhana' }
       ]
     },
-    { name: 'බෞද්ධ ඉතිහාසය', path: '/history' },
-    { name: 'කල්‍යාණ මිත්‍රත්වය', path: '/community' },
-    { name: 'ඔබ කවුද?', path: '/lifecycle' },
     { name: 'ශාසනය සුරකිමු', path: '/sasanaya' }
   ];
 

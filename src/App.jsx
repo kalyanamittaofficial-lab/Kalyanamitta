@@ -23,14 +23,19 @@ import Onboarding from './pages/Onboarding';
 import History from './pages/History';
 import HistoryChapter from './pages/HistoryChapter';
 import Sasanaya from './pages/Sasanaya';
+import LMS from './pages/LMS';
 
 function ProtectedRoute({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Check if user is logged in
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       setIsAuthenticated(!!session);
-    });
+    };
+
+    checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsAuthenticated(!!session);
@@ -72,6 +77,7 @@ function App() {
           <Route path="community" element={<Community />} />
           <Route path="dharmadhana" element={<DharmaDhana />} />
           <Route path="sasanaya" element={<Sasanaya />} />
+          <Route path="lms" element={<LMS />} />
           <Route path="profile" element={<Profile />} />
           <Route path="other-chantings" element={<OtherChantings />} />
           <Route path="library/:id" element={<ResourceLanding />} />

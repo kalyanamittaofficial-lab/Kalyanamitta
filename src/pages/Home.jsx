@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import HeroSection from '../components/HeroSection';
-import LatestSermons from '../components/LatestSermons';
 import FeaturedArticle from '../components/FeaturedArticle';
 import NoticeBoard from '../components/NoticeBoard';
 
@@ -14,9 +13,8 @@ export default function Home() {
       {/* Main Content (Scrollable) */}
       <div style={{ position: 'relative', zIndex: 10, paddingBottom: '120px' }}>
         <HeroSection />
-        <LatestSermons />
-        <FeaturedArticle />
         <NoticeBoard />
+        <FeaturedArticle />
       </div>
     </div>
   );
