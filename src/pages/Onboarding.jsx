@@ -119,7 +119,7 @@ export default function Onboarding() {
   const labelStyle = { display: 'block', marginBottom: '6px', fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: '600' };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-main)', paddingTop: '100px', paddingBottom: '60px' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-main)', paddingTop: '20px', paddingBottom: '60px' }}>
       <div style={{ maxWidth: '600px', width: '100%', margin: '0 auto', padding: '0 24px' }}>
         
         <h1 style={{ fontSize: '2.5rem', color: 'var(--primary)', fontFamily: 'var(--font-serif)', marginBottom: '8px', textAlign: 'center' }}>
