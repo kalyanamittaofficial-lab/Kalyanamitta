@@ -261,12 +261,12 @@ export default function Register() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                 <div>
-                  <label style={labelStyle}>Email Address *</label>
-                  <input type="email" name="email" value={formData.email} onChange={handleChange} required style={getInputStyle(focusedInput === 'email')} placeholder="name@example.com" onFocus={() => setFocusedInput('email')} onBlur={() => setFocusedInput(null)} />
+                  <label htmlFor="email" style={labelStyle}>Email Address *</label>
+                  <input id="email" autoComplete="email" type="email" name="email" value={formData.email} onChange={handleChange} required style={getInputStyle(focusedInput === 'email')} placeholder="name@example.com" onFocus={() => setFocusedInput('email')} onBlur={() => setFocusedInput(null)} />
                 </div>
                 <div>
-                  <label style={labelStyle}>Password *</label>
-                  <input type="password" name="password" value={formData.password} onChange={handleChange} required style={getInputStyle(focusedInput === 'password')} minLength="6" placeholder="අකුරු 6 කට වඩා ලබාදෙන්න" onFocus={() => setFocusedInput('password')} onBlur={() => setFocusedInput(null)} />
+                  <label htmlFor="password" style={labelStyle}>Password *</label>
+                  <input id="password" autoComplete="new-password" type="password" name="password" value={formData.password} onChange={handleChange} required style={getInputStyle(focusedInput === 'password')} minLength="6" placeholder="අකුරු 6 කට වඩා ලබාදෙන්න" onFocus={() => setFocusedInput('password')} onBlur={() => setFocusedInput(null)} />
                   {focusedInput === 'password' && (
                     <span style={{ fontSize: '0.75rem', color: 'var(--primary)', marginTop: '4px', display: 'block', animation: 'fadeIn 0.3s' }}>
                       * ඉලක්කම් සහ අකුරු මිශ්‍ර කර ශක්තිමත් මුරපදයක් (Strong Password) ලබා දෙන්න.
@@ -276,19 +276,19 @@ export default function Register() {
               </div>
 
               <div>
-                <label style={labelStyle}>Full Name (English) *</label>
-                <input type="text" name="name" value={formData.name} onChange={handleChange} required style={getInputStyle(focusedInput === 'name')} placeholder="e.g. Nimal Perera" onFocus={() => setFocusedInput('name')} onBlur={() => setFocusedInput(null)} />
+                <label htmlFor="name" style={labelStyle}>Full Name (English) *</label>
+                  <input id="name" autoComplete="name" type="text" name="name" value={formData.name} onChange={handleChange} required style={getInputStyle(focusedInput === 'name')} placeholder="e.g. Nimal Perera" onFocus={() => setFocusedInput('name')} onBlur={() => setFocusedInput(null)} />
               </div>
 
               <div>
-                <label style={labelStyle}>Mobile Number *</label>
-                <input type="tel" name="mobile" value={formData.mobile} onChange={handleChange} required style={getInputStyle(focusedInput === 'mobile')} placeholder="+947XXXXXXXX" onFocus={() => setFocusedInput('mobile')} onBlur={() => setFocusedInput(null)} />
+                <label htmlFor="mobile" style={labelStyle}>Mobile Number *</label>
+                  <input id="mobile" autoComplete="tel" type="tel" name="mobile" value={formData.mobile} onChange={handleChange} required style={getInputStyle(focusedInput === 'mobile')} placeholder="+947XXXXXXXX" onFocus={() => setFocusedInput('mobile')} onBlur={() => setFocusedInput(null)} />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                 <div>
-                  <label style={labelStyle}>Country *</label>
-                  <select name="country" value={formData.country} onChange={handleChange} style={getSelectStyle()}>
+                  <label htmlFor="country" style={labelStyle}>Country *</label>
+                  <select id="country" autoComplete="country" name="country" value={formData.country} onChange={handleChange} style={getSelectStyle()}>
                     <option value="Sri Lanka">Sri Lanka</option>
                     <option value="Australia">Australia</option>
                     <option value="UK">United Kingdom</option>
@@ -297,36 +297,36 @@ export default function Register() {
                   </select>
                 </div>
                 <div>
-                  <label style={labelStyle}>State / District *</label>
-                  <input type="text" name="state" value={formData.state} onChange={handleChange} required style={getInputStyle(focusedInput === 'state')} placeholder="e.g. Colombo" onFocus={() => setFocusedInput('state')} onBlur={() => setFocusedInput(null)} />
+                  <label htmlFor="state" style={labelStyle}>State / District *</label>
+                  <input id="state" autoComplete="address-level1" type="text" name="state" value={formData.state} onChange={handleChange} required style={getInputStyle(focusedInput === 'state')} placeholder="e.g. Colombo" onFocus={() => setFocusedInput('state')} onBlur={() => setFocusedInput(null)} />
                 </div>
               </div>
 
               {formData.country === 'Other' && (
                 <div style={{ marginTop: '-12px' }}>
-                  <label style={labelStyle}>Specify Your Country *</label>
-                  <input type="text" name="otherCountry" value={formData.otherCountry} onChange={handleChange} required style={getInputStyle(focusedInput === 'otherCountry')} placeholder="e.g. Canada" onFocus={() => setFocusedInput('otherCountry')} onBlur={() => setFocusedInput(null)} />
+                  <label htmlFor="otherCountry" style={labelStyle}>Specify Your Country *</label>
+                  <input id="otherCountry" autoComplete="country-name" type="text" name="otherCountry" value={formData.otherCountry} onChange={handleChange} required style={getInputStyle(focusedInput === 'otherCountry')} placeholder="e.g. Canada" onFocus={() => setFocusedInput('otherCountry')} onBlur={() => setFocusedInput(null)} />
                 </div>
               )}
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                 <div>
-                  <label style={labelStyle}>Native Language</label>
-                  <select name="language" value={formData.language} onChange={handleChange} style={getSelectStyle()}>
+                  <label htmlFor="language" style={labelStyle}>Native Language</label>
+                  <select id="language" autoComplete="language" name="language" value={formData.language} onChange={handleChange} style={getSelectStyle()}>
                     <option value="Sinhala">Sinhala</option>
                     <option value="English">English</option>
                     <option value="Tamil">Tamil</option>
                   </select>
                 </div>
                 <div>
-                  <label style={labelStyle}>Date of Birth *</label>
-                  <input type="date" name="dob" value={formData.dob} onChange={handleChange} required style={getInputStyle(focusedInput === 'dob')} onFocus={() => setFocusedInput('dob')} onBlur={() => setFocusedInput(null)} />
+                  <label htmlFor="dob" style={labelStyle}>Date of Birth *</label>
+                  <input id="dob" autoComplete="bday" type="date" name="dob" value={formData.dob} onChange={handleChange} required style={getInputStyle(focusedInput === 'dob')} onFocus={() => setFocusedInput('dob')} onBlur={() => setFocusedInput(null)} />
                 </div>
               </div>
 
               <div>
-                <label style={labelStyle}>Marital Status *</label>
-                <select name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} required style={getSelectStyle()}>
+                <label htmlFor="maritalStatus" style={labelStyle}>Marital Status *</label>
+                  <select id="maritalStatus" autoComplete="off" name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} required style={getSelectStyle()}>
                   <option value="">Select Status</option>
                   <option value="Single">Single / Unmarried</option>
                   <option value="Married">Married</option>
@@ -334,13 +334,13 @@ export default function Register() {
               </div>
 
               <div>
-                <label style={labelStyle}>Family Details</label>
-                <input type="text" name="familyDetails" value={formData.familyDetails} onChange={handleChange} style={getInputStyle(focusedInput === 'familyDetails')} placeholder="e.g. Living with parents / 2 Kids" onFocus={() => setFocusedInput('familyDetails')} onBlur={() => setFocusedInput(null)} />
+                <label htmlFor="familyDetails" style={labelStyle}>Family Details</label>
+                  <input id="familyDetails" autoComplete="off" type="text" name="familyDetails" value={formData.familyDetails} onChange={handleChange} style={getInputStyle(focusedInput === 'familyDetails')} placeholder="e.g. Living with parents / 2 Kids" onFocus={() => setFocusedInput('familyDetails')} onBlur={() => setFocusedInput(null)} />
               </div>
 
               <div>
-                <label style={labelStyle}>Education / Profession *</label>
-                <input type="text" name="education" value={formData.education} onChange={handleChange} required style={getInputStyle(focusedInput === 'education')} placeholder="e.g. Software Engineer / BSc Degree" onFocus={() => setFocusedInput('education')} onBlur={() => setFocusedInput(null)} />
+                <label htmlFor="education" style={labelStyle}>Education / Profession *</label>
+                  <input id="education" autoComplete="off" type="text" name="education" value={formData.education} onChange={handleChange} required style={getInputStyle(focusedInput === 'education')} placeholder="e.g. Software Engineer / BSc Degree" onFocus={() => setFocusedInput('education')} onBlur={() => setFocusedInput(null)} />
               </div>
 
               <button type="submit" style={{ marginTop: '24px', padding: '16px', backgroundColor: 'var(--primary)', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '1.05rem', fontWeight: '600', cursor: 'pointer', transition: 'background-color 0.2s ease' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--primary-hover)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--primary)'}>
