@@ -1,118 +1,75 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Bell, User, Home, X, Menu, ChevronDown, Sun, Moon } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Search, Menu, X, Sun, Moon } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../utils/supabase';
 
-const NavDropdown = ({ item, location }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const isActive = item.subItems.some(sub => location.pathname === sub.path);
-
-  return (
-    <div 
-      style={{ position: 'relative' }} 
-      onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => setIsOpen(false)}
-    >
-      <div 
-        style={{ 
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-          fontSize: '0.95rem',
-          fontWeight: isActive ? '700' : '500',
-          color: isActive || isOpen ? 'var(--primary)' : 'var(--text-main)', 
-          cursor: 'pointer',
-          transition: 'color 0.2s ease',
-          fontFamily: 'var(--font-sinhala)',
-          padding: '10px 0'
-        }}
-      >
-        <span>{item.name}</span>
-        <ChevronDown size={14} style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease', opacity: 0.6 }} />
-      </div>
-
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.98 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            style={{
-              position: 'absolute',
-              top: '100%',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              background: 'var(--glass-bg)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid var(--glass-border)',
-              borderRadius: '12px',
-              padding: '12px',
-              minWidth: '220px',
-              boxShadow: '0 10px 40px rgba(0,0,0,0.08)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '4px',
-              zIndex: 100
-            }}
-          >
-            {item.subItems.map(sub => {
-              const isSubActive = location.pathname === sub.path;
-              if (sub.disabled) {
-                return (
-                  <div
-                    key={sub.name}
-                    style={{
-                      padding: '12px 16px',
-                      borderRadius: '8px',
-                      color: 'var(--text-muted)',
-                      opacity: 0.6,
-                      background: 'transparent',
-                      fontFamily: 'var(--font-sinhala)',
-                      fontSize: '0.95rem',
-                      fontWeight: '500',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      cursor: 'not-allowed'
-                    }}
-                    title="ඉදිරියේදී බලාපොරොත්තු වන්න"
-                  >
-                    <span>{sub.name}</span>
-                    <span style={{ fontSize: '0.7rem', padding: '2px 6px', background: 'var(--glass-border)', borderRadius: '4px' }}>ළඟදීම</span>
-                  </div>
-                );
-              }
-              return (
-                <Link
-                  key={sub.name}
-                  to={sub.path}
-                  style={{
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    color: isSubActive ? 'var(--primary)' : 'var(--text-main)',
-                    background: isSubActive ? 'var(--hover-overlay)' : 'transparent',
-                    textDecoration: 'none',
-                    fontFamily: 'var(--font-sinhala)',
-                    fontSize: '0.95rem',
-                    fontWeight: isSubActive ? '700' : '500',
-                    transition: 'all 0.2s ease',
-                    display: 'block'
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--hover-overlay)'; e.currentTarget.style.color = 'var(--primary)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = isSubActive ? 'var(--hover-overlay)' : 'transparent'; e.currentTarget.style.color = isSubActive ? 'var(--primary)' : 'var(--text-main)'; }}
-                >
-                  {sub.name}
-                </Link>
-              );
-            })}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-};
+// --- Premium Elite Nav Data ---
+const allNavItems = [
+  { name: 'මුල් පිටුව', path: '/' },
+  { name: 'ඔබ කවුද?', path: '/lifecycle' },
+  { name: 'ධර්ම මාර්ගය', path: '/path' },
+  { name: 'කල්‍යාණ මිත්‍රත්වය', path: '/community' },
+  { 
+    name: 'දහම් මග', 
+    isMegaMenu: true,
+    columns: [
+      {
+        title: 'ප්‍රායෝගික ධර්මය',
+        items: [
+          { name: 'ජීවිතයට ධර්මය', path: '/life' },
+          { name: 'ගිහි විනය', path: '/layman', isPlaceholder: true },
+          { name: 'මානසික සුවය', path: '/wellness', isPlaceholder: true }
+        ]
+      },
+      {
+        title: 'දේශනා සහ භාවනා',
+        items: [
+          { name: 'ධර්ම දේශනා', path: '/sermons' },
+          { name: 'භාවනා වැඩසටහන්', path: '/meditation' },
+          { name: 'විශේෂ සාකච්ඡා', path: '/discussions', isPlaceholder: true }
+        ]
+      },
+      {
+        title: 'අධ්‍යයන අංශය',
+        items: [
+          { name: 'බෞද්ධ ඉතිහාසය', path: '/history' },
+          { name: 'පාලි භාෂා අධ්‍යයනය', path: '/pali', isPlaceholder: true },
+          { name: 'සූත්‍ර විවරණ', path: '/sutta', isPlaceholder: true }
+        ]
+      }
+    ]
+  },
+  { 
+    name: 'සම්පත්', 
+    isMegaMenu: true,
+    columns: [
+      {
+        title: 'ඩිජිටල් පුස්තකාලය',
+        items: [
+          { name: 'කල්‍යාණමිත්ත පුස්තකාලය', path: '/words', disabled: true },
+          { name: 'PDF ග්‍රන්ථ', path: '/pdf-books', isPlaceholder: true },
+          { name: 'මාසික සඟරා', path: '/magazines', isPlaceholder: true }
+        ]
+      },
+      {
+        title: 'පුණ්‍යකර්ම',
+        items: [
+          { name: 'ධර්ම දාන', path: '/dharmadhana' },
+          { name: 'විහාරස්ථාන සංවර්ධන', path: '/temple-dev', isPlaceholder: true }
+        ]
+      },
+      {
+        title: 'වෙනත් සේවා',
+        items: [
+          { name: 'ළමා වැඩසටහන්', path: '/kids', isPlaceholder: true },
+          { name: 'සමාජ සත්කාර', path: '/social', isPlaceholder: true }
+        ]
+      }
+    ]
+  },
+  { name: 'ශාසනය සුරකිමු', path: '/sasanaya' }
+];
 
 export default function Header() {
   const navigate = useNavigate();
@@ -121,31 +78,62 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [session, setSession] = useState(null);
   const [theme, setTheme] = useState('light');
+  
+  // Mega menu state
+  const [activeMegaMenu, setActiveMegaMenu] = useState(null);
+  const headerRef = useRef(null);
+  const timeoutRef = useRef(null);
 
+  // Initialize theme and Auth (Runs ONLY ONCE)
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || 'light';
     setTheme(savedTheme);
+    document.documentElement.setAttribute('data-theme', savedTheme);
     
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    
-    // Check initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
       subscription.unsubscribe();
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, []);
+
+  // Handle Scroll and Click Outside (Optimized to prevent heavy re-renders)
+  useEffect(() => {
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setIsScrolled(window.scrollY > 20);
+          setActiveMegaMenu(null); // Close menu on scroll
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    const handleClickOutside = (e) => {
+      if (headerRef.current && !headerRef.current.contains(e.target)) {
+        setActiveMegaMenu(null);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []); // Empty dependency array! We don't want to re-attach listeners on every hover.
+
   
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -154,321 +142,379 @@ export default function Header() {
     localStorage.setItem('theme', newTheme);
   };
 
-  // Elite Grouped Nav Structure
-  const allNavItems = [
-    { name: 'මුල් පිටුව', path: '/' },
-    { name: 'ඔබ කවුද?', path: '/lifecycle' },
-    { name: 'ධර්ම මාර්ගය', path: '/path' },
-    { name: 'කල්‍යාණ මිත්‍රත්වය', path: '/community' },
-    { name: 'LMS ද්වාරය', path: '/lms' },
-    { 
-      name: 'දහම් මග', 
-      isDropdown: true,
-      subItems: [
-        { name: 'ජීවිතයට ධර්මය', path: '/life' }, 
-        { name: 'දේශනා', path: '/sermons' }, 
-        { name: 'භාවනා', path: '/meditation' },
-        { name: 'බෞද්ධ ඉතිහාසය', path: '/history' }
-      ]
-    },
-    { 
-      name: 'සම්පත්', 
-      isDropdown: true,
-      subItems: [
-        { name: 'කල්‍යාණමිත්ත පුස්තකාලය', path: '/words', disabled: true },
-        { name: 'ධර්ම දාන', path: '/dharmadhana' }
-      ]
-    },
-    { name: 'ශාසනය සුරකිමු', path: '/sasanaya' }
-  ];
+  const handleMouseEnter = (item) => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (item.isMegaMenu) {
+      setActiveMegaMenu(item);
+    } else {
+      // Grace period: don't instantly close if the user accidentally swipes across a normal link 
+      // while trying to move their mouse down into the Mega Menu.
+      timeoutRef.current = setTimeout(() => {
+        setActiveMegaMenu(null);
+      }, 300);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      setActiveMegaMenu(null);
+    }, 300); // 300ms delay for smooth UX when leaving the header
+  };
+
+  const isDark = theme === 'dark';
+  const bgColor = isDark ? 'rgba(25, 25, 25, 0.98)' : 'rgba(255, 255, 255, 0.98)';
+  const solidBg = isDark ? '#191919' : '#ffffff';
+  const textColor = isDark ? '#ffffff' : '#0a0a0a';
+  const textMuted = isDark ? '#8a8a8a' : '#666666';
+  const borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)';
+  
+  const isAnyMegaMenuOpen = activeMegaMenu !== null;
 
   return (
     <>
-      <header className={`mobile-header-padding ${isScrolled ? 'scrolled' : ''}`} style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        width: '100%',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        zIndex: 50,
-        background: isScrolled ? 'var(--glass-bg)' : 'var(--bg-main)',
-        backdropFilter: isScrolled ? 'blur(20px)' : 'none',
-        borderBottom: '1px solid var(--glass-border)',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        boxShadow: isScrolled ? '0 4px 20px rgba(0,0,0,0.03)' : 'none'
-      }}>
-        {/* Logo Area */}
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '16px', textDecoration: 'none' }}>
-          <img 
-            src="/kalyanamitta-logo.png" 
-            alt="Kalyanamitta Logo" 
-            style={{ height: isScrolled ? '45px' : '60px', width: 'auto', objectFit: 'contain', transition: 'height 0.3s ease' }} 
-          />
-          <div className="hide-on-mobile">
-            <div style={{ fontSize: '1.4rem', fontWeight: '700', color: 'var(--primary)', letterSpacing: '0.02em', fontFamily: 'var(--font-serif)' }}>Kalyanamitta</div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', letterSpacing: '0.05em' }}>කල්‍යාණමිත්ත</div>
-          </div>
-        </Link>
+      <style>{`
+        .premium-header-wrapper {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          z-index: 1000;
+          background: ${isAnyMegaMenuOpen ? solidBg : (isScrolled ? bgColor : 'transparent')};
+          /* Removed heavy backdrop-filter blur for immense performance boost while scrolling */
+          border-bottom: 1px solid ${isScrolled || isAnyMegaMenuOpen ? borderColor : 'transparent'};
+          transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
 
-        {/* Main Nav (Hidden on Mobile) */}
-        <nav className="hide-on-mobile" style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '32px'
-        }}>
-          {allNavItems.map(item => {
-            if (item.isDropdown) {
-              return <NavDropdown key={item.name} item={item} location={location} />;
-            }
-            
-            const isActive = location.pathname === item.path;
-            return (
-              <Link 
-                to={item.path} 
-                key={item.name} 
-                style={{ 
-                  position: 'relative',
-                  display: 'flex',
-                  alignItems: 'center',
-                  fontSize: '0.95rem',
-                  fontWeight: isActive ? '700' : '500',
-                  color: isActive ? 'var(--primary)' : 'var(--text-main)', 
-                  cursor: 'pointer',
-                  transition: 'color 0.2s ease',
-                  textDecoration: 'none',
-                  fontFamily: 'var(--font-sinhala)'
-                }} 
-                onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--primary)'; }}
-                onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.color = 'var(--text-main)'; }}
-              >
-                {isActive && (
-                  <motion.div
-                    layoutId="desktop-nav-underline"
-                    style={{
-                      position: 'absolute',
-                      bottom: '-6px',
-                      left: 0,
-                      width: '100%',
-                      height: '2px',
-                      background: 'var(--primary)',
-                      borderRadius: '2px'
-                    }}
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  />
-                )}
-                <span>{item.name}</span>
+        .premium-header-container {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0 5%;
+          height: 85px;
+          max-width: 1920px;
+          margin: 0 auto;
+        }
+
+        .premium-desktop-nav {
+          display: none;
+          height: 100%;
+          align-items: center;
+          gap: 36px;
+        }
+
+        @media (min-width: 1100px) {
+          .premium-desktop-nav {
+            display: flex;
+          }
+          .premium-mobile-toggle {
+            display: none !important;
+          }
+        }
+
+        .premium-mobile-toggle {
+          display: flex;
+          background: transparent;
+          border: none;
+          color: ${textColor};
+          cursor: pointer;
+          padding: 10px;
+        }
+
+        .premium-nav-item {
+          position: relative;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          font-family: var(--font-sinhala);
+          font-size: 1.05rem;
+          font-weight: 500;
+          color: ${textColor};
+          text-decoration: none;
+          cursor: pointer;
+          transition: color 0.2s ease;
+          letter-spacing: -0.01em;
+        }
+
+        .premium-nav-item:hover, .premium-nav-item.active {
+          color: var(--primary);
+        }
+
+        .premium-nav-indicator {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          height: 3px;
+          background-color: var(--primary);
+          border-top-left-radius: 3px;
+          border-top-right-radius: 3px;
+        }
+
+        .premium-mega-menu {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          width: 100%;
+          background: ${solidBg};
+          border-bottom: 1px solid ${borderColor};
+          box-shadow: 0 40px 80px rgba(0,0,0,0.06);
+          padding: 60px 5% 80px 5%;
+          overflow: hidden;
+          z-index: 999;
+        }
+
+        .mega-menu-backdrop {
+          position: fixed;
+          top: 85px;
+          left: 0;
+          width: 100%;
+          height: calc(100vh - 85px);
+          background: rgba(0,0,0,0.4);
+          /* Removed backdrop filter blur here as well for performance */
+          z-index: 998;
+        }
+      `}</style>
+
+      <div 
+        className="premium-header-wrapper" 
+        ref={headerRef}
+        onMouseLeave={handleMouseLeave}
+      >
+        <div className="premium-header-container">
+          
+          {/* Elite Logo */}
+          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '14px', textDecoration: 'none' }} onClick={() => setActiveMegaMenu(null)}>
+            <img src="/kalyanamitta-logo.png" alt="Logo" style={{ height: '48px', width: 'auto' }} />
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <div style={{ fontSize: '1.45rem', fontWeight: '800', color: textColor, letterSpacing: '-0.02em', fontFamily: 'var(--font-serif)', lineHeight: 1.1 }}>
+                Kalyanamitta
+              </div>
+              <div style={{ fontSize: '0.9rem', color: textMuted, letterSpacing: '0.04em', fontFamily: 'var(--font-sinhala)', fontWeight: 500, opacity: 0.8 }}>
+                කල්‍යාණමිත්ත
+              </div>
+            </div>
+          </Link>
+
+          {/* Premium Desktop Navigation */}
+          <nav className="premium-desktop-nav">
+            {allNavItems.map(item => {
+              const isMegaOpen = activeMegaMenu?.name === item.name;
+              const isActiveRoute = !item.isMegaMenu && location.pathname === item.path;
+              const isActive = isMegaOpen || isActiveRoute;
+
+              return (
+                <div 
+                  key={item.name} 
+                  style={{ height: '100%' }}
+                  onMouseEnter={() => handleMouseEnter(item)}
+                >
+                  {item.isMegaMenu ? (
+                    <div className={`premium-nav-item ${isActive ? 'active' : ''}`}>
+                      {item.name}
+                      {isActive && (
+                        <motion.div layoutId="premiumNavIndicator" className="premium-nav-indicator" />
+                      )}
+                    </div>
+                  ) : (
+                    <Link 
+                      to={item.path} 
+                      className={`premium-nav-item ${isActive ? 'active' : ''}`}
+                      onClick={() => setActiveMegaMenu(null)}
+                    >
+                      {item.name}
+                      {isActive && (
+                        <motion.div layoutId="premiumNavIndicator" className="premium-nav-indicator" />
+                      )}
+                    </Link>
+                  )}
+                </div>
+              );
+            })}
+          </nav>
+
+          {/* Premium Actions */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
+            <button onClick={toggleTheme} style={{ background: 'none', border: 'none', color: textColor, cursor: 'pointer', opacity: 0.7, padding: 0, display: 'flex', transition: 'opacity 0.2s' }} onMouseEnter={e => e.currentTarget.style.opacity = 1} onMouseLeave={e => e.currentTarget.style.opacity = 0.7}>
+              {isDark ? <Sun size={22} /> : <Moon size={22} />}
+            </button>
+
+            {session ? (
+              <Link to="/dashboard" className="premium-desktop-nav" style={{ color: textColor, textDecoration: 'none', fontWeight: 600, fontSize: '0.95rem' }}>
+                Profile
               </Link>
-            );
-          })}
-        </nav>
+            ) : (
+              <Link to="/login" className="premium-desktop-nav" style={{ color: textColor, textDecoration: 'none', fontWeight: 600, fontSize: '0.95rem' }}>
+                Login
+              </Link>
+            )}
 
-        {/* Action Icons & Mobile Toggle */}
-        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-          
-          <button 
-            onClick={toggleTheme}
-            style={{
-              background: 'transparent', border: 'none', color: 'var(--text-main)', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px',
-              borderRadius: '50%', transition: 'background-color 0.2s ease'
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--glass-border)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-            title="Toggle Dark Mode"
-          >
-            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
-
-          {session ? (
-            <Link 
-              to="/dashboard"
-              style={{ 
-                background: 'var(--primary)', 
-                color: '#fff', 
-                padding: '10px 24px', 
-                borderRadius: '6px', 
-                fontSize: '0.9rem', 
-                fontWeight: '600', 
-                textDecoration: 'none',
-                fontFamily: 'var(--font-sinhala)',
-                transition: 'all 0.3s ease',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.15)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)'; }}
+            <button 
+              className="premium-mobile-toggle"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              ගිණුම (Dashboard)
-            </Link>
-          ) : (
-            <Link 
-              to="/login"
-              style={{ 
-                background: 'var(--primary)', 
-                color: '#fff', 
-                padding: '10px 24px', 
-                borderRadius: '6px', 
-                fontSize: '0.9rem', 
-                fontWeight: '600', 
-                textDecoration: 'none',
-                fontFamily: 'var(--font-sinhala)',
-                transition: 'all 0.3s ease',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.15)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)'; }}
-            >
-              පිවිසෙන්න
-            </Link>
-          )}
-          
-          <button 
-            className="show-on-mobile"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'var(--primary)',
-              cursor: 'pointer',
-              display: 'none' // Controlled by CSS .show-on-mobile
-            }}
-          >
-            {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
+              {isMenuOpen ? <X size={30} strokeWidth={1.5} /> : <Menu size={30} strokeWidth={1.5} />}
+            </button>
+          </div>
         </div>
-      </header>
 
-      {/* Mobile Menu Overlay */}
+        {/* --- Flawless Mega Menu --- */}
+        <AnimatePresence>
+          {activeMegaMenu && (
+            <motion.div
+              initial={{ opacity: 0, y: -15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="premium-mega-menu"
+              onMouseEnter={() => handleMouseEnter(activeMegaMenu)}
+              onMouseLeave={handleMouseLeave}
+            >
+              <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+                {/* Title Area */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${borderColor}`, paddingBottom: '32px', marginBottom: '48px' }}>
+                  <div style={{ fontSize: '2rem', fontFamily: 'var(--font-sinhala)', color: textColor, fontWeight: 700, letterSpacing: '-0.01em' }}>
+                    {activeMegaMenu.name}
+                  </div>
+                  <button onClick={() => setActiveMegaMenu(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: textMuted, transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = textColor} onMouseLeave={e => e.currentTarget.style.color = textMuted}>
+                    <X size={32} strokeWidth={1} />
+                  </button>
+                </div>
+
+                {/* Columns */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '80px' }}>
+                  {activeMegaMenu.columns.map((col, idx) => (
+                    <div key={idx}>
+                      <h3 style={{ 
+                        fontSize: '1.2rem', 
+                        fontFamily: 'var(--font-sinhala)', 
+                        color: textColor,
+                        fontWeight: 700,
+                        marginBottom: '28px',
+                        letterSpacing: '-0.01em'
+                      }}>
+                        {col.title}
+                      </h3>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        {col.items.map((item, i) => (
+                          item.disabled ? (
+                            <div key={i} style={{ color: textMuted, fontSize: '1.05rem', fontFamily: 'var(--font-sinhala)', display: 'flex', justifyContent: 'space-between', opacity: 0.5, fontWeight: 400 }}>
+                              {item.name}
+                            </div>
+                          ) : (
+                            <Link 
+                              key={i}
+                              to={item.path}
+                              onClick={() => setActiveMegaMenu(null)}
+                              style={{
+                                color: item.isPlaceholder ? textMuted : textColor,
+                                textDecoration: 'none',
+                                fontSize: '1.05rem',
+                                fontFamily: 'var(--font-sinhala)',
+                                fontWeight: 500,
+                                transition: 'color 0.2s, transform 0.2s',
+                                display: 'inline-block'
+                              }}
+                              onMouseEnter={(e) => { 
+                                e.currentTarget.style.color = 'var(--primary)'; 
+                                e.currentTarget.style.transform = 'translateX(4px)';
+                              }}
+                              onMouseLeave={(e) => { 
+                                e.currentTarget.style.color = item.isPlaceholder ? textMuted : textColor; 
+                                e.currentTarget.style.transform = 'translateX(0)';
+                              }}
+                            >
+                              {item.name}
+                            </Link>
+                          )
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Backdrop overlay for mega menu */}
+      <AnimatePresence>
+        {isAnyMegaMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            transition={{ duration: 0.2 }}
+            className="mega-menu-backdrop" 
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Spacer */}
+      <div style={{ height: '85px' }} />
+
+      {/* Full-Screen Premium Mobile Overlay */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="mobile-menu-padding"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             style={{
               position: 'fixed',
-              top: '80px',
+              top: '85px',
               left: 0,
               width: '100%',
-              height: 'calc(100vh - 80px)',
-              background: 'var(--bg-main)',
-              zIndex: 49,
-              display: 'flex',
-              flexDirection: 'column',
+              height: 'calc(100vh - 85px)',
+              background: solidBg,
+              zIndex: 999,
+              padding: '40px 6%',
               overflowY: 'auto'
             }}
           >
-            <nav style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              {allNavItems.map(item => {
-                if (item.isDropdown) {
-                  return (
-                    <div key={item.name} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <div style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: '700', color: 'var(--primary)', borderBottom: '1px solid var(--glass-border)', paddingBottom: '8px' }}>
-                        {item.name}
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '8px' }}>
-                        {item.subItems.map(sub => {
-                          const isActive = location.pathname === sub.path;
-                          if (sub.disabled) {
-                            return (
-                              <div
-                                key={sub.name}
-                                style={{
-                                  fontSize: '1.2rem',
-                                  fontWeight: '500',
-                                  color: 'var(--text-muted)',
-                                  opacity: 0.6,
-                                  fontFamily: 'var(--font-sinhala)',
-                                  padding: '8px 0',
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
-                                  alignItems: 'center',
-                                  cursor: 'not-allowed'
-                                }}
-                              >
-                                <span>{sub.name}</span>
-                                <span style={{ fontSize: '0.75rem', padding: '2px 6px', background: 'var(--glass-border)', borderRadius: '4px' }}>ළඟදීම</span>
-                              </div>
-                            );
-                          }
-                          return (
-                            <Link
-                              key={sub.name}
-                              to={sub.path}
-                              onClick={() => setIsMenuOpen(false)}
-                              style={{
-                                fontSize: '1.2rem',
-                                fontWeight: isActive ? '700' : '500',
-                                color: isActive ? 'var(--primary)' : 'var(--text-main)', 
-                                textDecoration: 'none',
-                                fontFamily: 'var(--font-sinhala)',
-                                padding: '8px 0',
-                              }}
-                            >
-                              {sub.name}
-                            </Link>
-                          );
-                        })}
-                      </div>
+            {allNavItems.map((item) => (
+              <div key={item.name} style={{ borderBottom: `1px solid ${borderColor}`, padding: '24px 0' }}>
+                {item.isMegaMenu ? (
+                  <div>
+                    <div style={{ fontSize: '1.4rem', fontWeight: 700, color: textColor, fontFamily: 'var(--font-sinhala)', marginBottom: '24px' }}>
+                      {item.name}
                     </div>
-                  );
-                }
-
-                const isActive = location.pathname === item.path;
-                return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                      {item.columns.map((col, cIdx) => (
+                        <div key={cIdx}>
+                          <div style={{ fontSize: '1rem', color: textMuted, fontWeight: 700, marginBottom: '16px' }}>{col.title}</div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            {col.items.map(subItem => (
+                              <Link 
+                                key={subItem.name} 
+                                to={subItem.path}
+                                onClick={() => setIsMenuOpen(false)}
+                                style={{ color: textColor, textDecoration: 'none', fontSize: '1.1rem', fontFamily: 'var(--font-sinhala)', fontWeight: 500 }}
+                              >
+                                {subItem.name}
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
                   <Link 
                     to={item.path} 
-                    key={item.name} 
-                    onClick={() => setIsMenuOpen(false)}
-                    style={{ 
-                      fontSize: '1.2rem',
-                      fontWeight: isActive ? '700' : '500',
-                      color: isActive ? 'var(--primary)' : 'var(--text-main)', 
-                      textDecoration: 'none',
-                      fontFamily: 'var(--font-sinhala)',
-                      padding: '8px 0',
-                      borderBottom: '1px solid var(--glass-border)'
-                    }} 
+                    onClick={() => setIsMenuOpen(false)} 
+                    style={{ display: 'block', fontSize: '1.4rem', fontWeight: 700, color: textColor, textDecoration: 'none', fontFamily: 'var(--font-sinhala)' }}
                   >
                     {item.name}
                   </Link>
-                );
-              })}
-            </nav>
+                )}
+              </div>
+            ))}
           </motion.div>
         )}
       </AnimatePresence>
-      <style>{`
-        .mobile-header-padding {
-          padding: 24px 48px;
-        }
-        .mobile-header-padding.scrolled {
-          padding: 12px 48px;
-        }
-        .mobile-menu-padding {
-          padding: 24px 48px;
-        }
-        
-        @media (max-width: 900px) {
-          .show-on-mobile {
-            display: block !important;
-          }
-          .hide-on-mobile {
-            display: none !important;
-          }
-          .mobile-header-padding {
-            padding: 20px 20px;
-          }
-          .mobile-header-padding.scrolled {
-            padding: 12px 20px;
-          }
-          .mobile-menu-padding {
-            padding: 20px;
-          }
-        }
-      `}</style>
     </>
   );
 }
