@@ -162,7 +162,7 @@ export default function Notices() {
                   <div style={{ position: 'relative', height: '180px', overflow: 'hidden' }}>
                     <div style={{ 
                       position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, 
-                      backgroundImage: \`url(\${item.thumbnail})\`, 
+                      backgroundImage: `url(${item.thumbnail})`, 
                       backgroundSize: 'cover', backgroundPosition: 'center',
                       opacity: 0.8
                     }} className="lms-card-img" />
@@ -229,7 +229,7 @@ export default function Notices() {
         </div>
       </div>
 
-      <style dangerouslySetInnerHTML={{__html: \`
+      <style dangerouslySetInnerHTML={{__html: `
         .lms-tab-btn:hover {
           color: var(--primary) !important;
           background: rgba(140, 21, 21, 0.02) !important;
@@ -270,7 +270,7 @@ export default function Notices() {
             top: 0 !important;
           }
         }
-      \`}} />
+      `}} />
     </div>
   );
 }
