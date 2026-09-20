@@ -201,12 +201,13 @@ export default function Header() {
           display: none;
           height: 100%;
           align-items: center;
-          gap: 36px;
+          gap: 24px;
         }
 
-        @media (min-width: 1100px) {
+        @media (min-width: 1200px) {
           .premium-desktop-nav {
             display: flex;
+            gap: 28px;
           }
           .premium-mobile-toggle {
             display: none !important;
@@ -235,6 +236,7 @@ export default function Header() {
           cursor: pointer;
           transition: color 0.2s ease;
           letter-spacing: -0.01em;
+          white-space: nowrap;
         }
 
         .premium-nav-item:hover, .premium-nav-item.active {
