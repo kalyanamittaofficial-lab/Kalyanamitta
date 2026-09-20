@@ -7,11 +7,12 @@ import { supabase } from '../utils/supabase';
 // --- Premium Elite Nav Data ---
 const allNavItems = [
   { name: 'මුල් පිටුව', path: '/' },
-  { name: 'ඔබ කවුද?', path: '/lifecycle' },
-  { name: 'ධර්ම මාර්ගය', path: '/path' },
-  { name: 'කල්‍යාණ මිත්‍රත්වය', path: '/community' },
-  { 
-    name: 'දහම් මග', 
+    { name: 'ඔබ කවුද?', path: '/lifecycle' },
+    { name: 'ධර්ම මාර්ගය', path: '/path' },
+    { name: 'කල්‍යාණ මිත්‍රත්වය', path: '/community' },
+    { name: 'නිවේදන සහ දේශනා', path: '/notices' },
+    { 
+      name: 'දහම් මග', 
     isMegaMenu: true,
     columns: [
       {

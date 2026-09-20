@@ -48,7 +48,7 @@ export default function NoticeBoard() {
       platform: 'Kalyanamitta Portal',
       description: 'පසුගිය සතියේ පැවති දේශනාවට අදාළ ශ්‍රව්‍ය/දෘශ්‍ය පටිගත කිරීම්.',
       linkText: 'Access Recording',
-      linkUrl: '/lms'
+      linkUrl: '/notices'
     }
   ];
 
@@ -72,8 +72,8 @@ export default function NoticeBoard() {
               </p>
             </div>
           </div>
-          <a href="/lms" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary)', textDecoration: 'none', fontWeight: '600', fontSize: '0.9rem', borderBottom: '1px solid transparent', transition: 'border-color 0.3s' }} className="view-all-btn">
-            View LMS Archive <ArrowRight size={16} />
+          <a href="/notices" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary)', textDecoration: 'none', fontWeight: '600', fontSize: '0.9rem', borderBottom: '1px solid transparent', transition: 'border-color 0.3s' }} className="view-all-btn">
+            View All Notices <ArrowRight size={16} />
           </a>
         </div>
 
