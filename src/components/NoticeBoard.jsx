@@ -1,218 +1,263 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Bell, Video, Calendar, ArrowRight, MonitorPlay, ExternalLink } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Bell, Video, Calendar, ArrowRight, MonitorPlay, ExternalLink, Clock, ChevronRight } from 'lucide-react';
 
 export default function NoticeBoard() {
+  const [hoveredId, setHoveredId] = useState(null);
+
   const notices = [
     {
       id: 1,
       type: 'live',
-      date: { month: 'SEP', day: '09' },
+      date: { month: 'SEP', day: '09', time: '07:00 PM' },
       title: 'විශේෂ සජීවී ධර්ම දේශනාව',
       speaker: 'කල්‍යාණමිත්‍ර දේශකතුමා',
       platform: 'Microsoft Teams',
-      description: 'නිවන් දැකීමේ අවශ්‍යතාවය සහ කල්‍යාණ මිත්‍රත්වය පිළිබඳ ගැඹුරු සාකච්ඡාව.',
+      description: 'නිවන් දැකීමේ අවශ්‍යතාවය සහ කල්‍යාණ මිත්‍රත්වය පිළිබඳ ගැඹුරු සාකච්ඡාව. සියලු දෙනාටම විවෘතයි.',
       linkText: 'Join Live Session',
       linkUrl: '#'
     },
     {
       id: 2,
       type: 'upcoming',
-      date: { month: 'SEP', day: '15' },
+      date: { month: 'SEP', day: '15', time: '06:00 PM' },
       title: 'සතිපට්ඨාන භාවනා වැඩසටහන',
       speaker: 'කල්‍යාණමිත්‍ර දේශකතුමා',
       platform: 'Microsoft Teams',
-      description: 'ප්‍රායෝගික භාවනා පුහුණුව සහ ධර්ම සාකච්ඡාව සඳහා ලියාපදිංචි වන්න.',
+      description: 'ප්‍රායෝගික භාවනා පුහුණුව සහ ධර්ම සාකච්ඡාව.',
       linkText: 'View Details',
       linkUrl: '#'
     },
     {
       id: 3,
+      type: 'upcoming',
+      date: { month: 'SEP', day: '22', time: '07:30 PM' },
+      title: 'ධම්මචක්කප්පවත්තන සූත්‍රය',
+      speaker: 'කල්‍යාණමිත්‍ර දේශකතුමා',
+      platform: 'Microsoft Teams',
+      description: 'සූත්‍ර දේශනා මාලාවේ මීළඟ අදියර.',
+      linkText: 'View Details',
+      linkUrl: '#'
+    },
+    {
+      id: 4,
       type: 'past',
-      date: { month: 'SEP', day: '02' },
+      date: { month: 'SEP', day: '02', time: 'Archive' },
       title: 'පසුගිය ධර්ම දේශනාවේ පටිගත කිරීම',
       speaker: 'LMS Library',
       platform: 'Kalyanamitta Portal',
-      description: 'පසුගිය සතියේ පැවති දේශනාවට අදාළ ශ්‍රව්‍ය/දෘශ්‍ය පටිගත කිරීම් සහ සටහන් දැන් LMS හරහා ලබාගත හැක.',
+      description: 'පසුගිය සතියේ පැවති දේශනාවට අදාළ ශ්‍රව්‍ය/දෘශ්‍ය පටිගත කිරීම්.',
       linkText: 'Access Recording',
       linkUrl: '/lms'
     }
   ];
 
-  const getStatusBadge = (type) => {
-    switch (type) {
-      case 'live':
-        return (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#8c1515', fontSize: '0.8rem', fontWeight: '700', letterSpacing: '1.5px', textTransform: 'uppercase' }}>
-            <span style={{ position: 'relative', display: 'flex', width: '8px', height: '8px' }}>
-              <span style={{ position: 'absolute', display: 'inline-flex', height: '100%', width: '100%', borderRadius: '50%', backgroundColor: '#8c1515', opacity: 0.75, animation: 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite' }}></span>
-              <span style={{ position: 'relative', display: 'inline-flex', borderRadius: '50%', width: '8px', height: '8px', backgroundColor: '#8c1515' }}></span>
-            </span>
-            LIVE NOW
-          </div>
-        );
-      case 'upcoming':
-        return (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--primary)', fontSize: '0.8rem', fontWeight: '700', letterSpacing: '1.5px', textTransform: 'uppercase' }}>
-            <Calendar size={14} /> UPCOMING
-          </div>
-        );
-      case 'past':
-        return (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: '700', letterSpacing: '1.5px', textTransform: 'uppercase' }}>
-            <MonitorPlay size={14} /> ARCHIVED
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
+  const liveNotice = notices.find(n => n.type === 'live') || notices[0];
+  const otherNotices = notices.filter(n => n.id !== liveNotice.id);
 
   return (
-    <section style={{ padding: '80px 24px', backgroundColor: 'var(--bg-main)', position: 'relative', zIndex: 10 }}>
-      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+    <section style={{ padding: '100px 24px', backgroundColor: 'var(--bg-main)', position: 'relative' }}>
+      <div style={{ maxWidth: '1300px', margin: '0 auto' }}>
         
-        {/* Editorial Header */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '60px', borderBottom: '1px solid var(--glass-border)', paddingBottom: '24px' }}>
-          <div>
-            <h2 style={{ fontSize: '2.5rem', fontFamily: 'var(--font-serif)', color: 'var(--text-main)', fontWeight: '400', margin: '0 0 8px 0', letterSpacing: '-0.5px' }}>
-              Notice Board
-            </h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', margin: 0, fontFamily: 'var(--font-sinhala)' }}>
-              පුවරු නිවේදන සහ සජීවී විකාශන
-            </p>
+        {/* Section Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '40px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ width: '4px', height: '32px', backgroundColor: 'var(--primary)' }} />
+            <div>
+              <h2 style={{ fontSize: '2rem', fontFamily: 'var(--font-serif)', color: 'var(--text-main)', margin: '0 0 4px 0', letterSpacing: '0.5px' }}>
+                Notice Board
+              </h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: 0, fontFamily: 'var(--font-sinhala)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                පුවරු නිවේදන සහ කාලසටහන
+              </p>
+            </div>
           </div>
-          <div style={{ 
-            width: '48px', height: '48px', borderRadius: '50%', 
-            background: 'var(--bg-secondary)', color: 'var(--primary)',
-            display: 'flex', justifyContent: 'center', alignItems: 'center',
-            border: '1px solid var(--glass-border)'
-          }}>
-            <Bell size={20} strokeWidth={1.5} />
-          </div>
+          <a href="/lms" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary)', textDecoration: 'none', fontWeight: '600', fontSize: '0.9rem', borderBottom: '1px solid transparent', transition: 'border-color 0.3s' }} className="view-all-btn">
+            View LMS Archive <ArrowRight size={16} />
+          </a>
         </div>
 
-        {/* Minimalist Notice List */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-          {notices.map((notice, index) => (
-            <motion.div 
-              key={notice.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1, duration: 0.6, ease: "easeOut" }}
-              style={{
-                display: 'flex',
-                borderBottom: '1px solid var(--glass-border)',
-                backgroundColor: notice.type === 'live' ? 'rgba(140, 21, 21, 0.02)' : 'transparent',
-                transition: 'all 0.3s ease',
-                position: 'relative'
-              }}
-              className="editorial-notice-row"
-            >
-              {/* Date Column */}
-              <div style={{
-                width: '120px',
-                padding: '40px 24px 40px 0',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-                justifyContent: 'flex-start',
-                borderRight: '1px solid var(--glass-border)',
-                marginRight: '32px'
-              }}>
-                <span style={{ fontSize: '0.8rem', fontWeight: '700', color: notice.type === 'live' ? '#8c1515' : 'var(--text-muted)', letterSpacing: '2px', textTransform: 'uppercase' }}>{notice.date.month}</span>
-                <span style={{ fontSize: '2.5rem', fontWeight: '300', fontFamily: 'var(--font-serif)', color: 'var(--text-main)', lineHeight: 1, marginTop: '8px' }}>{notice.date.day}</span>
+        {/* Advanced Elite Grid Layout */}
+        <div className="notice-grid" style={{ display: 'grid', gap: '24px' }}>
+          
+          {/* LEFT: Featured / Live Notice Card */}
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            style={{
+              backgroundColor: 'var(--bg-secondary)',
+              border: '1px solid var(--glass-border)',
+              borderRadius: '2px', // Very sharp corners for elite editorial look
+              padding: '48px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+            className="featured-notice-card"
+          >
+            {/* Pulsing Live Background Accent */}
+            {liveNotice.type === 'live' && (
+              <div style={{ position: 'absolute', top: 0, right: 0, width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(140, 21, 21, 0.05) 0%, transparent 70%)', transform: 'translate(30%, -30%)', pointerEvents: 'none' }} />
+            )}
+
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+                {/* Date Block */}
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--primary)', letterSpacing: '2px' }}>{liveNotice.date.month}</span>
+                  <span style={{ fontSize: '4.5rem', fontWeight: '300', fontFamily: 'var(--font-serif)', color: 'var(--text-main)', lineHeight: 0.9, marginTop: '8px' }}>{liveNotice.date.day}</span>
+                </div>
+                
+                {/* Status Badge */}
+                {liveNotice.type === 'live' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', backgroundColor: 'rgba(140, 21, 21, 0.05)', border: '1px solid rgba(140, 21, 21, 0.2)', borderRadius: '30px', color: '#8c1515', fontSize: '0.8rem', fontWeight: '700', letterSpacing: '1px' }}>
+                    <span style={{ position: 'relative', display: 'flex', width: '8px', height: '8px' }}>
+                      <span style={{ position: 'absolute', display: 'inline-flex', height: '100%', width: '100%', borderRadius: '50%', backgroundColor: '#8c1515', opacity: 0.75, animation: 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite' }}></span>
+                      <span style={{ position: 'relative', display: 'inline-flex', borderRadius: '50%', width: '8px', height: '8px', backgroundColor: '#8c1515' }}></span>
+                    </span>
+                    LIVE NOW
+                  </div>
+                )}
               </div>
 
-              {/* Content Column */}
-              <div style={{ flex: 1, padding: '40px 32px 40px 0', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <div style={{ marginBottom: '16px' }}>
-                  {getStatusBadge(notice.type)}
-                </div>
-                <h3 style={{ fontSize: '1.6rem', fontFamily: 'var(--font-sinhala)', color: 'var(--text-main)', margin: '0 0 12px 0', fontWeight: '500', lineHeight: 1.4 }}>
-                  {notice.title}
-                </h3>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '16px', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: '0.95rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px', fontFamily: 'var(--font-sinhala)' }}>
-                    <span style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: 'var(--primary)' }} />
-                    {notice.speaker}
-                  </span>
-                  <span style={{ fontSize: '0.95rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Video size={14} color="var(--primary)" />
-                    {notice.platform}
-                  </span>
-                </div>
-                <p style={{ fontSize: '1.05rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', margin: 0, lineHeight: 1.7, maxWidth: '700px' }}>
-                  {notice.description}
-                </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px', color: 'var(--text-muted)', fontSize: '0.9rem', fontFamily: 'var(--font-sinhala)' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={14} /> {liveNotice.date.time}</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Video size={14} /> {liveNotice.platform}</span>
               </div>
 
-              {/* Action Column */}
-              <div style={{
-                padding: '40px 0 40px 32px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'flex-end',
-              }} className="editorial-action-col">
-                <a href={notice.linkUrl} style={{
+              <h3 style={{ fontSize: '2rem', fontFamily: 'var(--font-sinhala)', color: 'var(--text-main)', margin: '0 0 16px 0', fontWeight: '500', lineHeight: 1.3 }}>
+                {liveNotice.title}
+              </h3>
+              
+              <p style={{ fontSize: '1.1rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', margin: '0 0 32px 0', lineHeight: 1.7 }}>
+                {liveNotice.description}
+              </p>
+            </div>
+
+            <a href={liveNotice.linkUrl} style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '12px',
+              padding: '16px 32px',
+              backgroundColor: 'var(--text-main)',
+              color: 'var(--bg-main)',
+              fontSize: '1rem',
+              fontWeight: '500',
+              textDecoration: 'none',
+              transition: 'all 0.3s',
+              alignSelf: 'flex-start',
+              border: '1px solid var(--text-main)'
+            }} className="primary-notice-btn">
+              {liveNotice.linkText} <ExternalLink size={18} />
+            </a>
+          </motion.div>
+
+          {/* RIGHT: Timeline / List of other events */}
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
+          >
+            {otherNotices.map((notice, index) => (
+              <div 
+                key={notice.id}
+                onMouseEnter={() => setHoveredId(notice.id)}
+                onMouseLeave={() => setHoveredId(null)}
+                style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  padding: '12px 24px',
-                  backgroundColor: notice.type === 'live' ? 'var(--primary)' : 'transparent',
-                  color: notice.type === 'live' ? 'white' : 'var(--text-main)',
-                  border: notice.type === 'live' ? 'none' : '1px solid var(--glass-border)',
-                  borderRadius: '0px',
-                  fontSize: '0.9rem',
-                  fontWeight: '600',
-                  letterSpacing: '0.5px',
-                  textDecoration: 'none',
-                  transition: 'all 0.3s',
-                  whiteSpace: 'nowrap'
-                }} className="editorial-btn">
-                  {notice.linkText}
-                  {notice.type === 'live' ? <ExternalLink size={16} /> : <ArrowRight size={16} />}
-                </a>
+                  padding: '32px',
+                  backgroundColor: 'var(--bg-main)',
+                  border: '1px solid',
+                  borderColor: hoveredId === notice.id ? 'var(--text-main)' : 'var(--glass-border)',
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer',
+                  position: 'relative'
+                }}
+                className="secondary-notice-card"
+              >
+                {/* Left Line Accent on Hover */}
+                <div style={{
+                  position: 'absolute', left: -1, top: 0, bottom: 0, width: '3px',
+                  backgroundColor: 'var(--primary)',
+                  transform: hoveredId === notice.id ? 'scaleY(1)' : 'scaleY(0)',
+                  transition: 'transform 0.3s ease',
+                  transformOrigin: 'center'
+                }} />
+
+                {/* Date Bubble */}
+                <div style={{
+                  minWidth: '80px', height: '80px',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  border: '1px solid var(--glass-border)',
+                  backgroundColor: 'var(--bg-secondary)',
+                  marginRight: '24px'
+                }}>
+                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: 'var(--primary)', letterSpacing: '1px' }}>{notice.date.month}</span>
+                  <span style={{ fontSize: '1.8rem', fontWeight: '400', fontFamily: 'var(--font-serif)', color: 'var(--text-main)', lineHeight: 1 }}>{notice.date.day}</span>
+                </div>
+
+                {/* Content */}
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                    {notice.type === 'upcoming' ? (
+                      <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--text-main)', letterSpacing: '1px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={12}/> UPCOMING</span>
+                    ) : (
+                      <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '4px' }}><MonitorPlay size={12}/> ARCHIVE</span>
+                    )}
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>• {notice.date.time}</span>
+                  </div>
+                  
+                  <h4 style={{ fontSize: '1.25rem', fontFamily: 'var(--font-sinhala)', color: 'var(--text-main)', margin: '0 0 8px 0', fontWeight: '500' }}>
+                    {notice.title}
+                  </h4>
+                  
+                  <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', margin: 0, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    {notice.description}
+                  </p>
+                </div>
+
+                {/* Arrow Icon */}
+                <div style={{
+                  width: '40px', height: '40px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  border: '1px solid',
+                  borderColor: hoveredId === notice.id ? 'var(--text-main)' : 'var(--glass-border)',
+                  borderRadius: '50%',
+                  color: hoveredId === notice.id ? 'var(--bg-main)' : 'var(--text-main)',
+                  backgroundColor: hoveredId === notice.id ? 'var(--text-main)' : 'transparent',
+                  transition: 'all 0.3s ease'
+                }}>
+                  <ChevronRight size={18} />
+                </div>
               </div>
-            </motion.div>
-          ))}
+            ))}
+          </motion.div>
         </div>
-        
-        {/* Custom CSS for Editorial effects */}
+
+        {/* Global Styles for this component */}
         <style dangerouslySetInnerHTML={{__html: `
-          @keyframes ping {
-            75%, 100% { transform: scale(2); opacity: 0; }
+          .notice-grid {
+            grid-template-columns: 1fr 1fr;
           }
-          .editorial-notice-row:hover {
-            background-color: var(--bg-secondary) !important;
+          @media (max-width: 1024px) {
+            .notice-grid {
+              grid-template-columns: 1fr;
+            }
           }
-          .editorial-btn:hover {
-            background-color: var(--text-main) !important;
-            color: var(--bg-main) !important;
-            border-color: var(--text-main) !important;
+          .primary-notice-btn:hover {
+            background-color: transparent !important;
+            color: var(--text-main) !important;
           }
-          @media (max-width: 768px) {
-            .editorial-notice-row {
-              flex-direction: column;
-            }
-            .editorial-notice-row > div:first-child {
-              width: 100% !important;
-              border-right: none !important;
-              border-bottom: 1px solid var(--glass-border);
-              margin-right: 0 !important;
-              padding: 24px 0 !important;
-              flex-direction: row !important;
-              align-items: center !important;
-              gap: 16px;
-            }
-            .editorial-notice-row > div:first-child span {
-              margin-top: 0 !important;
-            }
-            .editorial-action-col {
-              justify-content: flex-start !important;
-              padding: 0 0 32px 0 !important;
-            }
+          .view-all-btn:hover {
+            border-bottom-color: var(--primary) !important;
           }
         `}} />
       </div>
