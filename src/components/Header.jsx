@@ -340,7 +340,7 @@ export default function Header() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
             
             {/* Live Broadcast Indicator */}
-            <Link to="/live" style={{ textDecoration: 'none' }} className="premium-desktop-nav">
+            <Link to="/live" style={{ textDecoration: 'none' }}>
               <motion.div 
                 animate={{ opacity: [1, 0.6, 1] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
