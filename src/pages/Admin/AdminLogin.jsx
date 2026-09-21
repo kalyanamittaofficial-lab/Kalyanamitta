@@ -4,7 +4,7 @@ import { supabase } from '../../utils/supabase';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [kmId, setKmId] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -14,8 +14,15 @@ export default function AdminLogin() {
     setIsLoading(true);
     setError('');
 
+    // Transform KM ID into a hidden, secure internal email for Supabase Auth
+    const formattedId = kmId.trim().toUpperCase();
+    const internalEmail = `${formattedId}@admin.km`;
+
     try {
-      const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error: authError } = await supabase.auth.signInWithPassword({ 
+        email: internalEmail, 
+        password 
+      });
       
       if (authError) throw authError;
 
@@ -33,7 +40,11 @@ export default function AdminLogin() {
 
       navigate('/portal-ops');
     } catch (err) {
-      setError(err.message);
+      if (err.message.includes('Invalid login credentials')) {
+        setError('Invalid Kalyanamitta ID or Security Key.');
+      } else {
+        setError(err.message);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -51,12 +62,13 @@ export default function AdminLogin() {
 
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Admin Email</label>
+            <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Kalyanamitta ID</label>
             <input 
-              type="email" 
+              type="text" 
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              placeholder="e.g. KM-001"
+              value={kmId}
+              onChange={(e) => setKmId(e.target.value)}
               style={{ width: '100%', padding: '12px', background: 'var(--bg-main)', border: '1px solid var(--glass-border)', color: 'var(--text-main)', outline: 'none' }}
             />
           </div>
