@@ -25,6 +25,11 @@ import HistoryChapter from './pages/HistoryChapter';
 import Sasanaya from './pages/Sasanaya';
 import Notices from './pages/Notices';
 
+const AdminLayout = React.lazy(() => import('./pages/Admin/AdminLayout'));
+const AdminDashboard = React.lazy(() => import('./pages/Admin/AdminDashboard'));
+const NoticeManager = React.lazy(() => import('./pages/Admin/NoticeManager'));
+const TeamManager = React.lazy(() => import('./pages/Admin/TeamManager'));
+
 function ProtectedRoute({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
 
@@ -62,9 +67,17 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
+      <React.Suspense fallback={<div style={{height: '100vh', background: 'var(--bg-main)'}} />}>
+        <Routes>
+          {/* SECURE ADMIN PORTAL */}
+          <Route path="/portal-ops" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="notices" element={<NoticeManager />} />
+            <Route path="team" element={<TeamManager />} />
+          </Route>
+
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
           <Route path="words" element={<Words />} />
           <Route path="history" element={<History />} />
           <Route path="history/:chapterId" element={<HistoryChapter />} />
@@ -105,6 +118,7 @@ function App() {
         {/* Book Reader is outside the Layout so it can be truly full-screen and immersive without the main header/footer */}
         <Route path="/read/:bookId" element={<BookReader />} />
       </Routes>
+      </React.Suspense>
     </BrowserRouter>
   );
 }
