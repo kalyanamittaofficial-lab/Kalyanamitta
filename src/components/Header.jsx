@@ -191,23 +191,23 @@ export default function Header() {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 0 5%;
+          padding: 0 clamp(16px, 3vw, 5%);
           height: 85px;
           max-width: 1920px;
           margin: 0 auto;
+          gap: 20px;
         }
 
         .premium-desktop-nav {
           display: none;
           height: 100%;
           align-items: center;
-          gap: 24px;
+          gap: clamp(12px, 1.5vw, 28px);
         }
 
         @media (min-width: 1200px) {
           .premium-desktop-nav {
             display: flex;
-            gap: 28px;
           }
           .premium-mobile-toggle {
             display: none !important;
@@ -229,7 +229,7 @@ export default function Header() {
           display: flex;
           align-items: center;
           font-family: var(--font-sinhala);
-          font-size: 1.05rem;
+          font-size: clamp(0.9rem, 1.1vw, 1.05rem);
           font-weight: 500;
           color: ${textColor};
           text-decoration: none;
