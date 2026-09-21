@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './utils/supabase';
 import Layout from './components/Layout';
 import Home from './pages/Home';
-import LMS from './pages/LMS';
 import Live from './pages/Live';
 import Meditation from './pages/Meditation';
 import Words from './pages/Words';
