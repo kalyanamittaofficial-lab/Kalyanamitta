@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabase';
-import { Radio, Save, Clock, Youtube } from 'lucide-react';
+import { Radio, Save, Clock, Video } from 'lucide-react';
 
 export default function LiveBroadcastManager() {
   const [loading, setLoading] = useState(false);
@@ -107,7 +107,7 @@ export default function LiveBroadcastManager() {
         {/* Video ID Input */}
         <div>
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '8px' }}>
-            <Youtube size={18} /> YouTube Live Video ID
+            <Video size={18} /> YouTube Live Video ID
           </label>
           <input 
             type="text" 
