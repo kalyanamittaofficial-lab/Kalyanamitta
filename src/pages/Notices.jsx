@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlayCircle, FileText, Calendar, Clock, MonitorPlay, Video } from 'lucide-react';
+import { supabase } from '../utils/supabase';
 
 export default function Notices() {
   const [activeTab, setActiveTab] = useState('all');
@@ -12,58 +13,26 @@ export default function Notices() {
     { id: 'special', name: 'විශේෂ නිවේදන (Special)' },
   ];
 
-  const content = [
-    {
-      id: 1,
-      category: 'upcoming',
-      title: 'සතිපට්ඨාන භාවනා වැඩසටහන',
-      date: '2023-09-15',
-      time: '06:00 PM',
-      duration: '2h',
-      type: 'video',
-      thumbnail: 'https://images.unsplash.com/photo-1605806616949-1e87b487cb2a?q=80&w=2940&auto=format&fit=crop',
-      hasNotes: false,
-      status: 'upcoming'
-    },
-    {
-      id: 2,
-      category: 'upcoming',
-      title: 'ධම්මචක්කප්පවත්තන සූත්‍රය',
-      date: '2023-09-22',
-      time: '07:30 PM',
-      duration: '1h 30m',
-      type: 'video',
-      thumbnail: 'https://images.unsplash.com/photo-1599839619722-39751411ea63?q=80&w=2940&auto=format&fit=crop',
-      hasNotes: false,
-      status: 'upcoming'
-    },
-    {
-      id: 3,
-      category: 'past',
-      title: 'කායානුපස්සනාව - පළමු කොටස',
-      date: '2023-09-01',
-      time: '07:00 PM',
-      duration: '1h 45m',
-      type: 'video',
-      thumbnail: 'https://images.unsplash.com/photo-1577402636906-8d5f308ce61d?q=80&w=2940&auto=format&fit=crop',
-      hasNotes: true,
-      status: 'past'
-    },
-    {
-      id: 4,
-      category: 'special',
-      title: 'විශේෂ සජීවී ධර්ම සාකච්ඡාව',
-      date: '2023-09-09',
-      time: '07:00 PM',
-      duration: 'LIVE',
-      type: 'video',
-      thumbnail: 'https://images.unsplash.com/photo-1528310263305-e110bb5444da?q=80&w=2940&auto=format&fit=crop',
-      hasNotes: true,
-      status: 'live'
-    }
-  ];
+  const [content, setContent] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredContent = activeTab === 'all' ? content : content.filter(c => c.category === activeTab);
+  useEffect(() => {
+    fetchNotices();
+  }, []);
+
+  const fetchNotices = async () => {
+    const { data, error } = await supabase
+      .from('notices')
+      .select('*')
+      .order('date', { ascending: false });
+    
+    if (!error && data) {
+      setContent(data);
+    }
+    setLoading(false);
+  };
+
+  const filteredContent = activeTab === 'all' ? content : content.filter(c => c.type === activeTab);
 
   return (
     <div style={{ background: 'var(--bg-main)', minHeight: '100vh', color: 'var(--text-main)' }}>
@@ -143,20 +112,20 @@ export default function Notices() {
                     borderTop: '1px solid var(--glass-border)',
                     padding: '40px 0',
                     transition: 'background-color 0.3s',
-                    backgroundColor: item.status === 'live' ? 'rgba(140, 21, 21, 0.02)' : 'transparent',
+                    backgroundColor: item.type === 'live' ? 'rgba(140, 21, 21, 0.02)' : 'transparent',
                   }}
                   className="elite-list-row"
                 >
                   {/* Left: Thumbnail/Date Block */}
                   <div style={{ width: '240px', flexShrink: 0, marginRight: '40px' }}>
-                    {item.status === 'upcoming' || item.status === 'live' ? (
+                    {item.type === 'upcoming' || item.type === 'live' ? (
                        <div style={{ 
                          width: '100%', height: '160px', 
-                         backgroundColor: item.status === 'live' ? 'rgba(140, 21, 21, 0.05)' : 'var(--bg-secondary)', 
-                         border: '1px solid', borderColor: item.status === 'live' ? 'rgba(140, 21, 21, 0.2)' : 'var(--glass-border)',
+                         backgroundColor: item.type === 'live' ? 'rgba(140, 21, 21, 0.05)' : 'var(--bg-secondary)', 
+                         border: '1px solid', borderColor: item.type === 'live' ? 'rgba(140, 21, 21, 0.2)' : 'var(--glass-border)',
                          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
                        }}>
-                          <span style={{ fontSize: '1rem', fontWeight: '700', color: item.status === 'live' ? '#8c1515' : 'var(--primary)', letterSpacing: '2px' }}>SEP</span>
+                          <span style={{ fontSize: '1rem', fontWeight: '700', color: item.type === 'live' ? '#8c1515' : 'var(--primary)', letterSpacing: '2px' }}>SEP</span>
                           <span style={{ fontSize: '3.5rem', fontWeight: '300', fontFamily: 'var(--font-serif)', color: 'var(--text-main)', lineHeight: 1, marginTop: '8px' }}>{item.date.split('-')[2]}</span>
                        </div>
                     ) : (
@@ -178,13 +147,13 @@ export default function Notices() {
                   {/* Right: Details */}
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                      {item.status === 'live' && (
+                      {item.type === 'live' && (
                         <span style={{ backgroundColor: 'rgba(140, 21, 21, 0.1)', color: '#8c1515', padding: '4px 8px', fontSize: '0.75rem', fontWeight: '700', letterSpacing: '1px', border: '1px solid rgba(140,21,21,0.2)' }}>LIVE NOW</span>
                       )}
-                      {item.status === 'upcoming' && (
+                      {item.type === 'upcoming' && (
                         <span style={{ color: 'var(--primary)', fontSize: '0.8rem', fontWeight: '600', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={14}/> UPCOMING</span>
                       )}
-                      {item.status === 'past' && (
+                      {item.type === 'past' && (
                         <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: '600', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '6px' }}><MonitorPlay size={14}/> ARCHIVED</span>
                       )}
                       <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontSize: '0.85rem' }}><Clock size={14} /> {item.time}</span>
@@ -196,8 +165,8 @@ export default function Notices() {
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginTop: 'auto' }}>
                       <button style={{ 
-                        background: item.status === 'upcoming' || item.status === 'live' ? 'var(--text-main)' : 'transparent', 
-                        color: item.status === 'upcoming' || item.status === 'live' ? 'var(--bg-main)' : 'var(--text-main)', 
+                        background: item.type === 'upcoming' || item.type === 'live' ? 'var(--text-main)' : 'transparent', 
+                        color: item.type === 'upcoming' || item.type === 'live' ? 'var(--bg-main)' : 'var(--text-main)', 
                         border: '1px solid var(--text-main)', 
                         padding: '10px 24px', 
                         fontSize: '0.9rem', 
@@ -205,7 +174,7 @@ export default function Notices() {
                         cursor: 'pointer',
                         transition: 'all 0.3s'
                       }} className="elite-action-btn">
-                        {item.status === 'upcoming' || item.status === 'live' ? 'Join Session' : 'Watch Recording'}
+                        {item.type === 'upcoming' || item.type === 'live' ? 'Join Session' : 'Watch Recording'}
                       </button>
                       
                       {item.hasNotes && (
