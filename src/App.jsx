@@ -77,6 +77,7 @@ function App() {
             <Route index element={<AdminDashboard />} />
             <Route path="notices" element={<NoticeManager />} />
             <Route path="team" element={<TeamManager />} />
+            <Route path="live" element={<React.lazy(() => import('./pages/Admin/LiveBroadcastManager'))} />} />
           </Route>
 
           <Route path="/" element={<Layout />}>

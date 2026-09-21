@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, Navigate, Link, useLocation } from 'react-router-dom';
 import { supabase } from '../../utils/supabase';
-import { LayoutDashboard, BellRing, Users, LogOut, Settings } from 'lucide-react';
+import { LayoutDashboard, BellRing, Users, LogOut, Settings, Radio } from 'lucide-react';
 
 export default function AdminLayout() {
   const [loading, setLoading] = useState(true);
@@ -62,6 +62,7 @@ export default function AdminLayout() {
 
   const navItems = [
     { name: 'Dashboard', path: '/portal-ops', icon: <LayoutDashboard size={18} /> },
+    { name: 'Live Broadcast', path: '/portal-ops/live', icon: <Radio size={18} /> },
     { name: 'Manage Notices', path: '/portal-ops/notices', icon: <BellRing size={18} /> },
     ...(userRole === 'superadmin' ? [{ name: 'Team Management', path: '/portal-ops/team', icon: <Users size={18} /> }] : [])
   ];

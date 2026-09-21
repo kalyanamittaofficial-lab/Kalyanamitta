@@ -1,23 +1,83 @@
 import React, { useState, useEffect } from 'react';
-import { Radio, Users, Eye, ArrowLeft, X, Maximize, Calendar, FileText } from 'lucide-react';
+import { Radio, Users, Eye, ArrowLeft, X, Maximize, Calendar, FileText, Clock } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '../utils/supabase';
 
 export default function Live() {
   const navigate = useNavigate();
   const [showUI, setShowUI] = useState(true);
   
-  // Mock data
-  const isLive = true;
-  const liveVideoId = "jfKfPfyJRdk"; // Replace with actual live video ID
-  const viewerCount = 1240;
+  // Real data state
+  const [isLive, setIsLive] = useState(false);
+  const [liveVideoId, setLiveVideoId] = useState('');
+  const [nextScheduledTime, setNextScheduledTime] = useState('');
+  const [nextTitle, setNextTitle] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [timeRemaining, setTimeRemaining] = useState('');
 
-  // The YouTube URL with strict parameters
-  // controls=0: Hides bottom player controls (play/pause/timeline)
-  // disablekb=1: Disables keyboard controls (spacebar, arrows)
-  // rel=0: No related videos from other channels
-  // modestbranding=1: Minimal YouTube branding
-  // autoplay=1: Autoplay the stream
+  // Random viewer count generator for effect (since we can't easily get real YouTube viewers without API key)
+  const [viewerCount, setViewerCount] = useState(Math.floor(Math.random() * 500) + 800);
+
+  useEffect(() => {
+    fetchBroadcastData();
+
+    // Setup realtime subscription
+    const subscription = supabase
+      .channel('public:live_broadcast')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'live_broadcast' }, payload => {
+        const newData = payload.new;
+        if (newData) {
+          setIsLive(newData.is_live);
+          setLiveVideoId(newData.video_id);
+          setNextScheduledTime(newData.next_scheduled_time);
+          setNextTitle(newData.next_title);
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, []);
+
+  useEffect(() => {
+    let interval;
+    if (!isLive && nextScheduledTime) {
+      interval = setInterval(() => {
+        const now = new Date().getTime();
+        const scheduled = new Date(nextScheduledTime).getTime();
+        const distance = scheduled - now;
+
+        if (distance < 0) {
+          setTimeRemaining("Starting soon...");
+        } else {
+          const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+          
+          let timeString = '';
+          if (days > 0) timeString += `${days}d `;
+          timeString += `${hours}h ${minutes}m ${seconds}s`;
+          setTimeRemaining(timeString);
+        }
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isLive, nextScheduledTime]);
+
+  const fetchBroadcastData = async () => {
+    const { data } = await supabase.from('live_broadcast').select('*').eq('id', 1).single();
+    if (data) {
+      setIsLive(data.is_live);
+      setLiveVideoId(data.video_id);
+      setNextScheduledTime(data.next_scheduled_time);
+      setNextTitle(data.next_title);
+    }
+    setLoading(false);
+  };
+
   const embedUrl = `https://www.youtube.com/embed/${liveVideoId}?autoplay=1&controls=0&disablekb=1&rel=0&modestbranding=1&playsinline=1`;
 
   // Auto-hide UI when mouse is still (cinematic mode)
@@ -67,9 +127,27 @@ export default function Live() {
             style={{ width: '100%', height: '100%', border: 'none', objectFit: 'cover' }}
           ></iframe>
         ) : (
-          <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-            <Radio size={48} style={{ opacity: 0.3, marginBottom: '24px' }} />
-            <h2 style={{ fontFamily: 'var(--font-sinhala)', fontSize: '2rem', fontWeight: 300, letterSpacing: '0.05em' }}>මේ මොහොතේ සජීවී විකාශයක් නොමැත</h2>
+          <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff', background: 'radial-gradient(circle at center, #1a0505 0%, #000 100%)' }}>
+            <Radio size={64} style={{ opacity: 0.2, marginBottom: '24px', color: 'var(--primary)' }} />
+            <h2 style={{ fontFamily: 'var(--font-sinhala)', fontSize: '2rem', fontWeight: 300, letterSpacing: '0.05em', color: 'rgba(255,255,255,0.7)', marginBottom: '8px' }}>මේ මොහොතේ සජීවී විකාශයක් නොමැත</h2>
+            
+            {nextTitle && nextScheduledTime && (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', background: 'rgba(140, 21, 21, 0.1)', padding: '32px 48px', borderRadius: '24px', border: '1px solid rgba(140, 21, 21, 0.2)', backdropFilter: 'blur(10px)' }}
+              >
+                <span style={{ fontFamily: 'var(--font-sinhala)', color: 'var(--primary)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', fontSize: '0.9rem' }}>මීළඟ සජීවී විකාශය</span>
+                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.8rem', fontWeight: 600, margin: 0, color: '#fff', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>{nextTitle}</h3>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '16px' }}>
+                  <Clock size={20} color="rgba(255,255,255,0.6)" />
+                  <span style={{ fontSize: '1.4rem', fontFamily: 'monospace', fontWeight: 700, color: 'rgba(255,255,255,0.9)', letterSpacing: '2px' }}>
+                    {timeRemaining}
+                  </span>
+                </div>
+              </motion.div>
+            )}
           </div>
         )}
       </div>
