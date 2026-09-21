@@ -93,7 +93,6 @@ function App() {
           <Route path="community" element={<Community />} />
           <Route path="dharmadhana" element={<DharmaDhana />} />
           <Route path="sasanaya" element={<Sasanaya />} />
-          <Route path="live" element={<Live />} />
           <Route path="notices" element={<Notices />} />
           <Route path="profile" element={<Profile />} />
           <Route path="other-chantings" element={<OtherChantings />} />
@@ -119,8 +118,9 @@ function App() {
           {/* Fallback */}
           <Route path="*" element={<Home />} />
         </Route>
-        {/* Book Reader is outside the Layout so it can be truly full-screen and immersive without the main header/footer */}
+        {/* Standalone Fullscreen Routes */}
         <Route path="/read/:bookId" element={<BookReader />} />
+        <Route path="/live" element={<Live />} />
       </Routes>
       </React.Suspense>
     </BrowserRouter>
