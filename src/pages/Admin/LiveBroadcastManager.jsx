@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabase';
 import { Radio, Save, Clock, Youtube } from 'lucide-react';
-import toast, { Toaster } from 'react-hot-toast';
 
 export default function LiveBroadcastManager() {
   const [loading, setLoading] = useState(false);
@@ -54,18 +53,17 @@ export default function LiveBroadcastManager() {
       })
       .eq('id', 1);
 
-    setLoading(false);
+      setLoading(false);
     if (error) {
-      toast.error('Failed to update live settings');
+      alert('Failed to update live settings');
       console.error(error);
     } else {
-      toast.success('Live broadcast settings updated successfully!');
+      alert('Live broadcast settings updated successfully!');
     }
   };
 
   return (
     <div style={{ maxWidth: '800px', padding: '20px' }}>
-      <Toaster position="top-right" />
       <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px' }}>
         <Radio color="var(--primary)" /> Live Broadcast Control Panel
       </h2>
