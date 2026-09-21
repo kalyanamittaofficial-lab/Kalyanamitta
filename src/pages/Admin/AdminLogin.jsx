@@ -33,9 +33,14 @@ export default function AdminLogin() {
         .eq('id', data.user.id)
         .single();
 
-      if (roleError || !roleData || (roleData.role !== 'superadmin' && roleData.role !== 'editor')) {
+      if (roleError) {
         await supabase.auth.signOut();
-        throw new Error("Unauthorized access. Admin privileges required.");
+        throw new Error(`Role Check Error: ${roleError.message} (Code: ${roleError.code})`);
+      }
+      
+      if (!roleData || (roleData.role !== 'superadmin' && roleData.role !== 'editor')) {
+        await supabase.auth.signOut();
+        throw new Error("Unauthorized access. Your ID is not in the Admin list.");
       }
 
       navigate('/portal-ops');
