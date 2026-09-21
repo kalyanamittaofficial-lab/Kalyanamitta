@@ -34,13 +34,25 @@ export default function Dashboard() {
           .eq('id', currentUser.id)
           .single();
         
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('id', currentUser.id)
+          .single();
+          
+        const isAdmin = roleData && (roleData.role === 'superadmin' || roleData.role === 'editor');
+
         if (profileData) {
-          if (profileData.status === 'pending_onboarding') {
+          if (profileData.status === 'pending_onboarding' && !isAdmin) {
             navigate('/onboarding');
             return;
           }
           setProfile(profileData);
           setEditForm(profileData);
+        } else if (!isAdmin) {
+          // If no profile at all and not admin, go to onboarding
+          navigate('/onboarding');
+          return;
         }
 
       } catch (error) {
