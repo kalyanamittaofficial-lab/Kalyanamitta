@@ -29,6 +29,7 @@ const AdminLayout = React.lazy(() => import('./pages/Admin/AdminLayout'));
 const AdminDashboard = React.lazy(() => import('./pages/Admin/AdminDashboard'));
 const NoticeManager = React.lazy(() => import('./pages/Admin/NoticeManager'));
 const TeamManager = React.lazy(() => import('./pages/Admin/TeamManager'));
+const AdminLogin = React.lazy(() => import('./pages/Admin/AdminLogin'));
 
 function ProtectedRoute({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -70,6 +71,7 @@ function App() {
       <React.Suspense fallback={<div style={{height: '100vh', background: 'var(--bg-main)'}} />}>
         <Routes>
           {/* SECURE ADMIN PORTAL */}
+          <Route path="/portal-ops/login" element={<AdminLogin />} />
           <Route path="/portal-ops" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="notices" element={<NoticeManager />} />

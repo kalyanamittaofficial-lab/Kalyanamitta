@@ -40,17 +40,6 @@ export default function Onboarding() {
         .eq('id', session.user.id)
         .single();
         
-      const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single();
-        
-      if (roleData && (roleData.role === 'superadmin' || roleData.role === 'editor')) {
-        navigate('/portal-ops');
-        return;
-      }
-        
       if (profile) {
         // If they already completed onboarding, send them away
         if (profile.status === 'active') {

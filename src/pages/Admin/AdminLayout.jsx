@@ -55,15 +55,9 @@ export default function AdminLayout() {
     return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-main)', color: 'var(--text-main)' }}>Loading Secure Portal...</div>;
   }
 
-  // 404 CLOAKING: If not admin, we do NOT show "Access Denied". We pretend the page doesn't exist.
+  // If not admin, redirect to dedicated admin login
   if (!isAdmin) {
-    return (
-      <div style={{ padding: '160px 40px', textAlign: 'center', color: 'var(--text-main)', background: 'var(--bg-main)', minHeight: '100vh' }}>
-        <h1 style={{ fontSize: '4rem', fontFamily: 'var(--font-serif)', fontWeight: 300 }}>404</h1>
-        <p style={{ fontFamily: 'var(--font-sinhala)', fontSize: '1.2rem', color: 'var(--text-muted)' }}>මෙම පිටුව සොයාගත නොහැක.</p>
-        <Link to="/" style={{ color: 'var(--primary)', marginTop: '20px', display: 'inline-block', textDecoration: 'none' }}>Back to Home</Link>
-      </div>
-    );
+    return <Navigate to="/portal-ops/login" replace />;
   }
 
   const navItems = [
