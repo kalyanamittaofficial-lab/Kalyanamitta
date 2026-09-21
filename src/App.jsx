@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './utils/supabase';
 import Layout from './components/Layout';
 import Home from './pages/Home';
+import LMS from './pages/LMS';
+import Live from './pages/Live';
 import Meditation from './pages/Meditation';
 import Words from './pages/Words';
 import Sermons from './pages/Sermons';
@@ -92,6 +94,7 @@ function App() {
           <Route path="community" element={<Community />} />
           <Route path="dharmadhana" element={<DharmaDhana />} />
           <Route path="sasanaya" element={<Sasanaya />} />
+          <Route path="live" element={<Live />} />
           <Route path="notices" element={<Notices />} />
           <Route path="profile" element={<Profile />} />
           <Route path="other-chantings" element={<OtherChantings />} />
