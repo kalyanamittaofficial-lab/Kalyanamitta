@@ -28,9 +28,10 @@ import Notices from './pages/Notices';
 
 const AdminLayout = React.lazy(() => import('./pages/Admin/AdminLayout'));
 const AdminDashboard = React.lazy(() => import('./pages/Admin/AdminDashboard'));
+const AdminLogin = React.lazy(() => import('./pages/Admin/AdminLogin'));
 const NoticeManager = React.lazy(() => import('./pages/Admin/NoticeManager'));
 const TeamManager = React.lazy(() => import('./pages/Admin/TeamManager'));
-const AdminLogin = React.lazy(() => import('./pages/Admin/AdminLogin'));
+const LiveBroadcastManager = React.lazy(() => import('./pages/Admin/LiveBroadcastManager'));
 
 function ProtectedRoute({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -77,7 +78,7 @@ function App() {
             <Route index element={<AdminDashboard />} />
             <Route path="notices" element={<NoticeManager />} />
             <Route path="team" element={<TeamManager />} />
-            <Route path="live" element={<React.lazy(() => import('./pages/Admin/LiveBroadcastManager'))} />} />
+            <Route path="live" element={<LiveBroadcastManager />} />
           </Route>
 
           <Route path="/" element={<Layout />}>
