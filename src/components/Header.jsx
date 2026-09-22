@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, Menu, X, Sun, Moon } from 'lucide-react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Menu, X, Sun, Moon } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../utils/supabase';
 
@@ -73,12 +73,11 @@ const allNavItems = [
 ];
 
 export default function Header() {
-  const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [session, setSession] = useState(null);
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
   const [isLiveGlobal, setIsLiveGlobal] = useState(false);
   
   // Mega menu state
@@ -88,10 +87,6 @@ export default function Header() {
 
   // Initialize theme and Auth (Runs ONLY ONCE)
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    setTheme(savedTheme);
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
     });
@@ -101,16 +96,24 @@ export default function Header() {
     });
 
     // Fetch Live status globally for the header button
-    supabase.from('live_broadcast').select('is_live').eq('id', 1).single().then(({ data }) => {
-      if (data) setIsLiveGlobal(data.is_live);
+    supabase.from('live_broadcast').select('is_live').eq('id', 1).single().then(({ data, error }) => {
+      if (error) {
+        console.error('Failed to load live broadcast status:', error);
+        return;
+      }
+      if (data) setIsLiveGlobal(Boolean(data.is_live));
     });
 
     const liveSub = supabase
       .channel('header_live_status')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'live_broadcast' }, payload => {
-        if (payload.new) setIsLiveGlobal(payload.new.is_live);
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'live_broadcast', filter: 'id=eq.1' }, payload => {
+        if (payload.new?.id === 1) setIsLiveGlobal(Boolean(payload.new.is_live));
       })
-      .subscribe();
+      .subscribe(status => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error(`Header live status subscription failed: ${status}`);
+        }
+      });
 
     return () => {
       subscription.unsubscribe();
