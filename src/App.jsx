@@ -31,7 +31,6 @@ const AdminDashboard = React.lazy(() => import('./pages/Admin/AdminDashboard'));
 const AdminLogin = React.lazy(() => import('./pages/Admin/AdminLogin'));
 const NoticeManager = React.lazy(() => import('./pages/Admin/NoticeManager'));
 const TeamManager = React.lazy(() => import('./pages/Admin/TeamManager'));
-const Live = React.lazy(() => import('./pages/Live'));
 const LiveBroadcastManager = React.lazy(() => import('./pages/Admin/LiveBroadcastManager'));
 
 function ProtectedRoute({ children }) {
