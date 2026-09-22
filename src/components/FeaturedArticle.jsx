@@ -20,7 +20,7 @@ export default function FeaturedArticle() {
   }, []);
 
   return (
-    <div className="mobile-padding" style={{ padding: '0 48px', marginTop: '100px', width: '100%', maxWidth: '1400px', margin: '100px auto 0 auto' }}>
+    <div className="mobile-padding" style={{ padding: '0 clamp(16px, 5vw, 48px)', marginTop: '100px', width: '100%', maxWidth: '1400px', margin: '100px auto 0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '40px' }}>
         <h3 style={{ fontSize: '2rem', color: 'var(--primary)', fontWeight: '700', fontFamily: 'var(--font-serif)' }}>විශේෂාංග ලිපි</h3>
         <div style={{ flexGrow: 1, height: '1px', background: 'var(--glass-border)' }}></div>

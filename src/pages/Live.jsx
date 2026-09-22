@@ -256,18 +256,18 @@ export default function Live() {
             style={{ width: '100%', height: '100%', border: 'none', objectFit: 'cover' }}
           />
         ) : (
-          <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff', background: 'radial-gradient(circle at center, #1a0505 0%, #000 100%)' }}>
+          <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff', background: 'radial-gradient(circle at center, #1a0505 0%, #000 100%)', padding: '0 5%', textAlign: 'center' }}>
             <Radio size={64} style={{ opacity: 0.2, marginBottom: '24px', color: 'var(--primary)' }} />
-            <h2 style={{ fontFamily: 'var(--font-sinhala)', fontSize: '2rem', fontWeight: 300, letterSpacing: '0.05em', color: 'rgba(255,255,255,0.7)', marginBottom: '8px' }}>මේ මොහොතේ සජීවී විකාශයක් නොමැත</h2>
+            <h2 style={{ fontFamily: 'var(--font-sinhala)', fontSize: 'clamp(1.2rem, 5vw, 2rem)', fontWeight: 300, letterSpacing: '0.05em', color: 'rgba(255,255,255,0.7)', marginBottom: '8px' }}>මේ මොහොතේ සජීවී විකාශයක් නොමැත</h2>
             
             {nextTitle && nextScheduledTime && (
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', background: 'rgba(140, 21, 21, 0.1)', padding: '32px 48px', borderRadius: '24px', border: '1px solid rgba(140, 21, 21, 0.2)', backdropFilter: 'blur(10px)' }}
+                style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', background: 'rgba(140, 21, 21, 0.1)', padding: 'clamp(24px, 5vw, 32px) clamp(24px, 5vw, 48px)', borderRadius: '24px', border: '1px solid rgba(140, 21, 21, 0.2)', backdropFilter: 'blur(10px)', width: '100%', maxWidth: '500px' }}
               >
                 <span style={{ fontFamily: 'var(--font-sinhala)', color: 'var(--primary)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', fontSize: '0.9rem' }}>මීළඟ සජීවී විකාශය</span>
-                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.8rem', fontWeight: 600, margin: 0, color: '#fff', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>{nextTitle}</h3>
+                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.2rem, 5vw, 1.8rem)', fontWeight: 600, margin: 0, color: '#fff', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>{nextTitle}</h3>
                 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '16px' }}>
                   <Clock size={20} color="rgba(255,255,255,0.6)" />

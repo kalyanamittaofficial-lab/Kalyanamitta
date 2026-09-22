@@ -9,7 +9,7 @@ export default function HeroSection() {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      padding: '0 48px',
+      padding: '0 clamp(16px, 5vw, 48px)',
       width: '100%',
       maxWidth: '1400px',
       margin: '5vh auto 0 auto',
@@ -76,7 +76,7 @@ export default function HeroSection() {
         background: 'var(--bg-secondary)', 
         border: '1px solid rgba(0,0,0,0.05)',
         borderLeft: '4px solid var(--primary)',
-        padding: '48px',
+        padding: 'clamp(24px, 5vw, 48px)',
         display: 'flex',
         flexDirection: 'column',
         boxShadow: '0 20px 40px rgba(0,0,0,0.03)'

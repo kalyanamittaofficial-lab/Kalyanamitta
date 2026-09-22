@@ -56,18 +56,18 @@ export default function NoticeBoard() {
   const otherNotices = notices.filter(n => n.id !== liveNotice.id);
 
   return (
-    <section style={{ padding: '100px 24px', backgroundColor: 'var(--bg-main)', position: 'relative' }}>
+    <section style={{ padding: 'clamp(40px, 8vw, 100px) clamp(16px, 4vw, 24px)', backgroundColor: 'var(--bg-main)', position: 'relative' }}>
       <div style={{ maxWidth: '1300px', margin: '0 auto' }}>
         
         {/* Section Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '40px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'clamp(24px, 5vw, 40px)', flexWrap: 'wrap', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div style={{ width: '4px', height: '32px', backgroundColor: 'var(--primary)' }} />
             <div>
-              <h2 style={{ fontSize: '2rem', fontFamily: 'var(--font-serif)', color: 'var(--text-main)', margin: '0 0 4px 0', letterSpacing: '0.5px' }}>
+              <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontFamily: 'var(--font-serif)', color: 'var(--text-main)', margin: '0 0 4px 0', letterSpacing: '0.5px' }}>
                 Notice Board
               </h2>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: 0, fontFamily: 'var(--font-sinhala)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+              <p style={{ color: 'var(--text-muted)', fontSize: 'clamp(0.8rem, 2vw, 0.95rem)', margin: 0, fontFamily: 'var(--font-sinhala)', textTransform: 'uppercase', letterSpacing: '1px' }}>
                 පුවරු නිවේදන සහ කාලසටහන
               </p>
             </div>
@@ -90,7 +90,7 @@ export default function NoticeBoard() {
               backgroundColor: 'var(--bg-secondary)',
               border: '1px solid var(--glass-border)',
               borderRadius: '2px', // Very sharp corners for elite editorial look
-              padding: '48px',
+              padding: 'clamp(24px, 5vw, 48px)',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
@@ -105,11 +105,11 @@ export default function NoticeBoard() {
             )}
 
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
                 {/* Date Block */}
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <span style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--primary)', letterSpacing: '2px' }}>{liveNotice.date.month}</span>
-                  <span style={{ fontSize: '4.5rem', fontWeight: '300', fontFamily: 'var(--font-serif)', color: 'var(--text-main)', lineHeight: 0.9, marginTop: '8px' }}>{liveNotice.date.day}</span>
+                  <span style={{ fontSize: 'clamp(3rem, 8vw, 4.5rem)', fontWeight: '300', fontFamily: 'var(--font-serif)', color: 'var(--text-main)', lineHeight: 0.9, marginTop: '8px' }}>{liveNotice.date.day}</span>
                 </div>
                 
                 {/* Status Badge */}
@@ -124,16 +124,16 @@ export default function NoticeBoard() {
                 )}
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px', color: 'var(--text-muted)', fontSize: '0.9rem', fontFamily: 'var(--font-sinhala)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px', color: 'var(--text-muted)', fontSize: '0.9rem', fontFamily: 'var(--font-sinhala)', flexWrap: 'wrap' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={14} /> {liveNotice.date.time}</span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Video size={14} /> {liveNotice.platform}</span>
               </div>
 
-              <h3 style={{ fontSize: '2rem', fontFamily: 'var(--font-sinhala)', color: 'var(--text-main)', margin: '0 0 16px 0', fontWeight: '500', lineHeight: 1.3 }}>
+              <h3 style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontFamily: 'var(--font-sinhala)', color: 'var(--text-main)', margin: '0 0 16px 0', fontWeight: '500', lineHeight: 1.3 }}>
                 {liveNotice.title}
               </h3>
               
-              <p style={{ fontSize: '1.1rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', margin: '0 0 32px 0', lineHeight: 1.7 }}>
+              <p style={{ fontSize: 'clamp(1rem, 3vw, 1.1rem)', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', margin: '0 0 32px 0', lineHeight: 1.7 }}>
                 {liveNotice.description}
               </p>
             </div>
@@ -172,8 +172,7 @@ export default function NoticeBoard() {
                 onMouseLeave={() => setHoveredId(null)}
                 style={{
                   display: 'flex',
-                  alignItems: 'center',
-                  padding: '32px',
+                  padding: 'clamp(16px, 3vw, 32px)',
                   backgroundColor: 'var(--bg-main)',
                   border: '1px solid',
                   borderColor: hoveredId === notice.id ? 'var(--text-main)' : 'var(--glass-border)',
@@ -193,49 +192,52 @@ export default function NoticeBoard() {
                 }} />
 
                 {/* Date Bubble */}
-                <div style={{
-                  minWidth: '80px', height: '80px',
+                <div className="date-bubble" style={{
+                  minWidth: '70px', height: '70px',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                   border: '1px solid var(--glass-border)',
                   backgroundColor: 'var(--bg-secondary)',
-                  marginRight: '24px'
+                  marginRight: 'clamp(12px, 3vw, 24px)',
+                  flexShrink: 0
                 }}>
-                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: 'var(--primary)', letterSpacing: '1px' }}>{notice.date.month}</span>
-                  <span style={{ fontSize: '1.8rem', fontWeight: '400', fontFamily: 'var(--font-serif)', color: 'var(--text-main)', lineHeight: 1 }}>{notice.date.day}</span>
+                  <span style={{ fontSize: '0.65rem', fontWeight: '700', color: 'var(--primary)', letterSpacing: '1px' }}>{notice.date.month}</span>
+                  <span style={{ fontSize: '1.5rem', fontWeight: '400', fontFamily: 'var(--font-serif)', color: 'var(--text-main)', lineHeight: 1 }}>{notice.date.day}</span>
                 </div>
 
                 {/* Content */}
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
                     {notice.type === 'upcoming' ? (
-                      <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--text-main)', letterSpacing: '1px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={12}/> UPCOMING</span>
+                      <span style={{ fontSize: '0.7rem', fontWeight: '600', color: 'var(--text-main)', letterSpacing: '1px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={12}/> UPCOMING</span>
                     ) : (
-                      <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '4px' }}><MonitorPlay size={12}/> ARCHIVE</span>
+                      <span style={{ fontSize: '0.7rem', fontWeight: '600', color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '4px' }}><MonitorPlay size={12}/> ARCHIVE</span>
                     )}
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>• {notice.date.time}</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>• {notice.date.time}</span>
                   </div>
                   
-                  <h4 style={{ fontSize: '1.25rem', fontFamily: 'var(--font-sinhala)', color: 'var(--text-main)', margin: '0 0 8px 0', fontWeight: '500' }}>
+                  <h4 style={{ fontSize: 'clamp(1rem, 3vw, 1.25rem)', fontFamily: 'var(--font-sinhala)', color: 'var(--text-main)', margin: '0 0 8px 0', fontWeight: '500', lineHeight: 1.3 }}>
                     {notice.title}
                   </h4>
                   
-                  <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', margin: 0, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.5 }}>
                     {notice.description}
                   </p>
                 </div>
 
                 {/* Arrow Icon */}
-                <div style={{
-                  width: '40px', height: '40px',
+                <div className="arrow-icon-wrapper" style={{
+                  width: '32px', height: '32px',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   border: '1px solid',
                   borderColor: hoveredId === notice.id ? 'var(--text-main)' : 'var(--glass-border)',
                   borderRadius: '50%',
                   color: hoveredId === notice.id ? 'var(--bg-main)' : 'var(--text-main)',
                   backgroundColor: hoveredId === notice.id ? 'var(--text-main)' : 'transparent',
-                  transition: 'all 0.3s ease'
+                  transition: 'all 0.3s ease',
+                  marginLeft: '12px',
+                  flexShrink: 0
                 }}>
-                  <ChevronRight size={18} />
+                  <ChevronRight size={16} />
                 </div>
               </div>
             ))}
@@ -247,9 +249,24 @@ export default function NoticeBoard() {
           .notice-grid {
             grid-template-columns: 1fr 1fr;
           }
+          .secondary-notice-card {
+            align-items: center;
+          }
           @media (max-width: 1024px) {
             .notice-grid {
               grid-template-columns: 1fr;
+            }
+          }
+          @media (max-width: 480px) {
+            .secondary-notice-card {
+              align-items: flex-start !important;
+            }
+            .arrow-icon-wrapper {
+              display: none !important;
+            }
+            .date-bubble {
+              min-width: 60px !important;
+              height: 60px !important;
             }
           }
           .primary-notice-btn:hover {
