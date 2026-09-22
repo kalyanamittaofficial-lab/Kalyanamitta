@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabase';
 import { Radio, Save, Clock, Video } from 'lucide-react';
 
@@ -12,32 +12,42 @@ export default function LiveBroadcastManager() {
   });
 
   useEffect(() => {
-    fetchLiveStatus();
+    supabase
+      .from('live_broadcast')
+      .select('is_live, video_id, next_scheduled_time, next_title')
+      .eq('id', 1)
+      .single()
+      .then(({ data: broadcast, error }) => {
+        if (error) {
+          console.error('Failed to load live broadcast settings:', error);
+          return;
+        }
+
+        if (broadcast) {
+          // Format datetime for input type="datetime-local"
+          const dateObj = broadcast.next_scheduled_time ? new Date(broadcast.next_scheduled_time) : new Date();
+          // Adjust to local time format YYYY-MM-DDTHH:mm
+          const localDateTime = new Date(dateObj.getTime() - dateObj.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+
+          setData({
+            is_live: broadcast.is_live,
+            video_id: broadcast.video_id || '',
+            next_scheduled_time: broadcast.next_scheduled_time ? localDateTime : '',
+            next_title: broadcast.next_title || ''
+          });
+        }
+      });
   }, []);
 
-  const fetchLiveStatus = async () => {
-    const { data: broadcast, error } = await supabase
-      .from('live_broadcast')
-      .select('*')
-      .eq('id', 1)
-      .single();
-
-    if (broadcast) {
-      // Format datetime for input type="datetime-local"
-      const dateObj = broadcast.next_scheduled_time ? new Date(broadcast.next_scheduled_time) : new Date();
-      // Adjust to local time format YYYY-MM-DDTHH:mm
-      const localDateTime = new Date(dateObj.getTime() - dateObj.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-      
-      setData({
-        is_live: broadcast.is_live,
-        video_id: broadcast.video_id || '',
-        next_scheduled_time: broadcast.next_scheduled_time ? localDateTime : '',
-        next_title: broadcast.next_title || ''
-      });
-    }
-  };
-
   const handleSave = async () => {
+    const normalizedVideoId = data.video_id.trim();
+    const isValidVideoId = /^[A-Za-z0-9_-]{11}$/.test(normalizedVideoId);
+
+    if ((data.is_live || normalizedVideoId) && !isValidVideoId) {
+      alert('Please enter a valid 11-character YouTube video ID.');
+      return;
+    }
+
     setLoading(true);
     // Convert local datetime back to UTC ISO for Supabase
     const isoDate = data.next_scheduled_time ? new Date(data.next_scheduled_time).toISOString() : null;
@@ -46,7 +56,7 @@ export default function LiveBroadcastManager() {
       .from('live_broadcast')
       .update({
         is_live: data.is_live,
-        video_id: data.video_id,
+        video_id: normalizedVideoId,
         next_scheduled_time: isoDate,
         next_title: data.next_title,
         updated_at: new Date().toISOString()

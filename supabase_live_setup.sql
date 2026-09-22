@@ -1,4 +1,4 @@
--- Run this in the Supabase SQL Editor
+-- Run this in the Supabase SQL Editor after supabase_admin_setup.sql
 
 CREATE TABLE live_broadcast (
     id SERIAL PRIMARY KEY,
@@ -16,15 +16,40 @@ VALUES (1, false, 'jfKfPfyJRdk', '2026-09-25T14:00:00Z', 'සතිපට්ඨ�
 -- Enable RLS
 ALTER TABLE live_broadcast ENABLE ROW LEVEL SECURITY;
 
+-- Evaluate the role without recursively applying user_roles policies
+CREATE OR REPLACE FUNCTION public.has_live_broadcast_admin_role()
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+    SELECT EXISTS (
+        SELECT 1 FROM public.user_roles
+        WHERE user_roles.id = auth.uid()
+        AND role IN ('superadmin', 'editor')
+    );
+$$;
+
+REVOKE ALL ON FUNCTION public.has_live_broadcast_admin_role() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.has_live_broadcast_admin_role() TO authenticated;
+
 -- Allow public read access
 CREATE POLICY "Allow public read access on live_broadcast"
 ON live_broadcast FOR SELECT
 TO public
 USING (true);
 
--- Allow authenticated admins to update
-CREATE POLICY "Allow authenticated update on live_broadcast"
+-- Only users assigned an admin role can update broadcast settings
+CREATE POLICY "Allow admin update on live_broadcast"
 ON live_broadcast FOR UPDATE
 TO authenticated
-USING (true)
-WITH CHECK (true);
+USING (
+    public.has_live_broadcast_admin_role()
+)
+WITH CHECK (
+    public.has_live_broadcast_admin_role()
+);
+
+-- Enable Postgres Changes events for the public live indicators
+ALTER PUBLICATION supabase_realtime ADD TABLE public.live_broadcast;

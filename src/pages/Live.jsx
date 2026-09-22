@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Radio, Users, Eye, ArrowLeft, X, Maximize, Calendar, FileText, Clock } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Radio, Eye, X, FileText, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../utils/supabase';
 
@@ -13,28 +13,48 @@ export default function Live() {
   const [liveVideoId, setLiveVideoId] = useState('');
   const [nextScheduledTime, setNextScheduledTime] = useState('');
   const [nextTitle, setNextTitle] = useState('');
-  const [loading, setLoading] = useState(true);
   const [timeRemaining, setTimeRemaining] = useState('');
 
   // Random viewer count generator for effect (since we can't easily get real YouTube viewers without API key)
-  const [viewerCount, setViewerCount] = useState(Math.floor(Math.random() * 500) + 800);
+  const [viewerCount] = useState(() => Math.floor(Math.random() * 500) + 800);
 
   useEffect(() => {
-    fetchBroadcastData();
+    supabase
+      .from('live_broadcast')
+      .select('is_live, video_id, next_scheduled_time, next_title')
+      .eq('id', 1)
+      .single()
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Failed to load live broadcast data:', error);
+          return;
+        }
+
+        if (data) {
+          setIsLive(data.is_live);
+          setLiveVideoId(data.video_id || '');
+          setNextScheduledTime(data.next_scheduled_time || '');
+          setNextTitle(data.next_title || '');
+        }
+      });
 
     // Setup realtime subscription
     const subscription = supabase
       .channel('public:live_broadcast')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'live_broadcast' }, payload => {
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'live_broadcast', filter: 'id=eq.1' }, payload => {
         const newData = payload.new;
-        if (newData) {
+        if (newData?.id === 1) {
           setIsLive(newData.is_live);
-          setLiveVideoId(newData.video_id);
-          setNextScheduledTime(newData.next_scheduled_time);
-          setNextTitle(newData.next_title);
+          setLiveVideoId(newData.video_id || '');
+          setNextScheduledTime(newData.next_scheduled_time || '');
+          setNextTitle(newData.next_title || '');
         }
       })
-      .subscribe();
+      .subscribe(status => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error(`Live broadcast realtime subscription failed: ${status}`);
+        }
+      });
 
     return () => {
       supabase.removeChannel(subscription);
@@ -44,9 +64,15 @@ export default function Live() {
   useEffect(() => {
     let interval;
     if (!isLive && nextScheduledTime) {
-      interval = setInterval(() => {
+      const updateCountdown = () => {
         const now = new Date().getTime();
         const scheduled = new Date(nextScheduledTime).getTime();
+
+        if (Number.isNaN(scheduled)) {
+          setTimeRemaining('Starting soon...');
+          return;
+        }
+
         const distance = scheduled - now;
 
         if (distance < 0) {
@@ -62,39 +88,33 @@ export default function Live() {
           timeString += `${hours}h ${minutes}m ${seconds}s`;
           setTimeRemaining(timeString);
         }
-      }, 1000);
+      };
+
+      updateCountdown();
+      interval = setInterval(updateCountdown, 1000);
     }
     return () => clearInterval(interval);
   }, [isLive, nextScheduledTime]);
 
-  const fetchBroadcastData = async () => {
-    const { data } = await supabase.from('live_broadcast').select('*').eq('id', 1).single();
-    if (data) {
-      setIsLive(data.is_live);
-      setLiveVideoId(data.video_id);
-      setNextScheduledTime(data.next_scheduled_time);
-      setNextTitle(data.next_title);
-    }
-    setLoading(false);
-  };
-
-  const embedUrl = `https://www.youtube.com/embed/${liveVideoId}?autoplay=1&controls=0&disablekb=1&rel=0&modestbranding=1&playsinline=1`;
+  const embedUrl = `https://www.youtube.com/embed/${encodeURIComponent(liveVideoId.trim())}?autoplay=1&controls=0&disablekb=1&rel=0&modestbranding=1&playsinline=1`;
 
   // Auto-hide UI when mouse is still (cinematic mode)
   useEffect(() => {
     let timeout;
-    const handleMouseMove = () => {
+    const revealUI = () => {
       setShowUI(true);
       clearTimeout(timeout);
       timeout = setTimeout(() => setShowUI(false), 3000);
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('pointermove', revealUI);
+    window.addEventListener('pointerdown', revealUI);
     // Initial hide timer
     timeout = setTimeout(() => setShowUI(false), 4000);
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('pointermove', revealUI);
+      window.removeEventListener('pointerdown', revealUI);
       clearTimeout(timeout);
     };
   }, []);
