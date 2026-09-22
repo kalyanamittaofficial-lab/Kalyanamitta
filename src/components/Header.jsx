@@ -354,24 +354,23 @@ export default function Header() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
             
             {/* Live Broadcast Indicator */}
-            {isLiveGlobal && (
-              <Link to="/live" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-                <motion.div 
-                  animate={{ opacity: [1, 0.6, 1] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                  style={{ 
-                    display: 'flex', alignItems: 'center', gap: '6px', 
-                    background: 'rgba(220, 38, 38, 0.1)', color: '#dc2626', 
-                    padding: '4px 12px', borderRadius: '16px', 
-                    fontWeight: '700', fontSize: '0.85rem', 
-                    border: '1px solid rgba(220, 38, 38, 0.3)' 
-                  }}
-                >
-                  <div style={{ width: '8px', height: '8px', background: '#dc2626', borderRadius: '50%' }}></div>
-                  LIVE
-                </motion.div>
-              </Link>
-            )}
+            <Link to="/live" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+              <motion.div 
+                animate={isLiveGlobal ? { opacity: [1, 0.6, 1] } : { opacity: 1 }}
+                transition={isLiveGlobal ? { duration: 1.5, repeat: Infinity } : {}}
+                style={{ 
+                  display: 'flex', alignItems: 'center', gap: '6px', 
+                  background: isLiveGlobal ? 'rgba(220, 38, 38, 0.1)' : 'rgba(128, 128, 128, 0.1)', 
+                  color: isLiveGlobal ? '#dc2626' : textMuted, 
+                  padding: '4px 12px', borderRadius: '16px', 
+                  fontWeight: '700', fontSize: '0.85rem', 
+                  border: `1px solid ${isLiveGlobal ? 'rgba(220, 38, 38, 0.3)' : borderColor}` 
+                }}
+              >
+                <div style={{ width: '8px', height: '8px', background: isLiveGlobal ? '#dc2626' : textMuted, borderRadius: '50%' }}></div>
+                LIVE
+              </motion.div>
+            </Link>
 
             <button onClick={toggleTheme} style={{ background: 'none', border: 'none', color: textColor, cursor: 'pointer', opacity: 0.7, padding: 0, display: 'flex', transition: 'opacity 0.2s' }} onMouseEnter={e => e.currentTarget.style.opacity = 1} onMouseLeave={e => e.currentTarget.style.opacity = 0.7}>
               {isDark ? <Sun size={22} /> : <Moon size={22} />}
