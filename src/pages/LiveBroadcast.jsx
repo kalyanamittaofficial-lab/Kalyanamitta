@@ -8,6 +8,7 @@ export default function LiveBroadcast() {
   const [loading, setLoading] = useState(true);
   const [timeLeft, setTimeLeft] = useState('');
   const [isTimeReached, setIsTimeReached] = useState(false);
+  const [joined, setJoined] = useState(false);
 
   useEffect(() => {
     fetchLiveStatus();
@@ -129,14 +130,30 @@ export default function LiveBroadcast() {
               exit={{ opacity: 0, y: -20 }}
               style={{ width: '100%', maxWidth: '1000px', margin: '0 auto', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', border: '1px solid var(--glass-border)' }}
             >
-              <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, pointerEvents: 'none' }}>
-                <iframe 
-                  src={`https://www.youtube.com/embed/${data.video_id}?autoplay=1&controls=0&modestbranding=1&rel=0&disablekb=1&fs=0&iv_load_policy=3`} 
-                  title="Kalyanamitta Live Broadcast" 
-                  frameBorder="0" 
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
-                ></iframe>
+              <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, background: '#000', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                {!joined ? (
+                  <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', zIndex: 10 }}>
+                    <h3 style={{ color: '#fff', fontFamily: 'var(--font-sinhala)', fontSize: '1.5rem', marginBottom: '24px' }}>සජීවී විකාශය ආරම්භ වී ඇත</h3>
+                    <button 
+                      onClick={() => setJoined(true)}
+                      style={{ background: 'var(--primary)', color: '#fff', border: 'none', padding: '16px 40px', borderRadius: '30px', fontSize: '1.2rem', fontWeight: 'bold', fontFamily: 'var(--font-sinhala)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 10px 25px rgba(212, 163, 115, 0.4)', transition: 'transform 0.2s' }}
+                      onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                      onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                    >
+                      <PlayCircle size={24} /> නැරඹීම සඳහා පිවිසෙන්න
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+                    <iframe 
+                      src={`https://www.youtube.com/embed/${data.video_id}?autoplay=1&controls=0&modestbranding=1&rel=0&disablekb=1&fs=0&iv_load_policy=3`} 
+                      title="Kalyanamitta Live Broadcast" 
+                      frameBorder="0" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                    ></iframe>
+                  </div>
+                )}
               </div>
             </motion.div>
 
