@@ -73,7 +73,7 @@ export default function LiveBroadcastManager() {
   };
 
   return (
-    <div style={{ maxWidth: '800px', padding: '20px' }}>
+    <div style={{ maxWidth: '1200px', padding: '20px' }}>
       <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px' }}>
         <Radio color="var(--primary)" /> Live Broadcast Control Panel
       </h2>
@@ -81,7 +81,10 @@ export default function LiveBroadcastManager() {
         Control what viewers see on the /live broadcast page and header indicators.
       </p>
 
-      <div style={{ background: 'var(--bg-secondary)', padding: '24px', borderRadius: '12px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '32px' }}>
+        
+        {/* LEFT: Control Form */}
+        <div style={{ background: 'var(--bg-secondary)', padding: '24px', borderRadius: '12px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '24px' }}>
         
         {/* Is Live Toggle */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '20px', borderBottom: '1px solid var(--glass-border)' }}>
@@ -184,6 +187,43 @@ export default function LiveBroadcastManager() {
         </button>
 
       </div>
+
+      {/* RIGHT: Live Preview Screen */}
+      <div style={{ background: 'var(--bg-secondary)', padding: '24px', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+        <h3 style={{ fontSize: '1.1rem', margin: '0 0 16px 0', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Video size={18} /> Broadcast Preview
+        </h3>
+        
+        <div style={{ width: '100%', background: '#000', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--glass-border)', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
+          {data.video_id ? (
+            <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
+              <iframe 
+                src={`https://www.youtube.com/embed/${data.video_id}?autoplay=0&controls=1&modestbranding=1&rel=0`} 
+                title="Preview" 
+                frameBorder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowFullScreen
+                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+              ></iframe>
+            </div>
+          ) : (
+            <div style={{ padding: '80px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+              Enter a Video ID to see preview
+            </div>
+          )}
+        </div>
+
+        <div style={{ marginTop: '24px', padding: '16px', background: 'var(--bg-main)', borderRadius: '8px', border: '1px solid var(--glass-border)', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+          <p style={{ margin: '0 0 8px 0', fontWeight: 'bold' }}>How viewers see this:</p>
+          <ul style={{ margin: 0, paddingLeft: '20px', lineHeight: 1.6 }}>
+            <li>Controls and YouTube logos are completely hidden.</li>
+            <li>Clicking to pause/play is strictly disabled.</li>
+            <li>It auto-plays (silently) exactly when the countdown hits zero.</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
     </div>
   );
 }
