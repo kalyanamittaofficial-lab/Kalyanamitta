@@ -58,49 +58,27 @@ export default function PracticeGuide() {
           </p>
         </motion.div>
 
-        {/* Detailed Guide Section */}
+        {/* Coming Soon Section */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '24px', padding: '40px', marginBottom: '40px' }}
+          style={{ background: 'var(--bg-secondary)', border: '1px dashed var(--primary)', borderRadius: '24px', padding: '60px 40px', marginBottom: '40px', textAlign: 'center' }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', color: 'var(--primary)' }}>
-            <BookOpen size={24} />
-            <h2 style={{ fontFamily: 'var(--font-sinhala)', fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>
-              ප්‍රායෝගික පුහුණු මාර්ගෝපදේශය
-            </h2>
+          <div style={{ color: 'var(--primary)', marginBottom: '24px', opacity: 0.8 }}>
+            <Clock size={48} style={{ margin: '0 auto' }} />
           </div>
-          
-          <p style={{ fontFamily: 'var(--font-sinhala)', fontSize: '1.15rem', color: 'var(--text-main)', lineHeight: 2, opacity: 0.9 }}>
-            {step.guide}
+          <h2 style={{ fontFamily: 'var(--font-sinhala)', fontSize: '1.8rem', fontWeight: 700, margin: '0 0 16px 0', color: 'var(--text-main)' }}>
+            ඉදිරියේදී බලාපොරොත්තු වන්න!
+          </h2>
+          <p style={{ fontFamily: 'var(--font-sinhala)', fontSize: '1.15rem', color: 'var(--text-muted)', lineHeight: 1.8, maxWidth: '500px', margin: '0 auto' }}>
+            මෙම ධර්මතාවය ප්‍රායෝගිකව දියුණු කරන ආකාරය පිළිබඳ සවිස්තරාත්මක මාර්ගෝපදේශය මේ වන විට සකස් වෙමින් පවතී. ඉතා ඉක්මණින් මෙය යාවත්කාලීන කරනු ලැබේ.
           </p>
-
-          <div style={{ marginTop: '32px', background: 'rgba(140, 21, 21, 0.05)', borderLeft: '4px solid var(--primary)', padding: '24px', borderRadius: '0 16px 16px 0' }}>
-            <h3 style={{ fontFamily: 'var(--font-sinhala)', fontSize: '1.2rem', color: 'var(--primary)', margin: '0 0 12px 0', fontWeight: 700 }}>දෛනික අභ්‍යාසය:</h3>
-            <ul style={{ margin: 0, paddingLeft: '24px', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', fontSize: '1.05rem', lineHeight: 1.8 }}>
-              <li>අවම වශයෙන් දිනකට විනාඩි 15 ක් මෙම අභ්‍යාසය සඳහා වෙන් කරන්න.</li>
-              <li>සෑම දිනකම නින්දට පෙර අද දින මෙම ධර්මතාවය ප්‍රගුණ කළේදැයි විමසා බලන්න.</li>
-            </ul>
-          </div>
         </motion.div>
 
-        {/* Navigation & Completion */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'space-between', alignItems: 'center' }}>
-          
-          <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', background: completed ? 'var(--primary)' : 'var(--bg-secondary)', padding: '16px 24px', borderRadius: '16px', border: completed ? '1px solid var(--primary)' : '1px solid var(--glass-border)', transition: 'all 0.3s', flex: 1, minWidth: '280px' }}>
-            <input 
-              type="checkbox" 
-              checked={completed}
-              onChange={(e) => setCompleted(e.target.checked)}
-              style={{ width: '24px', height: '24px', accentColor: completed ? '#fff' : 'var(--primary)', cursor: 'pointer' }} 
-            />
-            <span style={{ fontSize: '1.1rem', fontWeight: 700, color: completed ? '#fff' : 'var(--text-main)', fontFamily: 'var(--font-sinhala)' }}>
-              අද දින මෙම පුහුණුව සම්පූර්ණ කළෙමි
-            </span>
-          </label>
-
-          <div style={{ display: 'flex', gap: '12px', flex: 1, justifyContent: 'flex-end', minWidth: '280px' }}>
+        {/* Navigation */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '12px', flex: 1, justifyContent: 'center', maxWidth: '400px' }}>
             {!isFirstStep && (
               <Link to={`/practice/${factorId}/${parseInt(stepId) - 1}`} style={{ textDecoration: 'none', flex: 1 }}>
                 <button style={{ width: '100%', padding: '16px', background: 'var(--bg-main)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', fontSize: '1.1rem', fontWeight: 600, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
@@ -118,12 +96,11 @@ export default function PracticeGuide() {
             ) : (
               <Link to={`/path`} style={{ textDecoration: 'none', flex: 1 }}>
                 <button style={{ width: '100%', padding: '16px', background: 'var(--primary)', border: 'none', borderRadius: '12px', color: '#fff', fontFamily: 'var(--font-sinhala)', fontSize: '1.1rem', fontWeight: 600, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
-                  සම්පූර්ණයි ✓
+                  ආපසු පිටවන්න
                 </button>
               </Link>
             )}
           </div>
-
         </div>
 
       </div>
