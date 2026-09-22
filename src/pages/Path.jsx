@@ -1,109 +1,7 @@
 import React, { useState, useEffect, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const bodhiFactors = [
-  { 
-    id: 1, 
-    title: 'සතර සතිපට්ඨාන', 
-    subtitle: 'සිහිය පිහිටුවීමේ පදනම',
-    count: 4,
-    description: 'අපගේ ශරීරය, හැඟීම්, සිත සහ ධර්මතාවයන් පිළිබඳව නිරන්තර අවධානයෙන් සහ නිවැරදි සිහියෙන් යුතුව වාසය කිරීමයි.',
-    items: [
-      { name: 'කායානුපස්සනා', desc: 'කය සහ කයේ ක්‍රියාකාරිත්වය පිළිබඳ අවධානය' },
-      { name: 'වේදනානුපස්සනා', desc: 'විඳීම් (සැප, දුක්, මධ්‍යස්ථ) පිළිබඳ අවධානය' },
-      { name: 'චිත්තානුපස්සනා', desc: 'සිතේ ස්වභාවය පිළිබඳ අවධානය' },
-      { name: 'ධම්මානුපස්සනා', desc: 'ධර්මතාවන් පිළිබඳ අවධානය' }
-    ]
-  },
-  { 
-    id: 2, 
-    title: 'සතර සම්මප්පධාන', 
-    subtitle: 'නිවැරදි උත්සාහය',
-    count: 4,
-    description: 'සිත තුළ අකුසල් දුරු කිරීමටත්, කුසල් දියුණු කිරීමටත් ගන්නා වූ අඛණ්ඩ සහ නිවැරදි වීරියයි.',
-    items: [
-      { name: 'නූපන් අකුසල් නූපදවීමට', desc: 'තවමත් සිතේ හටනොගත් පාපී සිතිවිලිවලට ඉඩ නොදීම' },
-      { name: 'උපන් අකුසල් දුරු කිරීමට', desc: 'සිතේ හටගත් පාපී සිතිවිලි වහා බැහැර කිරීම' },
-      { name: 'නූපන් කුසල් ඉපදවීමට', desc: 'සිතේ හටනොගත් යහපත් සිතිවිලි වඩවා ගැනීම' },
-      { name: 'උපන් කුසල් වැඩිදියුණු කිරීමට', desc: 'සිතේ ඇති යහපත් සිතිවිලි තවදුරටත් දියුණු කිරීම' }
-    ]
-  },
-  { 
-    id: 3, 
-    title: 'සතර ඉද්ධිපාද', 
-    subtitle: 'සාර්ථකත්වයේ පදනම',
-    count: 4,
-    description: 'නිවන් අවබෝධය නැමැති උතුම් අරමුණ මුදුන් පමුණුවා ගැනීමට අත්‍යවශ්‍ය වන මානසික ශක්තීන් සතර.',
-    items: [
-      { name: 'ඡන්ද', desc: 'අරමුණ කෙරෙහි ඇති බලවත් කැමැත්ත' },
-      { name: 'චිත්ත', desc: 'අරමුණ කෙරෙහි සිතේ ඇති බලවත් නැඹුරුව' },
-      { name: 'විරිය', desc: 'අරමුණ වෙනුවෙන් නොපසුබටව කරන උත්සාහය' },
-      { name: 'වීමංසා', desc: 'නුවණින් විමසා බැලීම' }
-    ]
-  },
-  { 
-    id: 4, 
-    title: 'පංච ඉන්ද්‍රිය', 
-    subtitle: 'අධ්‍යාත්මික ඉන්ද්‍රියයන්',
-    count: 5,
-    description: 'බාහිර අරමුණුවලට නොසැලී, ධර්මය තුළ සිත මනාව පිහිටුවා ගන්නා වූ අධ්‍යාත්මික ඉන්ද්‍රියයන් පහ.',
-    items: [
-      { name: 'සද්ධා ඉන්ද්‍රිය', desc: 'බුද්ධාදි රත්නත්‍රය කෙරෙහි ඇති නොසැලෙන විශ්වාසය' },
-      { name: 'විරිය ඉන්ද්‍රිය', desc: 'කුසලයට ඇති නොපසුබට උත්සාහය' },
-      { name: 'සති ඉන්ද්‍රිය', desc: 'මනා වූ සිහිය' },
-      { name: 'සමාධි ඉන්ද්‍රිය', desc: 'සිතේ එකඟ බව' },
-      { name: 'පඤ්ඤා ඉන්ද්‍රිය', desc: 'අනිත්‍ය, දුක්ඛ, අනාත්ම ලෙස යථාර්ථය දකින නුවණ' }
-    ]
-  },
-  { 
-    id: 5, 
-    title: 'පංච බල', 
-    subtitle: 'අධ්‍යාත්මික බලයන්',
-    count: 5,
-    description: 'ඉහත කී ඉන්ද්‍රියයන් පහ කිසිවකින් සෙලවිය නොහැකි තරමට බලවත් වූ විට එය "බල" ලෙස හැඳින්වේ.',
-    items: [
-      { name: 'සද්ධා බලය', desc: 'අශ්‍රද්ධාවෙන් නොසැලෙන විශ්වාසය' },
-      { name: 'විරිය බලය', desc: 'කම්මැලිකමෙන් නොසැලෙන උත්සාහය' },
-      { name: 'සති බලය', desc: 'මුළාවෙන් නොසැලෙන සිහිය' },
-      { name: 'සමාධි බලය', desc: 'වික්ෂිප්ත බවින් නොසැලෙන එකඟකම' },
-      { name: 'පඤ්ඤා බලය', desc: 'අවිද්‍යාවෙන් නොසැලෙන නුවණ' }
-    ]
-  },
-  { 
-    id: 6, 
-    title: 'සප්ත බොජ්ඣංග', 
-    subtitle: 'අවබෝධයේ අංග',
-    count: 7,
-    description: 'චතුරාර්ය සත්‍යය අවබෝධ කිරීම සඳහා සිත තුළ අනිවාර්යයෙන්ම මෝරා වැඩිය යුතු අංග හත.',
-    items: [
-      { name: 'සති', desc: 'මනා සිහිය' },
-      { name: 'ධම්මවිචය', desc: 'නුවණින් ධර්මය විමසීම' },
-      { name: 'විරිය', desc: 'නොපසුබට උත්සාහය' },
-      { name: 'පීති', desc: 'නිරාමිස සතුට' },
-      { name: 'පස්සද්ධි', desc: 'කය සහ සිතේ සංසිඳීම' },
-      { name: 'සමාධි', desc: 'සිතේ මනා එකඟබව' },
-      { name: 'උපේක්ඛා', desc: 'සිතේ මධ්‍යස්ථ බව' }
-    ]
-  },
-  { 
-    id: 7, 
-    title: 'ආර්ය අෂ්ටාංගික මාර්ගය', 
-    subtitle: 'උතුම් වූ ආර්ය මාර්ගය',
-    count: 8,
-    description: 'නිවනට මඟ පෙන්වන එකම මාර්ගය. මෙය ප්‍රඥා, ශීල, සමාධි යන ත්‍රිවිධ ශික්ෂාවන්ට ඇතුළත් වේ.',
-    items: [
-      { name: 'සම්මා දිට්ඨි', desc: 'නිවැරදි දැක්ම' },
-      { name: 'සම්මා සංකප්ප', desc: 'නිවැරදි කල්පනාව' },
-      { name: 'සම්මා වාචා', desc: 'නිවැරදි වචනය' },
-      { name: 'සම්මා කම්මන්ත', desc: 'නිවැරදි කර්මාන්තය' },
-      { name: 'සම්මා ආජීව', desc: 'නිවැරදි දිවිපැවැත්ම' },
-      { name: 'සම්මා වායාම', desc: 'නිවැරදි උත්සාහය' },
-      { name: 'සම්මා සති', desc: 'නිවැරදි සිහිය' },
-      { name: 'සම්මා සමාධි', desc: 'නිවැරදි සිතේ එකඟකම' }
-    ]
-  }
-];
-
+import { bodhiFactors } from '../data/bodhiFactors';
 // Memoized fully visible beautiful Dharma Chakra
 const RealisticChakra = memo(() => (
   <svg viewBox="0 0 1000 1000" width="100%" height="100%" style={{ filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.15))' }}>
@@ -492,13 +390,17 @@ export default function Path() {
                               අද දිනයේදී {item.desc} සඳහා කාලය වෙන් කරන්න.
                             </div>
                             
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '12px 20px', borderRadius: '10px', border: '1px solid var(--glass-border)', width: 'fit-content', transition: 'background 0.2s' }}
-                                   onMouseEnter={e => e.currentTarget.style.background = 'rgba(140, 21, 21, 0.05)'}
-                                   onMouseLeave={e => e.currentTarget.style.background = 'var(--bg-secondary)'}
-                            >
-                              <input type="checkbox" style={{ accentColor: 'var(--primary)', width: '20px', height: '20px', cursor: 'pointer' }} />
-                              <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-main)' }}>මම මෙය සම්පූර්ණ කළෙමි</span>
-                            </label>
+                            <Link to={`/practice/${activeFactor.id}/${idx}`} style={{ textDecoration: 'none' }}>
+                              <motion.button 
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '12px 20px', borderRadius: '10px', border: '1px solid var(--primary)', width: 'fit-content', color: 'var(--primary)', fontWeight: 600, fontFamily: 'var(--font-sinhala)', transition: 'all 0.2s' }}
+                                onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.color = '#fff'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-secondary)'; e.currentTarget.style.color = 'var(--primary)'; }}
+                              >
+                                සවිස්තරාත්මක පුහුණුව අරඹන්න <span>→</span>
+                              </motion.button>
+                            </Link>
                           </div>
                         </div>
                       ))}
