@@ -94,6 +94,17 @@ export default function LiveBroadcastManager() {
       .eq('id', 1);
   };
 
+  const handleToggleLive = (e) => {
+    const isChecked = e.target.checked;
+    const confirmMessage = isChecked 
+      ? "Are you sure you want to turn ON the live broadcast? This will show the LIVE indicator to all visitors."
+      : "Are you sure you want to turn OFF the live broadcast? This will immediately disconnect all current viewers.";
+    
+    if (window.confirm(confirmMessage)) {
+      setData({...data, is_live: isChecked});
+    }
+  };
+
   return (
     <div style={{ maxWidth: '1200px', padding: '20px' }}>
       <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -122,7 +133,7 @@ export default function LiveBroadcastManager() {
             <input 
               type="checkbox" 
               checked={data.is_live}
-              onChange={e => setData({...data, is_live: e.target.checked})}
+              onChange={handleToggleLive}
               style={{ opacity: 0, width: 0, height: 0 }}
             />
             <span style={{
