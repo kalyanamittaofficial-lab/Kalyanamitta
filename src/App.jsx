@@ -81,10 +81,12 @@ function App() {
             <Route path="live" element={<LiveBroadcastManager />} />
           </Route>
 
+          {/* STANDALONE IMMERSIVE UI */}
+          <Route path="/live" element={<Live />} />
+
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
           <Route path="words" element={<Words />} />
-          <Route path="live" element={<Live />} />
           <Route path="history" element={<History />} />
           <Route path="history/:chapterId" element={<HistoryChapter />} />
           <Route path="sermons" element={<Sermons />} />
