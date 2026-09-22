@@ -202,7 +202,7 @@ export default function Community() {
               <div className="cm-quote-sinhala">
                 "ආනන්දය, එසේ නොකියන්න. එසේ නොකියන්න. බ්‍රහ්මචරියාවේ අඩක් පමණක් නොව, මුළු බ්‍රහ්මචරියාවම කල්‍යාණ මිත්‍රත්වය මත රඳා පවතී."
                 <div style={{ marginTop: '1.2rem', fontSize: '0.9rem', opacity: 0.6, fontWeight: 400, letterSpacing: '0.05em' }}>
-                  — උපද්ධ සූත්‍රය (සංයුත්ත නිකාය)
+                  — උපඩ්ඪ සූත්‍රය (සංයුත්ත නිකාය)
                 </div>
               </div>
               

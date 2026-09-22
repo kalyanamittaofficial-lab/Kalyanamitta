@@ -1,9 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import HeroSection from '../components/HeroSection';
-import LatestSermons from '../components/LatestSermons';
 import FeaturedArticle from '../components/FeaturedArticle';
-import UpcomingEvents from '../components/UpcomingEvents';
+import NoticeBoard from '../components/NoticeBoard';
 
 export default function Home() {
   return (
@@ -14,9 +13,8 @@ export default function Home() {
       {/* Main Content (Scrollable) */}
       <div style={{ position: 'relative', zIndex: 10, paddingBottom: '120px' }}>
         <HeroSection />
-        <LatestSermons />
+        <NoticeBoard />
         <FeaturedArticle />
-        <UpcomingEvents />
       </div>
     </div>
   );

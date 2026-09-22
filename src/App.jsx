@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './utils/supabase';
 import Layout from './components/Layout';
 import Home from './pages/Home';
+import Live from './pages/Live';
 import Meditation from './pages/Meditation';
 import Words from './pages/Words';
 import Sermons from './pages/Sermons';
@@ -22,14 +23,27 @@ import ResourceLanding from './pages/ResourceLanding';
 import Onboarding from './pages/Onboarding';
 import History from './pages/History';
 import HistoryChapter from './pages/HistoryChapter';
+import Sasanaya from './pages/Sasanaya';
+import Notices from './pages/Notices';
+
+const AdminLayout = React.lazy(() => import('./pages/Admin/AdminLayout'));
+const AdminDashboard = React.lazy(() => import('./pages/Admin/AdminDashboard'));
+const AdminLogin = React.lazy(() => import('./pages/Admin/AdminLogin'));
+const NoticeManager = React.lazy(() => import('./pages/Admin/NoticeManager'));
+const TeamManager = React.lazy(() => import('./pages/Admin/TeamManager'));
+const LiveBroadcastManager = React.lazy(() => import('./pages/Admin/LiveBroadcastManager'));
 
 function ProtectedRoute({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Check if user is logged in
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       setIsAuthenticated(!!session);
-    });
+    };
+
+    checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsAuthenticated(!!session);
@@ -56,9 +70,19 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
+      <React.Suspense fallback={<div style={{height: '100vh', background: 'var(--bg-main)'}} />}>
+        <Routes>
+          {/* SECURE ADMIN PORTAL */}
+          <Route path="/portal-ops/login" element={<AdminLogin />} />
+          <Route path="/portal-ops" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="notices" element={<NoticeManager />} />
+            <Route path="team" element={<TeamManager />} />
+            <Route path="live" element={<LiveBroadcastManager />} />
+          </Route>
+
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
           <Route path="words" element={<Words />} />
           <Route path="history" element={<History />} />
           <Route path="history/:chapterId" element={<HistoryChapter />} />
@@ -70,6 +94,8 @@ function App() {
           <Route path="lifecycle" element={<LifeCycle />} />
           <Route path="community" element={<Community />} />
           <Route path="dharmadhana" element={<DharmaDhana />} />
+          <Route path="sasanaya" element={<Sasanaya />} />
+          <Route path="notices" element={<Notices />} />
           <Route path="profile" element={<Profile />} />
           <Route path="other-chantings" element={<OtherChantings />} />
           <Route path="library/:id" element={<ResourceLanding />} />
@@ -94,9 +120,11 @@ function App() {
           {/* Fallback */}
           <Route path="*" element={<Home />} />
         </Route>
-        {/* Book Reader is outside the Layout so it can be truly full-screen and immersive without the main header/footer */}
+        {/* Standalone Fullscreen Routes */}
         <Route path="/read/:bookId" element={<BookReader />} />
+        <Route path="/live" element={<Live />} />
       </Routes>
+      </React.Suspense>
     </BrowserRouter>
   );
 }

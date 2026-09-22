@@ -116,7 +116,7 @@ export default function ResourceLanding() {
     <div style={{ minHeight: '100vh', width: '100%', background: 'var(--bg-main)', position: 'relative' }}>
       
       {/* Back to Library */}
-      <div className="mobile-padding" style={{ position: 'relative', zIndex: 20, paddingTop: '100px', maxWidth: '900px', margin: '0 auto', display: 'flex', justifyContent: 'flex-start' }}>
+      <div className="mobile-padding" style={{ position: 'relative', zIndex: 20, paddingTop: '40px', maxWidth: '900px', margin: '0 auto', display: 'flex', justifyContent: 'flex-start' }}>
         <Link to="/words" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', textDecoration: 'none', fontFamily: 'var(--font-sinhala)', fontWeight: '600', padding: '12px 0' }}>
           <ArrowLeft size={16} /> ආපසු පුස්තකාලයට (Back to Index)
         </Link>

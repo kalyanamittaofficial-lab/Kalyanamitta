@@ -41,7 +41,7 @@ export default function Login() {
 
   const containerStyle = {
     display: 'flex',
-    height: 'calc(100vh - 100px)',
+    height: 'calc(100vh - 85px)',
     width: '100%',
     backgroundColor: 'var(--bg-main)',
     overflow: 'hidden'
@@ -160,7 +160,11 @@ export default function Login() {
 
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column' }}>
             <div style={{ position: 'relative' }}>
+              <label htmlFor="email" className="sr-only" style={{ display: 'none' }}>Email</label>
               <input 
+                id="email"
+                name="email"
+                autoComplete="email"
                 type="email" 
                 placeholder="විද්‍යුත් තැපෑල (Email)" 
                 value={email} 
@@ -173,7 +177,11 @@ export default function Login() {
             </div>
             
             <div style={{ position: 'relative' }}>
+              <label htmlFor="password" className="sr-only" style={{ display: 'none' }}>Password</label>
               <input 
+                id="password"
+                name="password"
+                autoComplete="current-password"
                 type="password" 
                 placeholder="මුරපදය (Password)" 
                 value={password} 
