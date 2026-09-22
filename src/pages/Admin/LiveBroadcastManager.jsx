@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabase';
 import { Radio, Save, Clock, Video } from 'lucide-react';
+import YouTube from 'react-youtube';
 
 export default function LiveBroadcastManager() {
   const [loading, setLoading] = useState(false);
+  const [player, setPlayer] = useState(null);
   const [data, setData] = useState({
     is_live: false,
     video_id: '',
@@ -70,6 +72,26 @@ export default function LiveBroadcastManager() {
     } else {
       alert('Live broadcast settings updated successfully!');
     }
+  };
+
+  const handlePlayerStateChange = async (event) => {
+    // 1: playing, 2: paused, 3: buffering
+    const ytState = event.data;
+    let stateString = 'paused';
+    if (ytState === 1 || ytState === 3) stateString = 'playing';
+    else if (ytState === 2 || ytState === 0) stateString = 'paused';
+    else return;
+    
+    const currentTime = await event.target.getCurrentTime();
+
+    await supabase
+      .from('live_broadcast')
+      .update({
+        playback_state: stateString,
+        current_video_time: currentTime,
+        last_sync_time: new Date().toISOString()
+      })
+      .eq('id', 1);
   };
 
   return (
@@ -197,14 +219,22 @@ export default function LiveBroadcastManager() {
         <div style={{ width: '100%', background: '#000', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--glass-border)', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
           {data.video_id ? (
             <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
-              <iframe 
-                src={`https://www.youtube.com/embed/${data.video_id}?autoplay=0&controls=1&modestbranding=1&rel=0`} 
-                title="Preview" 
-                frameBorder="0" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowFullScreen
+              <YouTube 
+                videoId={data.video_id}
+                opts={{
+                  width: '100%',
+                  height: '100%',
+                  playerVars: {
+                    autoplay: 0,
+                    controls: 1,
+                    modestbranding: 1,
+                    rel: 0
+                  }
+                }}
+                onReady={(e) => setPlayer(e.target)}
+                onStateChange={handlePlayerStateChange}
                 style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
-              ></iframe>
+              />
             </div>
           ) : (
             <div style={{ padding: '80px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>

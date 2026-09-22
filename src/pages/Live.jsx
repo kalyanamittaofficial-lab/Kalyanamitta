@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Radio, Eye, X, FileText, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../utils/supabase';
+import YouTube from 'react-youtube';
 
 export default function Live() {
   const navigate = useNavigate();
@@ -17,13 +18,19 @@ export default function Live() {
   const [joined, setJoined] = useState(false);
   const [startSeconds, setStartSeconds] = useState(0);
 
+  // Watch Party State
+  const playerRef = useRef(null);
+  const [playbackState, setPlaybackState] = useState('paused');
+  const [currentVideoTime, setCurrentVideoTime] = useState(0);
+  const [lastSyncTime, setLastSyncTime] = useState(null);
+
   // Random viewer count generator for effect (since we can't easily get real YouTube viewers without API key)
   const [viewerCount] = useState(() => Math.floor(Math.random() * 500) + 800);
 
   useEffect(() => {
     supabase
       .from('live_broadcast')
-      .select('is_live, video_id, next_scheduled_time, next_title')
+      .select('is_live, video_id, next_scheduled_time, next_title, playback_state, current_video_time, last_sync_time')
       .eq('id', 1)
       .single()
       .then(({ data, error }) => {
@@ -37,6 +44,9 @@ export default function Live() {
           setLiveVideoId(data.video_id || '');
           setNextScheduledTime(data.next_scheduled_time || '');
           setNextTitle(data.next_title || '');
+          setPlaybackState(data.playback_state || 'paused');
+          setCurrentVideoTime(data.current_video_time || 0);
+          setLastSyncTime(data.last_sync_time || null);
         }
       });
 
@@ -50,6 +60,9 @@ export default function Live() {
           setLiveVideoId(newData.video_id || '');
           setNextScheduledTime(newData.next_scheduled_time || '');
           setNextTitle(newData.next_title || '');
+          setPlaybackState(newData.playback_state || 'paused');
+          setCurrentVideoTime(newData.current_video_time || 0);
+          setLastSyncTime(newData.last_sync_time || null);
         }
       })
       .subscribe(status => {
@@ -58,26 +71,47 @@ export default function Live() {
         }
       });
 
+
     return () => {
       supabase.removeChannel(subscription);
     };
   }, []);
 
-  // Calculate synchronized start time
+  // Calculate synchronized start time for initial load
   useEffect(() => {
-    if (isLive && nextScheduledTime) {
-      const scheduled = new Date(nextScheduledTime).getTime();
+    if (isLive && playbackState === 'playing' && lastSyncTime) {
+      const lastSync = new Date(lastSyncTime).getTime();
       const now = new Date().getTime();
-      const diff = Math.floor((now - scheduled) / 1000);
-      if (diff > 0) {
-        setStartSeconds(diff);
-      } else {
-        setStartSeconds(0);
-      }
+      const diff = Math.floor((now - lastSync) / 1000);
+      setStartSeconds(currentVideoTime + diff);
     } else {
-      setStartSeconds(0);
+      setStartSeconds(currentVideoTime);
     }
-  }, [isLive, nextScheduledTime]);
+  }, [isLive, playbackState, currentVideoTime, lastSyncTime]);
+
+  // Realtime Watch Party Sync
+  useEffect(() => {
+    if (!playerRef.current) return;
+    
+    if (playbackState === 'paused') {
+      playerRef.current.pauseVideo();
+      playerRef.current.seekTo(currentVideoTime);
+    } else if (playbackState === 'playing') {
+      const lastSync = new Date(lastSyncTime).getTime();
+      const now = new Date().getTime();
+      const diff = Math.floor((now - lastSync) / 1000);
+      
+      // Calculate where the video SHOULD be right now
+      const targetTime = currentVideoTime + diff;
+      const actualTime = playerRef.current.getCurrentTime();
+      
+      // If we are out of sync by more than 3 seconds, seek to correct time
+      if (Math.abs(actualTime - targetTime) > 3) {
+        playerRef.current.seekTo(targetTime);
+      }
+      playerRef.current.playVideo();
+    }
+  }, [playbackState, currentVideoTime, lastSyncTime]);
 
   useEffect(() => {
     let interval;
@@ -154,30 +188,24 @@ export default function Live() {
       {/* The Immersive Video Player */}
       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
         {isLive ? (
-          !joined ? (
-            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'radial-gradient(circle at center, #1a0505 0%, #000 100%)', zIndex: 50, pointerEvents: 'auto' }}>
-              <h3 style={{ color: '#fff', fontFamily: 'var(--font-sinhala)', fontSize: '2rem', marginBottom: '32px', letterSpacing: '0.05em' }}>සජීවී විකාශය ආරම්භ වී ඇත</h3>
-              <button 
-                onClick={() => setJoined(true)}
-                style={{ background: 'var(--primary)', color: '#fff', border: 'none', padding: '20px 48px', borderRadius: '40px', fontSize: '1.4rem', fontWeight: 'bold', fontFamily: 'var(--font-sinhala)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 10px 30px rgba(140, 21, 21, 0.4)', transition: 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)' }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.background = 'var(--primary-hover)'; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.background = 'var(--primary)'; }}
-              >
-                <Eye size={28} /> නැරඹීම සඳහා පිවිසෙන්න
-              </button>
-            </div>
-          ) : (
-            <iframe
-              width="100%"
-              height="100%"
-              src={embedUrl}
-              title="Live Dhamma Sermon"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              style={{ width: '100%', height: '100%', border: 'none', objectFit: 'cover' }}
-            ></iframe>
-          )
+          <YouTube
+            videoId={liveVideoId.trim()}
+            opts={{
+              width: '100%',
+              height: '100%',
+              playerVars: {
+                autoplay: 1,
+                controls: 0,
+                disablekb: 1,
+                rel: 0,
+                modestbranding: 1,
+                playsinline: 1,
+                start: Math.floor(startSeconds)
+              }
+            }}
+            onReady={(e) => { playerRef.current = e.target; }}
+            style={{ width: '100%', height: '100%', border: 'none', objectFit: 'cover' }}
+          />
         ) : (
           <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff', background: 'radial-gradient(circle at center, #1a0505 0%, #000 100%)' }}>
             <Radio size={64} style={{ opacity: 0.2, marginBottom: '24px', color: 'var(--primary)' }} />
@@ -286,6 +314,33 @@ export default function Live() {
                 </button>
               </div>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* JOIN OVERLAY (Must be on top of everything to bypass pointer-events blocks) */}
+      <AnimatePresence>
+        {isLive && !joined && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{ 
+              position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', 
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
+              background: 'radial-gradient(circle at center, #1a0505 0%, #000 100%)', 
+              zIndex: 99999, pointerEvents: 'auto' 
+            }}
+          >
+            <h3 style={{ color: '#fff', fontFamily: 'var(--font-sinhala)', fontSize: '2rem', marginBottom: '32px', letterSpacing: '0.05em' }}>සජීවී විකාශය ආරම්භ වී ඇත</h3>
+            <button 
+              onClick={() => setJoined(true)}
+              style={{ background: 'var(--primary)', color: '#fff', border: 'none', padding: '20px 48px', borderRadius: '40px', fontSize: '1.4rem', fontWeight: 'bold', fontFamily: 'var(--font-sinhala)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 10px 30px rgba(140, 21, 21, 0.4)', transition: 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)' }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.background = 'var(--primary-hover)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.background = 'var(--primary)'; }}
+            >
+              <Eye size={28} /> නැරඹීම සඳහා පිවිසෙන්න
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
