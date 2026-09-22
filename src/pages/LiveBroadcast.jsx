@@ -129,13 +129,12 @@ export default function LiveBroadcast() {
               exit={{ opacity: 0, y: -20 }}
               style={{ width: '100%', maxWidth: '1000px', margin: '0 auto', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', border: '1px solid var(--glass-border)' }}
             >
-              <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
+              <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, pointerEvents: 'none' }}>
                 <iframe 
-                  src={`https://www.youtube.com/embed/${data.video_id}?autoplay=1&mute=1&rel=0`} 
-                  title="YouTube video player" 
+                  src={`https://www.youtube.com/embed/${data.video_id}?autoplay=1&controls=0&modestbranding=1&rel=0&disablekb=1&fs=0&iv_load_policy=3`} 
+                  title="Kalyanamitta Live Broadcast" 
                   frameBorder="0" 
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                  allowFullScreen
                   style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
                 ></iframe>
               </div>
