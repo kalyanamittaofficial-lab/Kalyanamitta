@@ -1,211 +1,177 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ArrowRight, BookOpen } from 'lucide-react';
 import { historyData } from '../data/historyData';
 
 export default function History() {
-  const [activeId, setActiveId] = useState(historyData[0].id);
-  const [hoveredId, setHoveredId] = useState(null);
-  const activeData = historyData.find(d => d.id === activeId) || historyData[0];
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Hide overflow on body to prevent scrolling when in this cinematic view
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
+    // Reset overflow changes from previous cinematic design if returning
+    document.body.style.overflow = 'auto';
+    window.scrollTo(0, 0);
   }, []);
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'hidden', background: 'var(--bg-main)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-main)', paddingTop: '160px', paddingBottom: '120px', position: 'relative' }}>
       
-      {/* ── Dynamic Background Image ── */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeId}
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage: `url(${activeData.image})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            zIndex: 0
-          }}
-        />
-      </AnimatePresence>
-
-      {/* ── Theme-Aware Overlay ── */}
-      {/* This ensures text is readable in both light and dark modes while letting the image peek through */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        background: 'var(--bg-main)',
-        opacity: 0.65, // Let the image show through
-        zIndex: 5
-      }} />
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        background: 'linear-gradient(to top, var(--bg-main) 0%, transparent 60%)',
-        zIndex: 6
-      }} />
-      
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        background: 'linear-gradient(to right, var(--bg-main) 0%, transparent 50%)',
-        zIndex: 6
-      }} />
-
-      {/* ── Main Content Layer ── */}
-      <div style={{
-        position: 'relative',
-        zIndex: 20,
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        padding: '0 40px 100px 40px', // Increased bottom padding
-        paddingTop: '70px' 
-      }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 10 }}>
         
-        {/* Title Area */}
-        <div style={{ marginTop: '0px', marginBottom: 'auto' }}>
-          <motion.h1 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            style={{ 
-              fontSize: '3.5rem', 
-              color: 'var(--text-main)', 
-              margin: 0,
-              fontWeight: 700
-            }}
-          >
+        {/* Header */}
+        <div style={{ 
+          marginBottom: '80px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center',
+          gap: '24px'
+        }}>
+          <span style={{
+            color: 'var(--primary)',
+            fontSize: '0.95rem',
+            fontWeight: 700,
+            letterSpacing: '2px',
+            textTransform: 'uppercase'
+          }}>
+            Kalyanamitta Study Center
+          </span>
+          <h1 style={{ 
+            fontSize: '4.5rem', 
+            color: 'var(--text-main)', 
+            margin: 0,
+            fontWeight: 700,
+            fontFamily: 'var(--font-serif)',
+            lineHeight: 1.1
+          }}>
             බෞද්ධ ඉතිහාසය
-          </motion.h1>
+          </h1>
+          <div style={{ width: '80px', height: '3px', background: 'var(--primary)', margin: '8px auto' }} />
+          <p style={{
+            fontSize: '1.25rem',
+            color: 'var(--text-muted)',
+            maxWidth: '750px',
+            lineHeight: 1.8,
+            margin: 0
+          }}>
+            බුද්ධ චරිතය, රහතන් වහන්සේලාගේ කථාපුවත් සහ සම්බුද්ධ ශාසනයේ ඓතිහාසික විකාශනය පිළිබඳ ප්‍රමිතිගත අධ්‍යයනාත්මක විස්තර සහ ග්‍රන්ථ.
+          </p>
         </div>
 
-        {/* Carousel / Navigation area */}
-        <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '20px', scrollbarWidth: 'none' }}>
-          {historyData.map((category) => {
-            const isActive = activeId === category.id;
-            const isHovered = hoveredId === category.id;
+        {/* Academic Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '40px' }}>
+          {historyData.map((category, index) => (
+            <motion.div
+              key={category.id}
+              onClick={() => navigate(`/history/${category.id}`)}
+              whileHover="hover"
+              initial="initial"
+              animate="animate"
+              variants={{
+                initial: { opacity: 0, y: 30 },
+                animate: { opacity: 1, y: 0, transition: { delay: index * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] } }
+              }}
+              style={{
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100%',
+              }}
+            >
+              {/* Image Container */}
+              <div style={{
+                position: 'relative',
+                width: '100%',
+                aspectRatio: '3/2',
+                overflow: 'hidden',
+                borderRadius: '12px',
+                marginBottom: '24px',
+                border: '1px solid var(--glass-border)',
+                boxShadow: '0 8px 30px rgba(0,0,0,0.06)'
+              }}>
+                <motion.img 
+                  src={category.image} 
+                  alt={category.title}
+                  variants={{
+                    initial: { scale: 1 },
+                    hover: { scale: 1.05 }
+                  }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                  }}
+                />
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 40%)',
+                  zIndex: 1
+                }} />
+                
+                {/* Chapter Badge */}
+                <div style={{
+                  position: 'absolute',
+                  bottom: '16px',
+                  left: '16px',
+                  background: 'var(--primary)',
+                  color: '#ffffff',
+                  padding: '6px 14px',
+                  borderRadius: '20px',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  letterSpacing: '1px',
+                  zIndex: 2,
+                  boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
+                }}>
+                  පරිච්ඡේදය {category.chapter}
+                </div>
+              </div>
 
-            return (
-              <motion.div
-                key={category.id}
-                layout
-                onClick={() => setActiveId(category.id)}
-                onMouseEnter={() => setHoveredId(category.id)}
-                onMouseLeave={() => setHoveredId(null)}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                style={{
-                  height: '420px',
-                  minWidth: isActive ? 'min(600px, 85vw)' : 'min(100px, 15vw)',
-                  background: (!isActive && isHovered) ? 'var(--bg-secondary)' : 'var(--glass-bg)',
-                  backdropFilter: 'blur(var(--glass-blur, 16px))',
-                  border: `1px solid var(--glass-border)`,
-                  borderRadius: '16px',
-                  cursor: isActive ? 'default' : 'pointer',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  flexDirection: isActive ? 'column' : 'row',
-                  transition: 'background-color 0.3s ease, min-width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)'
-                }}
-              >
-                {/* INACTIVE STATE */}
-                {!isActive && (
-                  <div style={{ 
-                    width: '100%', 
-                    height: '100%', 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    alignItems: 'center', 
-                    padding: '20px 0' 
-                  }}>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '1.2rem', fontWeight: 700 }}>
-                      {category.chapter}
-                    </span>
-                    <div style={{ flex: 1, position: 'relative', width: '100%' }}>
-                      <span style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%) rotate(-90deg)',
-                        whiteSpace: 'nowrap',
-                        color: 'var(--text-main)',
-                        fontSize: '1.2rem',
-                        fontWeight: 600,
-                        letterSpacing: '2px'
-                      }}>
-                        {category.title}
-                      </span>
-                    </div>
-                  </div>
-                )}
+              {/* Content Container */}
+              <div style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: '0 4px' }}>
+                <h2 style={{
+                  fontSize: '1.75rem',
+                  color: 'var(--text-main)',
+                  margin: '0 0 14px 0',
+                  fontFamily: 'var(--font-serif)',
+                  lineHeight: 1.3
+                }}>
+                  {category.title}
+                </h2>
+                
+                <p style={{
+                  color: 'var(--text-muted)',
+                  fontSize: '1.05rem',
+                  lineHeight: 1.7,
+                  margin: '0 0 24px 0',
+                  flex: 1
+                }}>
+                  {category.description}
+                </p>
 
-                {/* ACTIVE STATE */}
-                {isActive && (
-                  <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    style={{ padding: '40px 30px', display: 'flex', flexDirection: 'column', height: '100%' }}
-                  >
-                    <span style={{ color: 'var(--primary)', fontSize: '1.2rem', fontWeight: 700, letterSpacing: '3px' }}>
-                      පරිච්ඡේදය {category.chapter}
-                    </span>
-                    <h2 style={{ color: 'var(--text-main)', fontSize: '2.2rem', margin: '10px 0 24px 0' }}>
-                      {category.title}
-                    </h2>
-
-                    <div style={{ flex: 1, paddingRight: '10px' }}>
-                      <p style={{ 
-                        color: 'var(--text-muted)', 
-                        fontSize: '1.1rem', 
-                        lineHeight: 1.8, 
-                        margin: 0 
-                      }}>
-                        {category.description}
-                      </p>
-                    </div>
-
-                    <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => navigate(`/history/${category.id}`)}
-                        style={{
-                        background: 'var(--primary)',
-                        color: 'white',
-                        border: 'none',
-                        padding: '12px 24px',
-                        borderRadius: '30px',
-                        fontSize: '1rem',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        transition: 'transform 0.2s, filter 0.2s',
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                      onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                      >
-                        කියවන්න <ChevronRight size={18} />
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </motion.div>
-            );
-          })}
+                <motion.div 
+                  variants={{
+                    initial: { color: 'var(--text-muted)', x: 0 },
+                    hover: { color: 'var(--primary)', x: 6 }
+                  }}
+                  transition={{ duration: 0.2 }}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontWeight: 600,
+                    fontSize: '1rem'
+                  }}
+                >
+                  <BookOpen size={18} /> අධ්‍යයනය කරන්න <ArrowRight size={18} />
+                </motion.div>
+              </div>
+            </motion.div>
+          ))}
         </div>
+
       </div>
     </div>
   );
