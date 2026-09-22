@@ -14,6 +14,8 @@ export default function Live() {
   const [nextScheduledTime, setNextScheduledTime] = useState('');
   const [nextTitle, setNextTitle] = useState('');
   const [timeRemaining, setTimeRemaining] = useState('');
+  const [joined, setJoined] = useState(false);
+  const [startSeconds, setStartSeconds] = useState(0);
 
   // Random viewer count generator for effect (since we can't easily get real YouTube viewers without API key)
   const [viewerCount] = useState(() => Math.floor(Math.random() * 500) + 800);
@@ -61,6 +63,22 @@ export default function Live() {
     };
   }, []);
 
+  // Calculate synchronized start time
+  useEffect(() => {
+    if (isLive && nextScheduledTime) {
+      const scheduled = new Date(nextScheduledTime).getTime();
+      const now = new Date().getTime();
+      const diff = Math.floor((now - scheduled) / 1000);
+      if (diff > 0) {
+        setStartSeconds(diff);
+      } else {
+        setStartSeconds(0);
+      }
+    } else {
+      setStartSeconds(0);
+    }
+  }, [isLive, nextScheduledTime]);
+
   useEffect(() => {
     let interval;
     if (!isLive && nextScheduledTime) {
@@ -96,7 +114,7 @@ export default function Live() {
     return () => clearInterval(interval);
   }, [isLive, nextScheduledTime]);
 
-  const embedUrl = `https://www.youtube.com/embed/${encodeURIComponent(liveVideoId.trim())}?autoplay=1&controls=0&disablekb=1&rel=0&modestbranding=1&playsinline=1`;
+  const embedUrl = `https://www.youtube.com/embed/${encodeURIComponent(liveVideoId.trim())}?autoplay=1&controls=0&disablekb=1&rel=0&modestbranding=1&playsinline=1&start=${startSeconds}`;
 
   // Auto-hide UI when mouse is still (cinematic mode)
   useEffect(() => {
@@ -136,16 +154,30 @@ export default function Live() {
       {/* The Immersive Video Player */}
       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
         {isLive ? (
-          <iframe
-            width="100%"
-            height="100%"
-            src={embedUrl}
-            title="Live Dhamma Sermon"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            style={{ width: '100%', height: '100%', border: 'none', objectFit: 'cover' }}
-          ></iframe>
+          !joined ? (
+            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'radial-gradient(circle at center, #1a0505 0%, #000 100%)', zIndex: 50, pointerEvents: 'auto' }}>
+              <h3 style={{ color: '#fff', fontFamily: 'var(--font-sinhala)', fontSize: '2rem', marginBottom: '32px', letterSpacing: '0.05em' }}>සජීවී විකාශය ආරම්භ වී ඇත</h3>
+              <button 
+                onClick={() => setJoined(true)}
+                style={{ background: 'var(--primary)', color: '#fff', border: 'none', padding: '20px 48px', borderRadius: '40px', fontSize: '1.4rem', fontWeight: 'bold', fontFamily: 'var(--font-sinhala)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 10px 30px rgba(140, 21, 21, 0.4)', transition: 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)' }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.background = 'var(--primary-hover)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.background = 'var(--primary)'; }}
+              >
+                <Eye size={28} /> නැරඹීම සඳහා පිවිසෙන්න
+              </button>
+            </div>
+          ) : (
+            <iframe
+              width="100%"
+              height="100%"
+              src={embedUrl}
+              title="Live Dhamma Sermon"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              style={{ width: '100%', height: '100%', border: 'none', objectFit: 'cover' }}
+            ></iframe>
+          )
         ) : (
           <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff', background: 'radial-gradient(circle at center, #1a0505 0%, #000 100%)' }}>
             <Radio size={64} style={{ opacity: 0.2, marginBottom: '24px', color: 'var(--primary)' }} />
