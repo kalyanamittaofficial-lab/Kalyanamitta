@@ -16,7 +16,7 @@ export default function LiveBroadcastManager() {
   useEffect(() => {
     supabase
       .from('live_broadcast')
-      .select('is_live, video_id, next_scheduled_time, next_title')
+      .select('is_live, video_id, next_scheduled_time, next_title, current_video_time')
       .eq('id', 1)
       .single()
       .then(({ data: broadcast, error }) => {
@@ -26,16 +26,15 @@ export default function LiveBroadcastManager() {
         }
 
         if (broadcast) {
-          // Format datetime for input type="datetime-local"
           const dateObj = broadcast.next_scheduled_time ? new Date(broadcast.next_scheduled_time) : new Date();
-          // Adjust to local time format YYYY-MM-DDTHH:mm
           const localDateTime = new Date(dateObj.getTime() - dateObj.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 
           setData({
             is_live: broadcast.is_live,
             video_id: broadcast.video_id || '',
             next_scheduled_time: broadcast.next_scheduled_time ? localDateTime : '',
-            next_title: broadcast.next_title || ''
+            next_title: broadcast.next_title || '',
+            current_video_time: broadcast.current_video_time || 0
           });
         }
       });
@@ -51,7 +50,6 @@ export default function LiveBroadcastManager() {
     }
 
     setLoading(true);
-    // Convert local datetime back to UTC ISO for Supabase
     const isoDate = data.next_scheduled_time ? new Date(data.next_scheduled_time).toISOString() : null;
 
     const { error } = await supabase
@@ -75,7 +73,6 @@ export default function LiveBroadcastManager() {
   };
 
   const handlePlayerStateChange = async (event) => {
-    // 1: playing, 2: paused, 3: buffering
     const ytState = event.data;
     let stateString = 'paused';
     if (ytState === 1 || ytState === 3) stateString = 'playing';
@@ -94,7 +91,7 @@ export default function LiveBroadcastManager() {
       .eq('id', 1);
   };
 
-  const handleToggleLive = (e) => {
+  const handleToggleLive = async (e) => {
     const isChecked = e.target.checked;
     const confirmMessage = isChecked 
       ? "Are you sure you want to turn ON the live broadcast? This will show the LIVE indicator to all visitors."
@@ -102,6 +99,15 @@ export default function LiveBroadcastManager() {
     
     if (window.confirm(confirmMessage)) {
       setData({...data, is_live: isChecked});
+      
+      // Instantly save to DB
+      await supabase
+        .from('live_broadcast')
+        .update({
+          is_live: isChecked,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', 1);
     }
   };
 
@@ -239,7 +245,8 @@ export default function LiveBroadcastManager() {
                     autoplay: 0,
                     controls: 1,
                     modestbranding: 1,
-                    rel: 0
+                    rel: 0,
+                    start: Math.floor(data.current_video_time || 0)
                   }
                 }}
                 onReady={(e) => setPlayer(e.target)}
