@@ -217,7 +217,7 @@ export default function Live() {
       ref={containerRef}
       style={{ 
       width: '100%', 
-      height: '100vh', 
+      height: '100dvh', 
       background: '#000000', 
       position: 'fixed', 
       top: 0, 
