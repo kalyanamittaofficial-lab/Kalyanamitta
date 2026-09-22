@@ -175,6 +175,7 @@ const RealisticChakra = memo(() => (
 
 export default function Path() {
   const [activeId, setActiveId] = useState(1);
+  const [viewMode, setViewMode] = useState('overview'); // 'overview' | 'practice'
   const activeFactor = bodhiFactors.find(f => f.id === activeId);
 
   useEffect(() => {
@@ -211,6 +212,7 @@ export default function Path() {
           .chakra-interactive-area {
             flex-direction: row;
             align-items: flex-start;
+            gap: 3rem;
           }
         }
 
@@ -234,6 +236,7 @@ export default function Path() {
             height: 70vh;
             max-height: 700px;
             margin-bottom: 0;
+            padding-left: 2rem;
           }
         }
 
@@ -252,10 +255,10 @@ export default function Path() {
 
         @media (min-width: 1024px) {
           .wheel-scaler {
-            width: 500px;
-            height: 500px;
-            max-width: 500px;
-            max-height: 500px;
+            width: 420px;
+            height: 420px;
+            max-width: 420px;
+            max-height: 420px;
           }
         }
 
@@ -270,7 +273,7 @@ export default function Path() {
 
         @media (min-width: 1024px) {
           .chakra-content-panel {
-            flex: 1.2;
+            flex: 1.3;
             padding: 0 40px 120px 0;
           }
         }
@@ -375,7 +378,7 @@ export default function Path() {
                     key={factor.id}
                     className={`chakra-node ${activeId === factor.id ? 'active' : ''}`}
                     style={{ left, top }}
-                    onClick={() => setActiveId(factor.id)}
+                    onClick={() => { setActiveId(factor.id); setViewMode('overview'); }}
                   >
                     0{factor.id}
                   </button>
@@ -415,33 +418,93 @@ export default function Path() {
                   </div>
                 </div>
 
-                <p style={{ fontFamily: 'var(--font-sinhala)', fontSize: '1.15rem', lineHeight: 1.9, color: 'var(--text-main)', opacity: 0.9, marginBottom: '2.5rem' }}>
-                  {activeFactor.description}
-                </p>
+                {viewMode === 'overview' ? (
+                  <>
+                    <p style={{ fontFamily: 'var(--font-sinhala)', fontSize: '1.15rem', lineHeight: 1.9, color: 'var(--text-main)', opacity: 0.9, marginBottom: '2.5rem' }}>
+                      {activeFactor.description}
+                    </p>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {activeFactor.items.map((item, idx) => (
-                    <motion.div 
-                      key={idx}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.1 + (idx * 0.05), duration: 0.4 }}
-                      style={{
-                        padding: '16px 20px',
-                        background: 'rgba(0,0,0,0.02)',
-                        borderRadius: '12px',
-                        borderLeft: '3px solid var(--primary)'
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '2.5rem' }}>
+                      {activeFactor.items.map((item, idx) => (
+                        <motion.div 
+                          key={idx}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.1 + (idx * 0.05), duration: 0.4 }}
+                          style={{
+                            padding: '16px 20px',
+                            background: 'rgba(0,0,0,0.02)',
+                            borderRadius: '12px',
+                            borderLeft: '3px solid var(--primary)'
+                          }}
+                        >
+                          <div style={{ fontFamily: 'var(--font-sinhala)', fontSize: '1.15rem', color: 'var(--primary)', fontWeight: 700, marginBottom: '4px' }}>
+                            {item.name}
+                          </div>
+                          <div style={{ fontFamily: 'var(--font-sinhala)', fontSize: '1rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                            {item.desc}
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+
+                    <motion.button 
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setViewMode('practice')}
+                      style={{ 
+                        width: '100%', padding: '16px', background: 'var(--primary)', color: '#fff', 
+                        border: 'none', borderRadius: '12px', fontSize: '1.1rem', fontWeight: 700, 
+                        fontFamily: 'var(--font-sinhala)', cursor: 'pointer', display: 'flex', 
+                        alignItems: 'center', justifyContent: 'center', gap: '12px',
+                        boxShadow: '0 8px 20px rgba(140,21,21,0.3)'
                       }}
                     >
-                      <div style={{ fontFamily: 'var(--font-sinhala)', fontSize: '1.15rem', color: 'var(--primary)', fontWeight: 700, marginBottom: '4px' }}>
-                        {item.name}
-                      </div>
-                      <div style={{ fontFamily: 'var(--font-sinhala)', fontSize: '1rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-                        {item.desc}
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
+                      ප්‍රායෝගික පුහුණුවට පිවිසෙන්න <span style={{ fontSize: '1.3rem' }}>→</span>
+                    </motion.button>
+                  </>
+                ) : (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
+                  >
+                    <button onClick={() => setViewMode('overview')} style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: 0, marginBottom: '2rem' }}>
+                      ← ආපසු (Overview)
+                    </button>
+                    <h3 style={{ fontFamily: 'var(--font-sinhala)', fontSize: '1.4rem', color: 'var(--text-main)', marginBottom: '1rem', fontWeight: 700 }}>
+                      පුහුණුවීම් සිතියම (Practice Progress Map)
+                    </h3>
+                    <p style={{ color: 'var(--text-muted)', marginBottom: '2.5rem', lineHeight: 1.6 }}>
+                      ඔබගේ දෛනික ජීවිතය තුළ මෙම ධර්මතාවය ප්‍රායෝගිකව දියුණු කරන ආකාරය මෙහි දැක්වේ. පියවරෙන් පියවර සම්පූර්ණ කර සලකුණු කරන්න.
+                    </p>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', position: 'relative' }}>
+                      {/* Vertical line connecting steps */}
+                      <div style={{ position: 'absolute', left: '23px', top: '24px', bottom: '24px', width: '2px', background: 'var(--glass-border)', zIndex: 1 }}></div>
+                      
+                      {activeFactor.items.map((item, idx) => (
+                        <div key={idx} style={{ display: 'flex', gap: '24px', position: 'relative', zIndex: 2 }}>
+                          <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--bg-main)', border: '2px solid var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', fontWeight: 700, flexShrink: 0, boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>
+                            {idx + 1}
+                          </div>
+                          <div style={{ background: 'var(--bg-main)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '20px', flex: 1, boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+                            <div style={{ fontFamily: 'var(--font-sinhala)', fontWeight: 700, fontSize: '1.2rem', color: 'var(--text-main)', marginBottom: '8px' }}>{item.name}</div>
+                            <div style={{ fontSize: '1rem', color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: '20px', fontFamily: 'var(--font-sinhala)' }}>
+                              අද දිනයේදී {item.desc} සඳහා කාලය වෙන් කරන්න.
+                            </div>
+                            
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', background: 'var(--bg-secondary)', padding: '12px 20px', borderRadius: '10px', border: '1px solid var(--glass-border)', width: 'fit-content', transition: 'background 0.2s' }}
+                                   onMouseEnter={e => e.currentTarget.style.background = 'rgba(140, 21, 21, 0.05)'}
+                                   onMouseLeave={e => e.currentTarget.style.background = 'var(--bg-secondary)'}
+                            >
+                              <input type="checkbox" style={{ accentColor: 'var(--primary)', width: '20px', height: '20px', cursor: 'pointer' }} />
+                              <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-main)' }}>මම මෙය සම්පූර්ණ කළෙමි</span>
+                            </label>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
               </motion.div>
             </AnimatePresence>
           </div>
