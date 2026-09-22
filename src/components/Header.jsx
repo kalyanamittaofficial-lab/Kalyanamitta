@@ -357,7 +357,7 @@ export default function Header() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
             
             {/* Live Broadcast Indicator */}
-            <Link to="/live" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+            <a href="/live" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
               <motion.div 
                 animate={isLiveGlobal ? { opacity: [1, 0.6, 1] } : { opacity: 1 }}
                 transition={isLiveGlobal ? { duration: 1.5, repeat: Infinity } : {}}
@@ -373,7 +373,7 @@ export default function Header() {
                 <div style={{ width: '8px', height: '8px', background: isLiveGlobal ? '#dc2626' : textMuted, borderRadius: '50%' }}></div>
                 LIVE
               </motion.div>
-            </Link>
+            </a>
 
             <button onClick={toggleTheme} style={{ background: 'none', border: 'none', color: textColor, cursor: 'pointer', opacity: 0.7, padding: 0, display: 'flex', transition: 'opacity 0.2s' }} onMouseEnter={e => e.currentTarget.style.opacity = 1} onMouseLeave={e => e.currentTarget.style.opacity = 0.7}>
               {isDark ? <Sun size={22} /> : <Moon size={22} />}
