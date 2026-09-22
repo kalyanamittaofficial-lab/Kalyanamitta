@@ -230,14 +230,6 @@ export default function Path() {
       <div className="chakra-layout">
         
         <div className="chakra-hero">
-          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6 }}>
-            <div style={{
-              color: 'var(--primary)', fontSize: '0.9rem', fontWeight: 700,
-              marginBottom: '20px', letterSpacing: '0.2em', textTransform: 'uppercase'
-            }}>
-              Interactive Dharma Chakra
-            </div>
-          </motion.div>
           <motion.h1 
             initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6, delay: 0.1 }}
             style={{ 
