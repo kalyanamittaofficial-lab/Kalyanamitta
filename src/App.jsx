@@ -31,6 +31,7 @@ const AdminDashboard = React.lazy(() => import('./pages/Admin/AdminDashboard'));
 const AdminLogin = React.lazy(() => import('./pages/Admin/AdminLogin'));
 const NoticeManager = React.lazy(() => import('./pages/Admin/NoticeManager'));
 const TeamManager = React.lazy(() => import('./pages/Admin/TeamManager'));
+const LiveBroadcast = React.lazy(() => import('./pages/LiveBroadcast'));
 const LiveBroadcastManager = React.lazy(() => import('./pages/Admin/LiveBroadcastManager'));
 
 function ProtectedRoute({ children }) {
@@ -84,6 +85,7 @@ function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
           <Route path="words" element={<Words />} />
+          <Route path="live" element={<LiveBroadcast />} />
           <Route path="history" element={<History />} />
           <Route path="history/:chapterId" element={<HistoryChapter />} />
           <Route path="sermons" element={<Sermons />} />
