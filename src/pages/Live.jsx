@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Radio, Eye, X, FileText, Clock } from 'lucide-react';
+import { Radio, Eye, X, FileText, Clock, Maximize, Minimize, Smartphone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../utils/supabase';
@@ -18,11 +18,52 @@ export default function Live() {
   const [joined, setJoined] = useState(false);
   const [startSeconds, setStartSeconds] = useState(0);
 
+  // Fullscreen & Mobile states
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const containerRef = useRef(null);
+
   // Watch Party State
   const playerRef = useRef(null);
   const [playbackState, setPlaybackState] = useState('paused');
   const [currentVideoTime, setCurrentVideoTime] = useState(0);
   const [lastSyncTime, setLastSyncTime] = useState(null);
+
+  // Handle Fullscreen Toggle
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      containerRef.current?.requestFullscreen().catch(err => {
+        console.error(`Error attempting to enable fullscreen: ${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  };
+
+  // Handle Screen Rotate (Orientation Lock)
+  const toggleRotation = async () => {
+    try {
+      if (screen.orientation && screen.orientation.lock) {
+        if (screen.orientation.type.startsWith('portrait')) {
+          await screen.orientation.lock('landscape');
+        } else {
+          await screen.orientation.lock('portrait');
+        }
+      } else {
+        alert("ඔබගේ දුරකථනයේ මෙම පහසුකම (Auto Rotate API) සක්‍රිය නැත. කරුණාකර දුරකථනය හරවන්න.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("තිරය හැරවීම සඳහා කරුණාකර පළමුව Fullscreen කරන්න.");
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   // Random viewer count generator for effect (since we can't easily get real YouTube viewers without API key)
   const [viewerCount] = useState(() => Math.floor(Math.random() * 500) + 800);
@@ -172,7 +213,9 @@ export default function Live() {
   }, []);
 
   return (
-    <div style={{ 
+    <div 
+      ref={containerRef}
+      style={{ 
       width: '100vw', 
       height: '100vh', 
       background: '#000000', 
@@ -184,6 +227,12 @@ export default function Live() {
       display: 'flex',
       flexDirection: 'column'
     }}>
+      <style>{`
+        @media (max-width: 600px) {
+          .hide-on-mobile { display: none !important; }
+          .viewer-count-container { display: none !important; }
+        }
+      `}</style>
       
       {/* The Immersive Video Player */}
       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
@@ -248,63 +297,85 @@ export default function Live() {
             {/* Top Bar - Deep Crimson/Black Vignette */}
             <div style={{ 
               width: '100%', 
-              padding: '32px 5%', 
+              padding: 'clamp(16px, 4vw, 32px) 5%', 
               background: 'linear-gradient(to bottom, rgba(15, 0, 0, 0.95) 0%, rgba(10, 0, 0, 0.7) 40%, rgba(0,0,0,0) 100%)',
               display: 'flex',
+              flexWrap: 'wrap',
+              gap: '16px',
               justifyContent: 'space-between',
               alignItems: 'flex-start'
             }}>
               {/* Left: Exit & Info */}
-              <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: 'clamp(12px, 3vw, 32px)', alignItems: 'center' }}>
                 <button 
                   onClick={() => navigate('/')} 
-                  style={{ pointerEvents: 'auto', background: 'rgba(140, 21, 21, 0.15)', border: '1px solid rgba(140, 21, 21, 0.3)', color: '#fff', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', backdropFilter: 'blur(12px)', transition: 'all 0.4s cubic-bezier(0.22, 1, 0.36, 1)' }}
+                  style={{ pointerEvents: 'auto', background: 'rgba(140, 21, 21, 0.15)', border: '1px solid rgba(140, 21, 21, 0.3)', color: '#fff', width: 'clamp(40px, 10vw, 48px)', height: 'clamp(40px, 10vw, 48px)', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', backdropFilter: 'blur(12px)', transition: 'all 0.4s cubic-bezier(0.22, 1, 0.36, 1)' }}
                   onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
                   onMouseLeave={e => { e.currentTarget.style.background = 'rgba(140, 21, 21, 0.15)'; e.currentTarget.style.transform = 'scale(1)'; }}
                 >
-                  <X size={24} />
+                  <X size={20} />
                 </button>
                 
                 <div>
-                  <h1 style={{ color: '#fff', fontFamily: 'var(--font-serif)', fontSize: '1.6rem', fontWeight: 700, margin: '0 0 6px 0', textShadow: '0 4px 12px rgba(0,0,0,0.8)', letterSpacing: '-0.01em' }}>
+                  <h1 style={{ color: '#fff', fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.2rem, 4vw, 1.6rem)', fontWeight: 700, margin: '0 0 6px 0', textShadow: '0 4px 12px rgba(0,0,0,0.8)', letterSpacing: '-0.01em' }}>
                     සජීවී ධර්ම දේශනාව
                   </h1>
-                  <p style={{ color: 'rgba(255,255,255,0.75)', fontFamily: 'var(--font-sinhala)', fontSize: '1rem', margin: 0, textShadow: '0 2px 8px rgba(0,0,0,0.8)', fontWeight: 300 }}>
+                  <p style={{ color: 'rgba(255,255,255,0.75)', fontFamily: 'var(--font-sinhala)', fontSize: 'clamp(0.85rem, 2.5vw, 1rem)', margin: 0, textShadow: '0 2px 8px rgba(0,0,0,0.8)', fontWeight: 300 }}>
                     පූජ්‍ය අගලකඩ සිරිසුමන නාහිමි
                   </p>
                 </div>
               </div>
 
-              {/* Right: Live Status */}
-              {isLive && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'rgba(255,255,255,0.9)', fontSize: '0.95rem', fontWeight: '500', textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>
-                    <Eye size={18} color="rgba(255,255,255,0.6)" /> {viewerCount.toLocaleString()}
-                  </div>
-                  <motion.div 
-                    animate={{ opacity: [1, 0.6, 1], scale: [1, 1.02, 1] }}
-                    transition={{ duration: 2.5, ease: "easeInOut", repeat: Infinity }}
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--primary)', color: '#fff', padding: '6px 18px', borderRadius: '24px', fontWeight: '700', fontSize: '0.85rem', letterSpacing: '0.08em', boxShadow: '0 4px 20px rgba(140, 21, 21, 0.5)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)' }}
+              {/* Right: Controls & Live Status */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(8px, 2vw, 20px)' }}>
+                {/* Mobile Controls: Fullscreen & Rotate */}
+                <div style={{ display: 'flex', gap: '8px', pointerEvents: 'auto' }}>
+                  <button 
+                    onClick={toggleFullscreen}
+                    title="Screen Fit"
+                    style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', width: '38px', height: '38px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', backdropFilter: 'blur(10px)' }}
                   >
-                    <div style={{ width: '6px', height: '6px', background: '#fff', borderRadius: '50%', boxShadow: '0 0 8px #fff' }}></div>
-                    LIVE
-                  </motion.div>
+                    {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
+                  </button>
+                  <button 
+                    onClick={toggleRotation}
+                    title="Rotate Screen"
+                    style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', width: '38px', height: '38px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', backdropFilter: 'blur(10px)' }}
+                  >
+                    <Smartphone size={18} />
+                  </button>
                 </div>
-              )}
+
+                {isLive && (
+                  <>
+                    <div className="viewer-count-container" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'rgba(255,255,255,0.9)', fontSize: '0.95rem', fontWeight: '500', textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>
+                      <Eye size={18} color="rgba(255,255,255,0.6)" /> <span className="hide-on-mobile">{viewerCount.toLocaleString()}</span>
+                    </div>
+                    <motion.div 
+                      animate={{ opacity: [1, 0.6, 1], scale: [1, 1.02, 1] }}
+                      transition={{ duration: 2.5, ease: "easeInOut", repeat: Infinity }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--primary)', color: '#fff', padding: '6px 18px', borderRadius: '24px', fontWeight: '700', fontSize: '0.85rem', letterSpacing: '0.08em', boxShadow: '0 4px 20px rgba(140, 21, 21, 0.5)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)' }}
+                    >
+                      <div style={{ width: '6px', height: '6px', background: '#fff', borderRadius: '50%', boxShadow: '0 0 8px #fff' }}></div>
+                      LIVE
+                    </motion.div>
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Bottom Bar: Resources */}
             <div style={{ 
               width: '100%', 
-              padding: '40px 5%', 
+              padding: 'clamp(20px, 5vw, 40px) 5%', 
               background: 'linear-gradient(to top, rgba(15, 0, 0, 0.95) 0%, rgba(10, 0, 0, 0.7) 40%, rgba(0,0,0,0) 100%)',
               display: 'flex',
               justifyContent: 'center'
             }}>
-              <div style={{ pointerEvents: 'auto', background: 'rgba(20, 5, 5, 0.6)', border: '1px solid rgba(140, 21, 21, 0.2)', padding: '16px 24px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '32px', backdropFilter: 'blur(24px)', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}>
+              <div style={{ pointerEvents: 'auto', background: 'rgba(20, 5, 5, 0.6)', border: '1px solid rgba(140, 21, 21, 0.2)', padding: 'clamp(12px, 3vw, 16px) clamp(16px, 4vw, 24px)', borderRadius: '16px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 'clamp(16px, 4vw, 32px)', backdropFilter: 'blur(24px)', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'rgba(255,255,255,0.95)' }}>
                   <FileText size={20} color="var(--primary)" />
-                  <span style={{ fontFamily: 'var(--font-sinhala)', fontSize: '1rem', fontWeight: 500 }}>අද දින දේශනාවට අදාළ සූත්‍රය</span>
+                  <span style={{ fontFamily: 'var(--font-sinhala)', fontSize: 'clamp(0.9rem, 3vw, 1rem)', fontWeight: 500, textAlign: 'center' }}>අද දින දේශනාවට අදාළ සූත්‍රය</span>
                 </div>
                 <button style={{ background: 'var(--primary)', color: '#fff', border: 'none', padding: '10px 24px', borderRadius: '10px', fontFamily: 'var(--font-sinhala)', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)' }}
                   onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary-hover)'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(140,21,21,0.4)'; }}
