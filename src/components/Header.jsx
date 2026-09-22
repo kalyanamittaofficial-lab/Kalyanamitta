@@ -11,32 +11,32 @@ const allNavItems = [
   { name: 'ධර්ම මාර්ගය', path: '/path' },
   { name: 'කල්‍යාණ මිත්‍රත්වය', path: '/community' },
   { 
-    name: 'දහම් මග', 
+    name: 'දහම් පියස', 
     isMegaMenu: true,
     columns: [
       {
-        title: 'ප්‍රායෝගික ධර්මය',
+        title: 'දිවියට දහම',
         items: [
-          { name: 'ජීවිතයට ධර්මය', path: '/life' },
-          { name: 'ගිහි විනය', path: '/layman', isPlaceholder: true },
-          { name: 'මානසික සුවය', path: '/wellness', isPlaceholder: true }
+          { name: 'දහම සහ ජීවිතය', path: '/life' },
+          { name: 'ගිහි දිවියේ විනය', path: '/layman', isPlaceholder: true },
+          { name: 'සිතේ සුවය', path: '/wellness', isPlaceholder: true }
         ]
       },
       {
-        title: 'දේශනා සහ භාවනා',
+        title: 'දේශනා හා භාවනා',
         items: [
-          { name: 'නිවේදන සහ කාලසටහන', path: '/notices' },
-          { name: 'ධර්ම දේශනා', path: '/sermons' },
-          { name: 'භාවනා වැඩසටහන්', path: '/meditation' },
-          { name: 'විශේෂ සාකච්ඡා', path: '/discussions', isPlaceholder: true }
+          { name: 'වැඩසටහන් හා දිනදසුන', path: '/notices' },
+          { name: 'දහම් දේශනා', path: '/sermons' },
+          { name: 'භාවනා මඟපෙන්වීම්', path: '/meditation' },
+          { name: 'දහම් සාකච්ඡා', path: '/discussions', isPlaceholder: true }
         ]
       },
       {
-        title: 'අධ්‍යයන අංශය',
+        title: 'දහම් අධ්‍යයනය',
         items: [
-          { name: 'බෞද්ධ ඉතිහාසය', path: '/history' },
-          { name: 'පාලි භාෂා අධ්‍යයනය', path: '/pali', isPlaceholder: true },
-          { name: 'සූත්‍ර විවරණ', path: '/sutta', isPlaceholder: true }
+          { name: 'බුදු සසුනේ ඉතිහාසය', path: '/history' },
+          { name: 'පාලි භාෂාව', path: '/pali', isPlaceholder: true },
+          { name: 'සූත්‍ර අධ්‍යයනය', path: '/sutta', isPlaceholder: true }
         ]
       }
     ]
