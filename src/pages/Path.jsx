@@ -1,5 +1,6 @@
 import React, { useState, useEffect, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 import { bodhiFactors } from '../data/bodhiFactors';
 // Memoized fully visible beautiful Dharma Chakra
