@@ -25,6 +25,7 @@ import History from './pages/History';
 import HistoryChapter from './pages/HistoryChapter';
 import Sasanaya from './pages/Sasanaya';
 import Notices from './pages/Notices';
+import PracticeGuide from './pages/PracticeGuide';
 
 const AdminLayout = React.lazy(() => import('./pages/Admin/AdminLayout'));
 const AdminDashboard = React.lazy(() => import('./pages/Admin/AdminDashboard'));
@@ -92,6 +93,7 @@ function App() {
           <Route path="sermons" element={<Sermons />} />
           <Route path="meditation" element={<Meditation />} />
           <Route path="path" element={<Path />} />
+          <Route path="practice/:factorId/:stepId" element={<PracticeGuide />} />
           <Route path="life" element={<BlogArchive />} />
           <Route path="life/:slug" element={<SingleBlog />} />
           <Route path="lifecycle" element={<LifeCycle />} />
