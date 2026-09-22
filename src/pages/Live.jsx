@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { Radio, Eye, X, FileText, Clock, Maximize, Minimize, Smartphone } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../utils/supabase';
 import YouTube from 'react-youtube';
 
 export default function Live() {
   const navigate = useNavigate();
-  const [showUI, setShowUI] = useState(true);
+  const [searchParams] = useSearchParams();
+  const isWebView = searchParams.get('webview') === 'true';
+  const [showUI, setShowUI] = useState(!isWebView);
   
   // Real data state
   const [isLive, setIsLive] = useState(false);
@@ -15,7 +17,7 @@ export default function Live() {
   const [nextScheduledTime, setNextScheduledTime] = useState('');
   const [nextTitle, setNextTitle] = useState('');
   const [timeRemaining, setTimeRemaining] = useState('');
-  const [joined, setJoined] = useState(false);
+  const [joined, setJoined] = useState(isWebView); // Auto join if webview
   const [startSeconds, setStartSeconds] = useState(0);
 
   // Fullscreen & Mobile states
@@ -193,6 +195,11 @@ export default function Live() {
 
   // Auto-hide UI when mouse is still (cinematic mode)
   useEffect(() => {
+    if (isWebView) {
+      setShowUI(false);
+      return;
+    }
+    
     let timeout;
     const revealUI = () => {
       setShowUI(true);
@@ -210,14 +217,14 @@ export default function Live() {
       window.removeEventListener('pointerdown', revealUI);
       clearTimeout(timeout);
     };
-  }, []);
+  }, [isWebView]);
 
   return (
     <div 
       ref={containerRef}
       style={{ 
       width: '100%', 
-      height: '100dvh', 
+      height: '100vh', 
       background: '#000000', 
       position: 'fixed', 
       top: 0, 
