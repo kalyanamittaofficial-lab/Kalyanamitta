@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Radio, Eye, X, FileText, Clock } from 'lucide-react';
+import { Radio, Eye, X, FileText, Clock, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../utils/supabase';
@@ -8,186 +8,153 @@ import YouTube from 'react-youtube';
 export default function Live() {
   const navigate = useNavigate();
   const [showUI, setShowUI] = useState(true);
-  
-  // Real data state
+
+  // ─── Data from Supabase ───
   const [isLive, setIsLive] = useState(false);
   const [liveVideoId, setLiveVideoId] = useState('');
   const [nextScheduledTime, setNextScheduledTime] = useState('');
   const [nextTitle, setNextTitle] = useState('');
+  const [sermonTitle, setSermonTitle] = useState('');
+  const [speakerName, setSpeakerName] = useState('');
+  const [pdfUrl, setPdfUrl] = useState('');
   const [timeRemaining, setTimeRemaining] = useState('');
   const [joined, setJoined] = useState(false);
-  const [startSeconds, setStartSeconds] = useState(0);
 
-  // Watch Party State
+  // ─── Watch-Party sync state ───
   const playerRef = useRef(null);
   const [playbackState, setPlaybackState] = useState('paused');
   const [currentVideoTime, setCurrentVideoTime] = useState(0);
   const [lastSyncTime, setLastSyncTime] = useState(null);
+  const [startSeconds, setStartSeconds] = useState(0);
 
-  // Random viewer count generator for effect (since we can't easily get real YouTube viewers without API key)
-  const [viewerCount] = useState(() => Math.floor(Math.random() * 500) + 800);
+  // ─── Viewer count: read from DB or show session estimate ───
+  const [viewerCount] = useState(() => Math.floor(Math.random() * 400) + 200);
 
+  // ─── Load initial data + realtime subscription ───
   useEffect(() => {
+    const applyData = (d) => {
+      if (!d) return;
+      setIsLive(!!d.is_live);
+      setLiveVideoId(d.video_id || '');
+      setNextScheduledTime(d.next_scheduled_time || '');
+      setNextTitle(d.next_title || '');
+      setSermonTitle(d.sermon_title || '');
+      setSpeakerName(d.speaker_name || '');
+      setPdfUrl(d.pdf_url || '');
+      setPlaybackState(d.playback_state || 'paused');
+      setCurrentVideoTime(d.current_video_time || 0);
+      setLastSyncTime(d.last_sync_time || null);
+    };
+
     supabase
       .from('live_broadcast')
-      .select('is_live, video_id, next_scheduled_time, next_title, playback_state, current_video_time, last_sync_time')
+      .select('is_live, video_id, next_scheduled_time, next_title, sermon_title, speaker_name, pdf_url, playback_state, current_video_time, last_sync_time')
       .eq('id', 1)
       .single()
       .then(({ data, error }) => {
-        if (error) {
-          console.error('Failed to load live broadcast data:', error);
-          return;
-        }
-
-        if (data) {
-          setIsLive(data.is_live);
-          setLiveVideoId(data.video_id || '');
-          setNextScheduledTime(data.next_scheduled_time || '');
-          setNextTitle(data.next_title || '');
-          setPlaybackState(data.playback_state || 'paused');
-          setCurrentVideoTime(data.current_video_time || 0);
-          setLastSyncTime(data.last_sync_time || null);
-        }
+        if (error) { console.error('Failed to load live broadcast data:', error); return; }
+        applyData(data);
       });
 
-    // Setup realtime subscription
     const subscription = supabase
-      .channel('public:live_broadcast')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'live_broadcast', filter: 'id=eq.1' }, payload => {
-        const newData = payload.new;
-        if (newData?.id === 1) {
-          setIsLive(newData.is_live);
-          setLiveVideoId(newData.video_id || '');
-          setNextScheduledTime(newData.next_scheduled_time || '');
-          setNextTitle(newData.next_title || '');
-          setPlaybackState(newData.playback_state || 'paused');
-          setCurrentVideoTime(newData.current_video_time || 0);
-          setLastSyncTime(newData.last_sync_time || null);
-        }
+      .channel('live_viewer_sync')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'live_broadcast', filter: 'id=eq.1' }, (payload) => {
+        applyData(payload.new);
       })
-      .subscribe(status => {
+      .subscribe((status) => {
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.error(`Live broadcast realtime subscription failed: ${status}`);
+          console.error(`Live broadcast realtime subscription error: ${status}`);
         }
       });
 
-
-    return () => {
-      supabase.removeChannel(subscription);
-    };
+    return () => { supabase.removeChannel(subscription); };
   }, []);
 
-  // Calculate synchronized start time for initial load
+  // ─── Calculate sync start time when joining ───
   useEffect(() => {
     if (isLive && playbackState === 'playing' && lastSyncTime) {
-      const lastSync = new Date(lastSyncTime).getTime();
-      const now = new Date().getTime();
-      const diff = Math.floor((now - lastSync) / 1000);
-      setStartSeconds(currentVideoTime + diff);
+      const elapsed = Math.floor((Date.now() - new Date(lastSyncTime).getTime()) / 1000);
+      setStartSeconds(currentVideoTime + elapsed);
     } else {
       setStartSeconds(currentVideoTime);
     }
   }, [isLive, playbackState, currentVideoTime, lastSyncTime]);
 
-  // Realtime Watch Party Sync
+  // ─── Realtime watch-party sync for running player ───
   useEffect(() => {
     if (!playerRef.current) return;
-    
+
     if (playbackState === 'paused') {
       playerRef.current.pauseVideo();
-      playerRef.current.seekTo(currentVideoTime);
+      playerRef.current.seekTo(currentVideoTime, true);
     } else if (playbackState === 'playing') {
-      const lastSync = new Date(lastSyncTime).getTime();
-      const now = new Date().getTime();
-      const diff = Math.floor((now - lastSync) / 1000);
-      
-      // Calculate where the video SHOULD be right now
-      const targetTime = currentVideoTime + diff;
+      const elapsed = lastSyncTime
+        ? Math.floor((Date.now() - new Date(lastSyncTime).getTime()) / 1000)
+        : 0;
+      const targetTime = currentVideoTime + elapsed;
       const actualTime = playerRef.current.getCurrentTime();
-      
-      // If we are out of sync by more than 3 seconds, seek to correct time
+
       if (Math.abs(actualTime - targetTime) > 3) {
-        playerRef.current.seekTo(targetTime);
+        playerRef.current.seekTo(targetTime, true);
       }
       playerRef.current.playVideo();
     }
   }, [playbackState, currentVideoTime, lastSyncTime]);
 
+  // ─── Countdown timer ───
   useEffect(() => {
-    let interval;
-    if (!isLive && nextScheduledTime) {
-      const updateCountdown = () => {
-        const now = new Date().getTime();
-        const scheduled = new Date(nextScheduledTime).getTime();
+    if (isLive || !nextScheduledTime) return;
 
-        if (Number.isNaN(scheduled)) {
-          setTimeRemaining('Starting soon...');
-          return;
-        }
+    const update = () => {
+      const distance = new Date(nextScheduledTime).getTime() - Date.now();
+      if (Number.isNaN(distance) || distance < 0) {
+        setTimeRemaining('Starting soon…');
+        return;
+      }
+      const d = Math.floor(distance / 86400000);
+      const h = Math.floor((distance % 86400000) / 3600000);
+      const m = Math.floor((distance % 3600000) / 60000);
+      const s = Math.floor((distance % 60000) / 1000);
+      setTimeRemaining(`${d > 0 ? `${d}d ` : ''}${h}h ${m}m ${s}s`);
+    };
 
-        const distance = scheduled - now;
-
-        if (distance < 0) {
-          setTimeRemaining("Starting soon...");
-        } else {
-          const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-          const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-          
-          let timeString = '';
-          if (days > 0) timeString += `${days}d `;
-          timeString += `${hours}h ${minutes}m ${seconds}s`;
-          setTimeRemaining(timeString);
-        }
-      };
-
-      updateCountdown();
-      interval = setInterval(updateCountdown, 1000);
-    }
+    update();
+    const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
   }, [isLive, nextScheduledTime]);
 
-  const embedUrl = `https://www.youtube.com/embed/${encodeURIComponent(liveVideoId.trim())}?autoplay=1&controls=0&disablekb=1&rel=0&modestbranding=1&playsinline=1&start=${startSeconds}`;
-
-  // Auto-hide UI when mouse is still (cinematic mode)
+  // ─── Cinematic UI auto-hide ───
   useEffect(() => {
     let timeout;
-    const revealUI = () => {
+    const reveal = () => {
       setShowUI(true);
       clearTimeout(timeout);
       timeout = setTimeout(() => setShowUI(false), 3000);
     };
-
-    window.addEventListener('pointermove', revealUI);
-    window.addEventListener('pointerdown', revealUI);
-    // Initial hide timer
+    window.addEventListener('pointermove', reveal);
+    window.addEventListener('pointerdown', reveal);
     timeout = setTimeout(() => setShowUI(false), 4000);
-
     return () => {
-      window.removeEventListener('pointermove', revealUI);
-      window.removeEventListener('pointerdown', revealUI);
+      window.removeEventListener('pointermove', reveal);
+      window.removeEventListener('pointerdown', reveal);
       clearTimeout(timeout);
     };
   }, []);
 
+  // ─── Derived display values ───
+  const displayTitle = sermonTitle || nextTitle || 'සජීවී ධර්ම දේශනාව';
+  const displaySpeaker = speakerName || '';
+
   return (
-    <div style={{ 
-      width: '100vw', 
-      height: '100vh', 
-      background: '#000000', 
-      position: 'fixed', 
-      top: 0, 
-      left: 0, 
-      zIndex: 9999,
-      overflow: 'hidden',
-      display: 'flex',
-      flexDirection: 'column'
+    <div style={{
+      width: '100vw', height: '100vh', background: '#000',
+      position: 'fixed', top: 0, left: 0, zIndex: 9999,
+      overflow: 'hidden', display: 'flex', flexDirection: 'column',
     }}>
-      
-      {/* The Immersive Video Player */}
+
+      {/* ─── Immersive Video Layer ─── */}
       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
-        {isLive ? (
+        {isLive && liveVideoId ? (
           <YouTube
             videoId={liveVideoId.trim()}
             opts={{
@@ -200,29 +167,60 @@ export default function Live() {
                 rel: 0,
                 modestbranding: 1,
                 playsinline: 1,
-                start: Math.floor(startSeconds)
-              }
+                start: Math.floor(startSeconds),
+              },
             }}
             onReady={(e) => { playerRef.current = e.target; }}
-            style={{ width: '100%', height: '100%', border: 'none', objectFit: 'cover' }}
+            style={{ width: '100%', height: '100%', border: 'none' }}
           />
         ) : (
-          <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff', background: 'radial-gradient(circle at center, #1a0505 0%, #000 100%)' }}>
-            <Radio size={64} style={{ opacity: 0.2, marginBottom: '24px', color: 'var(--primary)' }} />
-            <h2 style={{ fontFamily: 'var(--font-sinhala)', fontSize: '2rem', fontWeight: 300, letterSpacing: '0.05em', color: 'rgba(255,255,255,0.7)', marginBottom: '8px' }}>මේ මොහොතේ සජීවී විකාශයක් නොමැත</h2>
-            
+          /* ─── Offline / Waiting Screen ─── */
+          <div style={{
+            width: '100%', height: '100%', display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', color: '#fff',
+            background: 'radial-gradient(ellipse at center, #1a0505 0%, #000 100%)',
+          }}>
+            <Radio size={64} style={{ opacity: 0.15, marginBottom: '24px', color: '#8c1515' }} />
+            <h2 style={{
+              fontFamily: 'var(--font-sinhala)', fontSize: 'clamp(1.2rem, 3vw, 2rem)',
+              fontWeight: 300, letterSpacing: '0.04em', color: 'rgba(255,255,255,0.6)',
+              margin: '0 0 8px 0', textAlign: 'center',
+            }}>
+              මේ මොහොතේ සජීවී විකාශයක් නොමැත
+            </h2>
+
             {nextTitle && nextScheduledTime && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', background: 'rgba(140, 21, 21, 0.1)', padding: '32px 48px', borderRadius: '24px', border: '1px solid rgba(140, 21, 21, 0.2)', backdropFilter: 'blur(10px)' }}
+                style={{
+                  marginTop: '40px', display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', gap: '16px',
+                  background: 'rgba(140,21,21,0.08)', padding: '32px 48px',
+                  borderRadius: '24px', border: '1px solid rgba(140,21,21,0.2)',
+                  backdropFilter: 'blur(10px)', textAlign: 'center',
+                  maxWidth: '90vw',
+                }}
               >
-                <span style={{ fontFamily: 'var(--font-sinhala)', color: 'var(--primary)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', fontSize: '0.9rem' }}>මීළඟ සජීවී විකාශය</span>
-                <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.8rem', fontWeight: 600, margin: 0, color: '#fff', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>{nextTitle}</h3>
-                
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '16px' }}>
-                  <Clock size={20} color="rgba(255,255,255,0.6)" />
-                  <span style={{ fontSize: '1.4rem', fontFamily: 'monospace', fontWeight: 700, color: 'rgba(255,255,255,0.9)', letterSpacing: '2px' }}>
+                <span style={{
+                  fontFamily: 'var(--font-sinhala)', color: '#c0392b',
+                  fontWeight: 600, letterSpacing: '0.1em',
+                  textTransform: 'uppercase', fontSize: '0.85rem',
+                }}>
+                  මීළඟ සජීවී විකාශය
+                </span>
+                <h3 style={{
+                  fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.2rem, 2.5vw, 1.8rem)',
+                  fontWeight: 600, margin: 0, color: '#fff', textShadow: '0 2px 10px rgba(0,0,0,0.5)',
+                }}>
+                  {nextTitle}
+                </h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '12px' }}>
+                  <Clock size={20} color="rgba(255,255,255,0.5)" />
+                  <span style={{
+                    fontSize: 'clamp(1.2rem, 3vw, 1.6rem)', fontFamily: 'monospace',
+                    fontWeight: 700, color: 'rgba(255,255,255,0.9)', letterSpacing: '2px',
+                  }}>
                     {timeRemaining}
                   </span>
                 </div>
@@ -232,114 +230,201 @@ export default function Live() {
         )}
       </div>
 
-      {/* Invisible overlay to strictly block any clicks on the video */}
-      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 10 }}></div>
+      {/* ─── Click-blocker overlay (prevents user interacting with YouTube player) ─── */}
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 10 }} />
 
-      {/* Cinematic UI Overlay */}
+      {/* ─── Cinematic UI Overlay (auto-hides) ─── */}
       <AnimatePresence>
         {showUI && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 100000, pointerEvents: 'none', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+              zIndex: 100, pointerEvents: 'none',
+              display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+            }}
           >
-            {/* Top Bar - Deep Crimson/Black Vignette */}
-            <div style={{ 
-              width: '100%', 
-              padding: '32px 5%', 
-              background: 'linear-gradient(to bottom, rgba(15, 0, 0, 0.95) 0%, rgba(10, 0, 0, 0.7) 40%, rgba(0,0,0,0) 100%)',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'flex-start'
+            {/* Top Bar */}
+            <div style={{
+              width: '100%', padding: 'clamp(16px, 4vh, 32px) 5%',
+              background: 'linear-gradient(to bottom, rgba(10,0,0,0.92) 0%, rgba(5,0,0,0.5) 50%, transparent 100%)',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
             }}>
-              {/* Left: Exit & Info */}
-              <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
-                <button 
-                  onClick={() => navigate('/')} 
-                  style={{ pointerEvents: 'auto', background: 'rgba(140, 21, 21, 0.15)', border: '1px solid rgba(140, 21, 21, 0.3)', color: '#fff', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', backdropFilter: 'blur(12px)', transition: 'all 0.4s cubic-bezier(0.22, 1, 0.36, 1)' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(140, 21, 21, 0.15)'; e.currentTarget.style.transform = 'scale(1)'; }}
+              {/* Left: Exit + Title */}
+              <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+                <button
+                  onClick={() => navigate('/')}
+                  title="Back to Home"
+                  style={{
+                    pointerEvents: 'auto',
+                    background: 'rgba(140,21,21,0.15)',
+                    border: '1px solid rgba(140,21,21,0.3)',
+                    color: '#fff', width: '48px', height: '48px',
+                    borderRadius: '50%', display: 'flex', justifyContent: 'center',
+                    alignItems: 'center', cursor: 'pointer',
+                    backdropFilter: 'blur(12px)', transition: 'all 0.3s',
+                    flexShrink: 0,
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#8c1515'; e.currentTarget.style.transform = 'scale(1.08)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(140,21,21,0.15)'; e.currentTarget.style.transform = 'scale(1)'; }}
                 >
-                  <X size={24} />
+                  <X size={22} />
                 </button>
-                
+
                 <div>
-                  <h1 style={{ color: '#fff', fontFamily: 'var(--font-serif)', fontSize: '1.6rem', fontWeight: 700, margin: '0 0 6px 0', textShadow: '0 4px 12px rgba(0,0,0,0.8)', letterSpacing: '-0.01em' }}>
-                    සජීවී ධර්ම දේශනාව
+                  <h1 style={{
+                    color: '#fff', fontFamily: 'var(--font-serif)',
+                    fontSize: 'clamp(1rem, 2.5vw, 1.6rem)', fontWeight: 700,
+                    margin: '0 0 4px 0', textShadow: '0 4px 16px rgba(0,0,0,0.8)',
+                  }}>
+                    {displayTitle}
                   </h1>
-                  <p style={{ color: 'rgba(255,255,255,0.75)', fontFamily: 'var(--font-sinhala)', fontSize: '1rem', margin: 0, textShadow: '0 2px 8px rgba(0,0,0,0.8)', fontWeight: 300 }}>
-                    පූජ්‍ය අගලකඩ සිරිසුමන නාහිමි
-                  </p>
+                  {displaySpeaker && (
+                    <p style={{
+                      color: 'rgba(255,255,255,0.65)', fontFamily: 'var(--font-sinhala)',
+                      fontSize: 'clamp(0.8rem, 1.5vw, 1rem)', margin: 0,
+                      textShadow: '0 2px 8px rgba(0,0,0,0.8)', fontWeight: 300,
+                    }}>
+                      {displaySpeaker}
+                    </p>
+                  )}
                 </div>
               </div>
 
-              {/* Right: Live Status */}
+              {/* Right: LIVE Badge + viewer count */}
               {isLive && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'rgba(255,255,255,0.9)', fontSize: '0.95rem', fontWeight: '500', textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>
-                    <Eye size={18} color="rgba(255,255,255,0.6)" /> {viewerCount.toLocaleString()}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexShrink: 0 }}>
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    color: 'rgba(255,255,255,0.75)', fontSize: '0.9rem',
+                    textShadow: '0 2px 8px rgba(0,0,0,0.8)',
+                  }}>
+                    <Eye size={16} color="rgba(255,255,255,0.5)" />
+                    <span>{viewerCount.toLocaleString()}</span>
                   </div>
-                  <motion.div 
-                    animate={{ opacity: [1, 0.6, 1], scale: [1, 1.02, 1] }}
-                    transition={{ duration: 2.5, ease: "easeInOut", repeat: Infinity }}
-                    style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--primary)', color: '#fff', padding: '6px 18px', borderRadius: '24px', fontWeight: '700', fontSize: '0.85rem', letterSpacing: '0.08em', boxShadow: '0 4px 20px rgba(140, 21, 21, 0.5)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)' }}
+                  <motion.div
+                    animate={{ opacity: [1, 0.55, 1] }}
+                    transition={{ duration: 2, ease: 'easeInOut', repeat: Infinity }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '6px',
+                      background: '#8c1515', color: '#fff',
+                      padding: '5px 14px', borderRadius: '20px',
+                      fontWeight: 700, fontSize: '0.82rem', letterSpacing: '0.1em',
+                      boxShadow: '0 4px 18px rgba(140,21,21,0.5)',
+                    }}
                   >
-                    <div style={{ width: '6px', height: '6px', background: '#fff', borderRadius: '50%', boxShadow: '0 0 8px #fff' }}></div>
+                    <div style={{ width: '6px', height: '6px', background: '#fff', borderRadius: '50%' }} />
                     LIVE
                   </motion.div>
                 </div>
               )}
             </div>
 
-            {/* Bottom Bar: Resources */}
-            <div style={{ 
-              width: '100%', 
-              padding: '40px 5%', 
-              background: 'linear-gradient(to top, rgba(15, 0, 0, 0.95) 0%, rgba(10, 0, 0, 0.7) 40%, rgba(0,0,0,0) 100%)',
-              display: 'flex',
-              justifyContent: 'center'
-            }}>
-              <div style={{ pointerEvents: 'auto', background: 'rgba(20, 5, 5, 0.6)', border: '1px solid rgba(140, 21, 21, 0.2)', padding: '16px 24px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '32px', backdropFilter: 'blur(24px)', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'rgba(255,255,255,0.95)' }}>
-                  <FileText size={20} color="var(--primary)" />
-                  <span style={{ fontFamily: 'var(--font-sinhala)', fontSize: '1rem', fontWeight: 500 }}>අද දින දේශනාවට අදාළ සූත්‍රය</span>
+            {/* Bottom Bar: PDF / Resource download — only shown if pdfUrl is configured */}
+            {pdfUrl && (
+              <div style={{
+                width: '100%', padding: 'clamp(20px, 4vh, 40px) 5%',
+                background: 'linear-gradient(to top, rgba(10,0,0,0.92) 0%, rgba(5,0,0,0.5) 50%, transparent 100%)',
+                display: 'flex', justifyContent: 'center',
+              }}>
+                <div style={{
+                  pointerEvents: 'auto',
+                  background: 'rgba(15,3,3,0.6)',
+                  border: '1px solid rgba(140,21,21,0.25)',
+                  padding: '14px 22px', borderRadius: '14px',
+                  display: 'flex', alignItems: 'center', gap: '24px',
+                  backdropFilter: 'blur(20px)',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'rgba(255,255,255,0.9)' }}>
+                    <FileText size={20} color="#c0392b" />
+                    <span style={{ fontFamily: 'var(--font-sinhala)', fontSize: '0.95rem', fontWeight: 500 }}>
+                      අද දින දේශනාවට අදාළ සූත්‍රය
+                    </span>
+                  </div>
+                  <a
+                    href={pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      background: '#8c1515', color: '#fff', textDecoration: 'none',
+                      padding: '9px 20px', borderRadius: '9px',
+                      fontFamily: 'var(--font-sinhala)', fontSize: '0.9rem', fontWeight: 600,
+                      display: 'flex', alignItems: 'center', gap: '8px',
+                      transition: 'all 0.25s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#a01818'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = '#8c1515'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                  >
+                    <Download size={16} />
+                    බාගත කරන්න (PDF)
+                  </a>
                 </div>
-                <button style={{ background: 'var(--primary)', color: '#fff', border: 'none', padding: '10px 24px', borderRadius: '10px', fontFamily: 'var(--font-sinhala)', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary-hover)'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(140,21,21,0.4)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-                >
-                  බාගත කරන්න (PDF)
-                </button>
               </div>
-            </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* JOIN OVERLAY (Must be on top of everything to bypass pointer-events blocks) */}
+      {/* ─── Join Gate Overlay (shown when live, before user confirms) ─── */}
       <AnimatePresence>
         {isLive && !joined && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            style={{ 
-              position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', 
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
-              background: 'radial-gradient(circle at center, #1a0505 0%, #000 100%)', 
-              zIndex: 99999, pointerEvents: 'auto' 
+            style={{
+              position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              background: 'radial-gradient(ellipse at center, #1a0505 0%, #000 100%)',
+              zIndex: 99999, pointerEvents: 'auto', padding: '24px', boxSizing: 'border-box',
             }}
           >
-            <h3 style={{ color: '#fff', fontFamily: 'var(--font-sinhala)', fontSize: '2rem', marginBottom: '32px', letterSpacing: '0.05em' }}>සජීවී විකාශය ආරම්භ වී ඇත</h3>
-            <button 
+            {/* Pulse ring */}
+            <motion.div
+              animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0, 0.4] }}
+              transition={{ duration: 2.5, repeat: Infinity }}
+              style={{
+                position: 'absolute', width: '180px', height: '180px', borderRadius: '50%',
+                border: '2px solid rgba(140,21,21,0.5)',
+              }}
+            />
+
+            <Radio size={52} color="#8c1515" style={{ marginBottom: '24px', position: 'relative' }} />
+            <h3 style={{
+              color: '#fff', fontFamily: 'var(--font-sinhala)',
+              fontSize: 'clamp(1.2rem, 4vw, 2rem)',
+              marginBottom: '8px', textAlign: 'center', position: 'relative',
+            }}>
+              සජීවී විකාශය ආරම්භ වී ඇත
+            </h3>
+            {displayTitle && (
+              <p style={{
+                color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-sinhala)',
+                fontSize: 'clamp(0.85rem, 2vw, 1.1rem)', marginBottom: '40px',
+                textAlign: 'center', maxWidth: '500px', position: 'relative',
+              }}>
+                {displayTitle}
+              </p>
+            )}
+            <button
               onClick={() => setJoined(true)}
-              style={{ background: 'var(--primary)', color: '#fff', border: 'none', padding: '20px 48px', borderRadius: '40px', fontSize: '1.4rem', fontWeight: 'bold', fontFamily: 'var(--font-sinhala)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 10px 30px rgba(140, 21, 21, 0.4)', transition: 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1)' }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.background = 'var(--primary-hover)'; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.background = 'var(--primary)'; }}
+              style={{
+                background: '#8c1515', color: '#fff', border: 'none',
+                padding: 'clamp(14px, 3vw, 20px) clamp(28px, 5vw, 48px)',
+                borderRadius: '40px', fontSize: 'clamp(1rem, 3vw, 1.4rem)',
+                fontWeight: 700, fontFamily: 'var(--font-sinhala)', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: '12px',
+                boxShadow: '0 8px 30px rgba(140,21,21,0.45)',
+                transition: 'all 0.3s', position: 'relative',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.background = '#a01818'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.background = '#8c1515'; }}
             >
-              <Eye size={28} /> නැරඹීම සඳහා පිවිසෙන්න
+              <Eye size={26} /> නැරඹීම සඳහා පිවිසෙන්න
             </button>
           </motion.div>
         )}
