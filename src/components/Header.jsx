@@ -354,7 +354,7 @@ export default function Header() {
           </nav>
 
           {/* Premium Actions */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(10px, 2vw, 28px)' }}>
             
             {/* Live Broadcast Indicator */}
             <a href="/live" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
@@ -552,6 +552,27 @@ export default function Header() {
                 )}
               </div>
             ))}
+            
+            {/* Mobile Auth Link */}
+            <div style={{ padding: '32px 0' }}>
+              {session ? (
+                <Link 
+                  to="/dashboard" 
+                  onClick={() => setIsMenuOpen(false)} 
+                  style={{ display: 'block', fontSize: '1.4rem', fontWeight: 700, color: 'var(--primary)', textDecoration: 'none' }}
+                >
+                  Profile / ගිණුම
+                </Link>
+              ) : (
+                <Link 
+                  to="/login" 
+                  onClick={() => setIsMenuOpen(false)} 
+                  style={{ display: 'block', fontSize: '1.4rem', fontWeight: 700, color: 'var(--primary)', textDecoration: 'none' }}
+                >
+                  Login / පිවිසෙන්න
+                </Link>
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

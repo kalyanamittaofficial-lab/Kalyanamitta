@@ -125,6 +125,11 @@ export default function Live() {
 
   // ─── Cinematic UI auto-hide ───
   useEffect(() => {
+    if (isWebView) {
+      setShowUI(false);
+      return;
+    }
+    
     let timeout;
     const reveal = () => {
       setShowUI(true);
