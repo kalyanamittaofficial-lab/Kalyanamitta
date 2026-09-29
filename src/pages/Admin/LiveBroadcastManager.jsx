@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../utils/supabase';
-import { Radio, Save, Clock, Video, User, FileText, AlignLeft, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Radio, Save, Clock, Video, User, FileText, AlignLeft, CheckCircle, AlertCircle, Loader2, Eye } from 'lucide-react';
 import YouTube from 'react-youtube';
 
 const INITIAL_DATA = {
@@ -86,7 +86,28 @@ export default function LiveBroadcastManager() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null); // { type: 'success'|'error', message }
   const [data, setData] = useState(INITIAL_DATA);
+  const [activeViewerCount, setActiveViewerCount] = useState(0);
   const playerRef = useRef(null);
+
+  // Real-time live viewer presence
+  useEffect(() => {
+    const presenceChannel = supabase.channel('live_broadcast_presence');
+
+    presenceChannel
+      .on('presence', { event: 'sync' }, () => {
+        const state = presenceChannel.presenceState();
+        let total = 0;
+        for (const key in state) {
+          total += state[key]?.length || 1;
+        }
+        setActiveViewerCount(total);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(presenceChannel);
+    };
+  }, []);
 
   // Show toast then auto-hide
   const showToast = (type, message) => {
@@ -263,7 +284,9 @@ export default function LiveBroadcastManager() {
                   {data.is_live ? 'BROADCAST IS LIVE' : 'BROADCAST IS OFFLINE'}
                 </h3>
                 <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                  {data.is_live ? 'All visitors can see the LIVE player and indicator.' : 'Visitors see the countdown / offline screen.'}
+                  {data.is_live
+                    ? `Global visibility is ON · ${activeViewerCount} live ${activeViewerCount === 1 ? 'viewer' : 'viewers'}`
+                    : 'Visitors see the countdown / offline screen.'}
                 </p>
               </div>
               {/* Toggle Switch */}
@@ -411,13 +434,19 @@ export default function LiveBroadcastManager() {
               <h3 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <Video size={20} color="var(--text-muted)" /> Master Preview Player
               </h3>
-              {data.is_live && (
-                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#dc2626', background: 'rgba(220,38,38,0.1)', padding: '4px 10px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid rgba(220,38,38,0.3)' }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#dc2626', animation: 'pulse 2s infinite' }} />
-                  SYNC ACTIVE
-                  <style>{`@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }`}</style>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', background: 'rgba(255,255,255,0.04)', padding: '4px 10px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid var(--glass-border)' }}>
+                  <Eye size={13} color="var(--primary)" />
+                  <strong style={{ color: 'var(--text-main)' }}>{activeViewerCount}</strong> {activeViewerCount === 1 ? 'Viewer' : 'Viewers'}
                 </span>
-              )}
+                {data.is_live && (
+                  <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#dc2626', background: 'rgba(220,38,38,0.1)', padding: '4px 10px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid rgba(220,38,38,0.3)' }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#dc2626', animation: 'pulse 2s infinite' }} />
+                    SYNC ACTIVE
+                    <style>{`@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }`}</style>
+                  </span>
+                )}
+              </div>
             </div>
 
             <div style={{ background: '#000', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--glass-border)' }}>

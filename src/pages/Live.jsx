@@ -29,8 +29,38 @@ export default function Live() {
   const [lastSyncTime, setLastSyncTime] = useState(null);
   const [startSeconds, setStartSeconds] = useState(0);
 
-  // ─── Viewer count: read from DB or show session estimate ───
-  const [viewerCount] = useState(() => Math.floor(Math.random() * 400) + 200);
+  // ─── Real-time live viewer count via Supabase Presence ───
+  const [viewerCount, setViewerCount] = useState(1);
+
+  useEffect(() => {
+    const visitorKey = Math.random().toString(36).substring(2, 10);
+    const presenceChannel = supabase.channel('live_broadcast_presence', {
+      config: {
+        presence: { key: visitorKey },
+      },
+    });
+
+    presenceChannel
+      .on('presence', { event: 'sync' }, () => {
+        const state = presenceChannel.presenceState();
+        let total = 0;
+        for (const key in state) {
+          total += state[key]?.length || 1;
+        }
+        setViewerCount(Math.max(1, total));
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await presenceChannel.track({
+            online_at: new Date().toISOString(),
+          });
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(presenceChannel);
+    };
+  }, []);
 
   // ─── Load initial data + realtime subscription ───
   useEffect(() => {
