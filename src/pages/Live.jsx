@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { Radio, Eye, X, FileText, Clock, Download } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../utils/supabase';
 import YouTube from 'react-youtube';
 
 export default function Live() {
   const navigate = useNavigate();
-  const [showUI, setShowUI] = useState(true);
+  const [searchParams] = useSearchParams();
+  const isWebView = searchParams.get('webview') === 'true';
+  const [showUI, setShowUI] = useState(!isWebView);
 
   // ─── Data from Supabase ───
   const [isLive, setIsLive] = useState(false);
@@ -18,7 +20,7 @@ export default function Live() {
   const [speakerName, setSpeakerName] = useState('');
   const [pdfUrl, setPdfUrl] = useState('');
   const [timeRemaining, setTimeRemaining] = useState('');
-  const [joined, setJoined] = useState(false);
+  const [joined, setJoined] = useState(isWebView);
 
   // ─── Watch-Party sync state ───
   const playerRef = useRef(null);
@@ -144,7 +146,7 @@ export default function Live() {
       window.removeEventListener('pointerdown', reveal);
       clearTimeout(timeout);
     };
-  }, []);
+  }, [isWebView]);
 
   // ─── Derived display values ───
   const displayTitle = sermonTitle || nextTitle || 'සජීවී ධර්ම දේශනාව';
