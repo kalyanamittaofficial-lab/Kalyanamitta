@@ -1,15 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
-import { Radio, Eye, X, FileText, Clock, Download } from 'lucide-react';
+import { Radio, Eye, X, FileText, Clock, Download, MessageSquare } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../utils/supabase';
 import YouTube from 'react-youtube';
+import LiveChat from '../components/LiveChat';
 
 export default function Live() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isWebView = searchParams.get('webview') === 'true';
   const [showUI, setShowUI] = useState(!isWebView);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   // ─── Data from Supabase ───
   const [isLive, setIsLive] = useState(false);
@@ -166,17 +168,21 @@ export default function Live() {
     const reveal = () => {
       setShowUI(true);
       clearTimeout(timeout);
-      timeout = setTimeout(() => setShowUI(false), 3000);
+      if (!isChatOpen) {
+        timeout = setTimeout(() => setShowUI(false), 3500);
+      }
     };
     window.addEventListener('pointermove', reveal);
     window.addEventListener('pointerdown', reveal);
-    timeout = setTimeout(() => setShowUI(false), 4000);
+    if (!isChatOpen) {
+      timeout = setTimeout(() => setShowUI(false), 4000);
+    }
     return () => {
       window.removeEventListener('pointermove', reveal);
       window.removeEventListener('pointerdown', reveal);
       clearTimeout(timeout);
     };
-  }, [isWebView]);
+  }, [isWebView, isChatOpen]);
 
   // ─── Derived display values ───
   const displayTitle = sermonTitle || nextTitle || 'සජීවී ධර්ම දේශනාව';
@@ -331,33 +337,68 @@ export default function Live() {
                 </div>
               </div>
 
-              {/* Right: LIVE Badge + viewer count */}
-              {isLive && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexShrink: 0 }}>
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: '6px',
-                    color: 'rgba(255,255,255,0.75)', fontSize: '0.9rem',
-                    textShadow: '0 2px 8px rgba(0,0,0,0.8)',
-                  }}>
-                    <Eye size={16} color="rgba(255,255,255,0.5)" />
-                    <span>{viewerCount.toLocaleString()}</span>
-                  </div>
-                  <motion.div
-                    animate={{ opacity: [1, 0.55, 1] }}
-                    transition={{ duration: 2, ease: 'easeInOut', repeat: Infinity }}
-                    style={{
+              {/* Right: Actions, Live Badge & Viewer Count */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexShrink: 0 }}>
+                {/* Chat Toggle Button */}
+                <button
+                  onClick={() => setIsChatOpen((prev) => !prev)}
+                  title={isChatOpen ? "Close Live Chat" : "Open Live Chat"}
+                  style={{
+                    pointerEvents: 'auto',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: isChatOpen ? 'var(--primary)' : 'rgba(255, 255, 255, 0.1)',
+                    border: `1px solid ${isChatOpen ? 'rgba(220, 38, 38, 0.4)' : 'rgba(255, 255, 255, 0.15)'}`,
+                    color: '#fff',
+                    padding: '8px 16px',
+                    borderRadius: '24px',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    backdropFilter: 'blur(10px)',
+                    fontFamily: 'var(--font-sinhala)',
+                    transition: 'all 0.2s',
+                    boxShadow: isChatOpen ? '0 4px 16px rgba(140, 21, 21, 0.4)' : 'none',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isChatOpen) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.18)';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isChatOpen) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                  }}
+                >
+                  <MessageSquare size={16} color={isChatOpen ? '#fff' : 'var(--primary)'} />
+                  <span>කතිකාවත</span>
+                </button>
+
+                {isLive && (
+                  <>
+                    <div style={{
                       display: 'flex', alignItems: 'center', gap: '6px',
-                      background: '#8c1515', color: '#fff',
-                      padding: '5px 14px', borderRadius: '20px',
-                      fontWeight: 700, fontSize: '0.82rem', letterSpacing: '0.1em',
-                      boxShadow: '0 4px 18px rgba(140,21,21,0.5)',
-                    }}
-                  >
-                    <div style={{ width: '6px', height: '6px', background: '#fff', borderRadius: '50%' }} />
-                    LIVE
-                  </motion.div>
-                </div>
-              )}
+                      color: 'rgba(255,255,255,0.75)', fontSize: '0.9rem',
+                      textShadow: '0 2px 8px rgba(0,0,0,0.8)',
+                    }}>
+                      <Eye size={16} color="rgba(255,255,255,0.5)" />
+                      <span>{viewerCount.toLocaleString()}</span>
+                    </div>
+                    <motion.div
+                      animate={{ opacity: [1, 0.55, 1] }}
+                      transition={{ duration: 2, ease: 'easeInOut', repeat: Infinity }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '6px',
+                        background: '#8c1515', color: '#fff',
+                        padding: '5px 14px', borderRadius: '20px',
+                        fontWeight: 700, fontSize: '0.82rem', letterSpacing: '0.1em',
+                        boxShadow: '0 4px 18px rgba(140,21,21,0.5)',
+                      }}
+                    >
+                      <div style={{ width: '6px', height: '6px', background: '#fff', borderRadius: '50%' }} />
+                      LIVE
+                    </motion.div>
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Bottom Bar: PDF / Resource download — only shown if pdfUrl is configured */}
@@ -464,6 +505,17 @@ export default function Live() {
               <Eye size={26} /> නැරඹීම සඳහා පිවිසෙන්න
             </button>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── Live Stream Chat Drawer ─── */}
+      <AnimatePresence>
+        {isChatOpen && (
+          <LiveChat
+            isOpen={isChatOpen}
+            onClose={() => setIsChatOpen(false)}
+            viewerCount={viewerCount}
+          />
         )}
       </AnimatePresence>
     </div>
