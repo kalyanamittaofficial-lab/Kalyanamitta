@@ -218,7 +218,7 @@ export default function LiveBroadcastManager() {
   }
 
   return (
-    <div style={{ maxWidth: '1200px', padding: '40px 20px', position: 'relative' }}>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '40px', position: 'relative' }}>
 
       {/* Toast Notification */}
       {toast && (

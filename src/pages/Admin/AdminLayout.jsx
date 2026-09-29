@@ -152,17 +152,30 @@ export default function AdminLayout() {
   const sidebarW = collapsed ? '64px' : '240px';
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#0d0d0f', color: '#e5e5e5', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+    <div className="admin-portal-root" style={{
+      display: 'flex',
+      height: '100vh',
+      maxHeight: '100vh',
+      width: '100vw',
+      overflow: 'hidden',
+      background: '#0d0d0f',
+      color: '#e5e5e5',
+      fontFamily: 'system-ui, -apple-system, sans-serif'
+    }}>
 
       {/* ── Desktop Sidebar ── */}
       <aside style={{
-        width: sidebarW, flexShrink: 0,
-        background: '#111113', borderRight: '1px solid rgba(255,255,255,0.06)',
-        display: 'flex', flexDirection: 'column',
-        position: 'sticky', top: 0, height: '100vh',
+        width: sidebarW,
+        flexShrink: 0,
+        background: '#111113',
+        borderRight: '1px solid rgba(255,255,255,0.06)',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
         transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)',
-        overflow: 'hidden',
-      }}>
+        overflowY: 'auto',
+        overflowX: 'hidden',
+      }} className="admin-scroll">
         <SidebarContent />
       </aside>
 
@@ -177,20 +190,34 @@ export default function AdminLayout() {
             position: 'fixed', top: 0, left: 0, height: '100vh', width: '240px',
             background: '#111113', borderRight: '1px solid rgba(255,255,255,0.06)',
             zIndex: 999, display: 'flex', flexDirection: 'column',
-          }}>
+            overflowY: 'auto',
+          }} className="admin-scroll">
             <SidebarContent />
           </aside>
         </>
       )}
 
-      {/* ── Main Content ── */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      {/* ── Main Content Area ── */}
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        minWidth: 0,
+        overflow: 'hidden'
+      }}>
 
-        {/* Top Bar */}
+        {/* Top Bar (Pinned) */}
         <header style={{
-          height: '60px', borderBottom: '1px solid rgba(255,255,255,0.06)',
-          display: 'flex', alignItems: 'center', padding: '0 28px',
-          gap: '16px', background: '#111113', position: 'sticky', top: 0, zIndex: 100,
+          height: '60px',
+          flexShrink: 0,
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          display: 'flex',
+          alignItems: 'center',
+          padding: '0 28px',
+          gap: '16px',
+          background: '#111113',
+          zIndex: 50,
         }}>
           {/* Mobile hamburger */}
           <button
@@ -221,13 +248,61 @@ export default function AdminLayout() {
           </div>
         </header>
 
-        {/* Page Content */}
-        <main style={{ flex: 1, padding: '36px 36px', overflowY: 'auto' }}>
+        {/* Page Content (Smooth Custom Scroll) */}
+        <main
+          className="admin-scroll"
+          style={{
+            flex: 1,
+            height: 'calc(100vh - 60px)',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            padding: '32px clamp(20px, 3.5vw, 44px) 60px',
+            scrollBehavior: 'smooth',
+          }}
+        >
           <Outlet context={{ userRole }} />
         </main>
       </div>
 
       <style>{`
+        /* Modern Sleek Floating Capsule Scrollbar for Admin Portal */
+        .admin-scroll {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+          scrollbar-gutter: stable;
+        }
+
+        .admin-scroll::-webkit-scrollbar {
+          width: 8px;
+          height: 8px;
+        }
+
+        .admin-scroll::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        .admin-scroll::-webkit-scrollbar-thumb {
+          background-color: rgba(255, 255, 255, 0.15);
+          border-radius: 9999px;
+          border: 2px solid transparent;
+          background-clip: content-box;
+          transition: background-color 0.2s ease;
+        }
+
+        .admin-scroll::-webkit-scrollbar-thumb:hover {
+          background-color: rgba(192, 57, 43, 0.7);
+        }
+
+        .admin-scroll::-webkit-scrollbar-corner {
+          background: transparent;
+        }
+
+        /* Prevent double window scrollbar in admin */
+        html:has(.admin-portal-root), body:has(.admin-portal-root) {
+          overflow: hidden !important;
+          height: 100vh !important;
+        }
+
         @media (max-width: 768px) {
           .km-mobile-hamburger { display: flex !important; }
         }
