@@ -64,7 +64,7 @@ function StatCard({ icon, label, value, loading, badge, badgeType = 'neutral' })
 }
 
 export default function AdminDashboard() {
-  const { userRole, userProfile, liveTelemetry, showToast } = useOutletContext() || {};
+  const { userRole, userProfile, liveTelemetry, showToast } = useOutletContext();
   const [stats, setStats] = useState({
     noticesCount: 0,
     teamCount: 0,

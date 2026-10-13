@@ -224,7 +224,7 @@ export default function AdminLayout() {
       exact: true,
     },
     {
-      name: 'Live Broadcast',
+      name: 'Live Studio',
       path: '/portal-ops/live',
       icon: <Radio size={19} />,
       badge: liveTelemetry.isLive ? 'LIVE' : null,
@@ -802,22 +802,15 @@ export default function AdminLayout() {
             scrollBehavior: 'smooth',
           }}
         >
-          <React.Suspense fallback={
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '50vh', gap: '12px', color: 'var(--adm-text-muted)' }}>
-              <Loader2 size={28} className="adm-spin" />
-              <span>Loading view…</span>
-            </div>
-          }>
-            <Outlet
-              context={{
-                userRole,
-                userProfile,
-                liveTelemetry,
-                showToast,
-                openConfirmModal,
-              }}
-            />
-          </React.Suspense>
+          <Outlet
+            context={{
+              userRole,
+              userProfile,
+              liveTelemetry,
+              showToast,
+              openConfirmModal,
+            }}
+          />
         </main>
       </div>
 

@@ -23,7 +23,7 @@ const EMPTY_FORM = {
 };
 
 export default function NoticeManager() {
-  const { userRole, showToast, openConfirmModal } = useOutletContext() || {};
+  const { userRole, showToast, openConfirmModal } = useOutletContext();
   const [notices, setNotices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -160,29 +160,18 @@ export default function NoticeManager() {
   };
 
   const handleDelete = (id, title) => {
-    if (openConfirmModal) {
-      openConfirmModal({
-        title: 'Delete Scheduled Notice?',
-        message: `Are you sure you want to permanently remove "${title || 'this notice'}" from the notice board?`,
-        confirmText: 'Delete Notice',
-        danger: true,
-        onConfirm: async () => {
-          const { error } = await supabase.from('notices').delete().eq('id', id);
-          if (error) throw error;
-          showToast?.('success', 'Notice deleted successfully.');
-          fetchNotices();
-        },
-      });
-    } else {
-      if (window.confirm(`Are you sure you want to delete "${title || 'this notice'}"?`)) {
-        supabase.from('notices').delete().eq('id', id).then(({ error }) => {
-          if (!error) {
-            showToast?.('success', 'Notice deleted successfully.');
-            fetchNotices();
-          }
-        });
-      }
-    }
+    openConfirmModal?.({
+      title: 'Delete Scheduled Notice?',
+      message: `Are you sure you want to permanently remove "${title || 'this notice'}" from the notice board?`,
+      confirmText: 'Delete Notice',
+      danger: true,
+      onConfirm: async () => {
+        const { error } = await supabase.from('notices').delete().eq('id', id);
+        if (error) throw error;
+        showToast?.('success', 'Notice deleted successfully.');
+        fetchNotices();
+      },
+    });
   };
 
   // Filtered notices
