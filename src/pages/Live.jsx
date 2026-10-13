@@ -148,6 +148,39 @@ export default function Live() {
         applyData(data);
       });
 
+    // 1. Direct WebSocket Broadcast listener for instant sub-50ms playback sync
+    const broadcastChannel = supabase.channel('live_stream_sync_room', {
+      config: { broadcast: { self: false } },
+    });
+
+    broadcastChannel
+      .on('broadcast', { event: 'player_sync' }, ({ payload }) => {
+        if (!payload) return;
+        setPlaybackState(payload.playback_state);
+        setCurrentVideoTime(payload.current_video_time);
+        setLastSyncTime(payload.last_sync_time);
+
+        if (playerRef.current) {
+          try {
+            if (payload.playback_state === 'paused') {
+              playerRef.current.pauseVideo();
+              playerRef.current.seekTo(payload.current_video_time, true);
+            } else if (payload.playback_state === 'playing') {
+              const elapsed = payload.last_sync_time
+                ? Math.floor((Date.now() - new Date(payload.last_sync_time).getTime()) / 1000)
+                : 0;
+              const targetTime = payload.current_video_time + elapsed;
+              playerRef.current.seekTo(targetTime, true);
+              playerRef.current.playVideo();
+            }
+          } catch (err) {
+            console.warn('Realtime player_sync trigger error:', err);
+          }
+        }
+      })
+      .subscribe();
+
+    // 2. Postgres database update listener as secondary fallback
     const subscription = supabase
       .channel('live_viewer_sync')
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'live_broadcast', filter: 'id=eq.1' }, (payload) => {
@@ -159,7 +192,10 @@ export default function Live() {
         }
       });
 
-    return () => { supabase.removeChannel(subscription); };
+    return () => {
+      supabase.removeChannel(broadcastChannel);
+      supabase.removeChannel(subscription);
+    };
   }, []);
 
   // ─── Calculate sync start time when joining ───

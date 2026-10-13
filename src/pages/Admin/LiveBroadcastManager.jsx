@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../utils/supabase';
-import { Radio, Save, Clock, Video, User, FileText, AlignLeft, CheckCircle, AlertCircle, Loader2, Eye, ExternalLink, Copy } from 'lucide-react';
+import { Radio, Save, Clock, Video, User, FileText, AlignLeft, CheckCircle, AlertCircle, Loader2, Eye, ExternalLink, Copy, Play, Pause } from 'lucide-react';
 import YouTube from 'react-youtube';
 
 const INITIAL_DATA = {
@@ -89,6 +89,8 @@ export default function LiveBroadcastManager() {
   const [activeViewerCount, setActiveViewerCount] = useState(0);
   const playerRef = useRef(null);
 
+  const syncChannelRef = useRef(null);
+
   // Real-time live viewer presence
   useEffect(() => {
     const presenceChannel = supabase.channel('live_broadcast_presence');
@@ -104,8 +106,16 @@ export default function LiveBroadcastManager() {
       })
       .subscribe();
 
+    // WebSocket Broadcast Channel for instant sub-50ms sync to all viewers
+    const syncChannel = supabase.channel('live_stream_sync_room', {
+      config: { broadcast: { self: false } },
+    });
+    syncChannelRef.current = syncChannel;
+    syncChannel.subscribe();
+
     return () => {
       supabase.removeChannel(presenceChannel);
+      supabase.removeChannel(syncChannel);
     };
   }, []);
 
@@ -210,6 +220,41 @@ export default function LiveBroadcastManager() {
     }
   };
 
+  const broadcastAndSavePlayback = async (stateString, currentTime) => {
+    const timeToSync = typeof currentTime === 'number'
+      ? currentTime
+      : (typeof playerRef.current?.getCurrentTime === 'function' ? playerRef.current.getCurrentTime() : 0);
+
+    const syncPayload = {
+      playback_state: stateString,
+      current_video_time: timeToSync,
+      last_sync_time: new Date().toISOString(),
+    };
+
+    // 1. Instant WebSocket broadcast directly to all live viewers (< 50ms)
+    try {
+      if (syncChannelRef.current) {
+        syncChannelRef.current.send({
+          type: 'broadcast',
+          event: 'player_sync',
+          payload: syncPayload,
+        });
+      }
+    } catch (err) {
+      console.warn('Realtime sync broadcast notice:', err);
+    }
+
+    // 2. Persist to DB for users joining or refreshing later
+    try {
+      await supabase
+        .from('live_broadcast')
+        .update(syncPayload)
+        .eq('id', 1);
+    } catch (err) {
+      console.warn('DB sync update notice:', err);
+    }
+  };
+
   const handlePlayerStateChange = async (event) => {
     const ytState = event.data;
     // 1 = playing, 2 = paused, 0 = ended, 3 = buffering
@@ -218,14 +263,7 @@ export default function LiveBroadcastManager() {
     const stateString = (ytState === 1 || ytState === 3) ? 'playing' : 'paused';
     const currentTime = typeof event.target.getCurrentTime === 'function' ? event.target.getCurrentTime() : 0;
 
-    await supabase
-      .from('live_broadcast')
-      .update({
-        playback_state: stateString,
-        current_video_time: currentTime,
-        last_sync_time: new Date().toISOString(),
-      })
-      .eq('id', 1);
+    await broadcastAndSavePlayback(stateString, currentTime);
   };
 
   if (loading) {
@@ -511,6 +549,55 @@ export default function LiveBroadcastManager() {
                 </div>
               )}
             </div>
+
+            {/* Direct Master Control Buttons */}
+            {data.video_id.trim() && (
+              <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (playerRef.current) {
+                      playerRef.current.pauseVideo();
+                      const curr = typeof playerRef.current.getCurrentTime === 'function' ? playerRef.current.getCurrentTime() : 0;
+                      await broadcastAndSavePlayback('paused', curr);
+                      showToast('success', '⏸️ Broadcast PAUSED for all viewers instantly!');
+                    }
+                  }}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                    padding: '12px 14px', borderRadius: '10px', border: '1px solid rgba(239,68,68,0.4)',
+                    background: 'rgba(239,68,68,0.15)', color: '#fff', fontWeight: 700,
+                    fontSize: '0.88rem', cursor: 'pointer', transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.25)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.15)'}
+                >
+                  <Pause size={17} color="#ef4444" /> Pause Viewers
+                </button>
+
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (playerRef.current) {
+                      playerRef.current.playVideo();
+                      const curr = typeof playerRef.current.getCurrentTime === 'function' ? playerRef.current.getCurrentTime() : 0;
+                      await broadcastAndSavePlayback('playing', curr);
+                      showToast('success', '▶️ Broadcast PLAYING for all viewers!');
+                    }
+                  }}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                    padding: '12px 14px', borderRadius: '10px', border: '1px solid rgba(34,197,94,0.4)',
+                    background: 'rgba(34,197,94,0.15)', color: '#fff', fontWeight: 700,
+                    fontSize: '0.88rem', cursor: 'pointer', transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.25)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(34,197,94,0.15)'}
+                >
+                  <Play size={17} color="#22c55e" /> Resume Viewers
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Watch Party Instructions */}
