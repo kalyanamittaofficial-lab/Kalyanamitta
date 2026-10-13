@@ -8,7 +8,7 @@ import {
 import { supabase } from '../../utils/supabase';
 
 export default function TeamManager() {
-  const { userRole, showToast, openConfirmModal } = useOutletContext();
+  const { userRole, showToast, openConfirmModal } = useOutletContext() || {};
   const [teamMembers, setTeamMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [targetUid, setTargetUid] = useState('');
