@@ -125,8 +125,19 @@ export default function Notices() {
                          border: '1px solid', borderColor: item.type === 'live' ? 'rgba(140, 21, 21, 0.2)' : 'var(--glass-border)',
                          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
                        }}>
-                          <span style={{ fontSize: '1rem', fontWeight: '700', color: item.type === 'live' ? '#8c1515' : 'var(--primary)', letterSpacing: '2px' }}>SEP</span>
-                          <span style={{ fontSize: '3.5rem', fontWeight: '300', fontFamily: 'var(--font-serif)', color: 'var(--text-main)', lineHeight: 1, marginTop: '8px' }}>{item.date.split('-')[2]}</span>
+                          <span style={{ fontSize: '1rem', fontWeight: '700', color: item.type === 'live' ? '#8c1515' : 'var(--primary)', letterSpacing: '2px' }}>
+                            {(() => {
+                              const d = new Date(item.date);
+                              const m = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+                              return !isNaN(d.getTime()) ? m[d.getMonth()] : 'DATE';
+                            })()}
+                          </span>
+                          <span style={{ fontSize: '3.5rem', fontWeight: '300', fontFamily: 'var(--font-serif)', color: 'var(--text-main)', lineHeight: 1, marginTop: '8px' }}>
+                            {(() => {
+                              const d = new Date(item.date);
+                              return !isNaN(d.getTime()) ? String(d.getDate()).padStart(2, '0') : (item.date ? item.date.slice(-2) : '01');
+                            })()}
+                          </span>
                        </div>
                     ) : (
                       <div style={{ position: 'relative', width: '100%', height: '160px', overflow: 'hidden', border: '1px solid var(--glass-border)' }}>
