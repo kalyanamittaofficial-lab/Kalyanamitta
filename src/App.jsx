@@ -127,7 +127,6 @@ function App() {
         </Route>
         {/* Standalone Fullscreen Routes */}
         <Route path="/read/:bookId" element={<BookReader />} />
-        <Route path="/live" element={<Live />} />
       </Routes>
       </React.Suspense>
     </BrowserRouter>

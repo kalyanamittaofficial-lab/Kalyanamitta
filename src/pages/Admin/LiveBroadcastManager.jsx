@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../utils/supabase';
-import { Radio, Save, Clock, Video, User, FileText, AlignLeft, CheckCircle, AlertCircle, Loader2, Eye } from 'lucide-react';
+import { Radio, Save, Clock, Video, User, FileText, AlignLeft, CheckCircle, AlertCircle, Loader2, Eye, ExternalLink, Copy } from 'lucide-react';
 import YouTube from 'react-youtube';
 
 const INITIAL_DATA = {
@@ -213,10 +213,10 @@ export default function LiveBroadcastManager() {
   const handlePlayerStateChange = async (event) => {
     const ytState = event.data;
     // 1 = playing, 2 = paused, 0 = ended, 3 = buffering
-    if (ytState !== 1 && ytState !== 2 && ytState !== 0) return;
+    if (ytState !== 1 && ytState !== 2 && ytState !== 0 && ytState !== 3) return;
 
-    const stateString = ytState === 1 || ytState === 3 ? 'playing' : 'paused';
-    const currentTime = event.target.getCurrentTime();
+    const stateString = (ytState === 1 || ytState === 3) ? 'playing' : 'paused';
+    const currentTime = typeof event.target.getCurrentTime === 'function' ? event.target.getCurrentTime() : 0;
 
     await supabase
       .from('live_broadcast')
@@ -257,13 +257,53 @@ export default function LiveBroadcastManager() {
       )}
 
       {/* Header */}
-      <div style={{ marginBottom: '40px', borderBottom: '1px solid var(--glass-border)', paddingBottom: '20px' }}>
-        <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '2rem', margin: '0 0 8px 0' }}>
-          <Radio size={32} color="var(--primary)" /> Live Broadcast Control Panel
-        </h2>
-        <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '1rem' }}>
-          Manage live streams, watch-party sync, scheduled countdowns, and all viewer-facing content.
-        </p>
+      <div style={{ marginBottom: '40px', borderBottom: '1px solid var(--glass-border)', paddingBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+        <div>
+          <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '2rem', margin: '0 0 8px 0' }}>
+            <Radio size={32} color="var(--primary)" /> Live Broadcast Control Panel
+          </h2>
+          <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '1rem' }}>
+            Manage live streams, watch-party sync, scheduled countdowns, and all viewer-facing content.
+          </p>
+        </div>
+
+        {/* Quick Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button
+            onClick={() => {
+              const liveUrl = `${window.location.origin}/live`;
+              if (navigator.clipboard) {
+                navigator.clipboard.writeText(liveUrl);
+                showToast('success', 'Live link copied to clipboard!');
+              }
+            }}
+            title="Copy live stream link for WhatsApp/Facebook"
+            style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              background: 'rgba(255,255,255,0.06)', border: '1px solid var(--glass-border)',
+              color: 'var(--text-main)', padding: '10px 16px', borderRadius: '10px',
+              fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
+            }}
+          >
+            <Copy size={16} /> Copy Link
+          </button>
+
+          <a
+            href="/live"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Open viewer page in a new tab"
+            style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              background: 'rgba(140,21,21,0.25)', border: '1px solid rgba(140,21,21,0.4)',
+              color: '#fff', padding: '10px 18px', borderRadius: '10px',
+              fontSize: '0.88rem', fontWeight: 600, textDecoration: 'none',
+              transition: 'all 0.2s',
+            }}
+          >
+            <ExternalLink size={16} /> Open Viewer Page
+          </a>
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '40px' }}>

@@ -18,19 +18,28 @@ export default function LiveChat({ isOpen, onClose, viewerCount = 0 }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [sending, setSending] = useState(false);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
   const messagesEndRef = useRef(null);
+  const scrollContainerRef = useRef(null);
   const channelRef = useRef(null);
 
   // Scroll to bottom smoothly
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setShouldAutoScroll(true);
+  };
+
+  const handleContainerScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    const isAtBottom = scrollHeight - scrollTop - clientHeight < 120;
+    setShouldAutoScroll(isAtBottom);
   };
 
   useEffect(() => {
-    if (isOpen) {
-      scrollToBottom();
+    if (isOpen && shouldAutoScroll) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, isOpen]);
+  }, [messages, isOpen, shouldAutoScroll]);
 
   // Auth & Profile initialization
   useEffect(() => {
@@ -364,6 +373,8 @@ export default function LiveChat({ isOpen, onClose, viewerCount = 0 }) {
 
       {/* ── Messages List ── */}
       <div
+        ref={scrollContainerRef}
+        onScroll={handleContainerScroll}
         className="live-chat-scroll"
         style={{
           flex: 1,
@@ -373,6 +384,7 @@ export default function LiveChat({ isOpen, onClose, viewerCount = 0 }) {
           flexDirection: 'column',
           gap: '12px',
           scrollBehavior: 'smooth',
+          position: 'relative',
         }}
       >
         {messages.length === 0 ? (
@@ -458,6 +470,33 @@ export default function LiveChat({ isOpen, onClose, viewerCount = 0 }) {
           })
         )}
         <div ref={messagesEndRef} />
+        {!shouldAutoScroll && messages.length > 5 && (
+          <button
+            onClick={scrollToBottom}
+            style={{
+              position: 'sticky',
+              bottom: '8px',
+              alignSelf: 'center',
+              background: 'var(--primary)',
+              color: '#fff',
+              border: 'none',
+              padding: '6px 14px',
+              borderRadius: '20px',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 4px 14px rgba(0,0,0,0.5)',
+              fontFamily: 'var(--font-sinhala)',
+              zIndex: 10,
+              transition: 'all 0.2s',
+            }}
+          >
+            පහළට යන්න ↓
+          </button>
+        )}
       </div>
 
       {/* ── Quick Reactions Bar ── */}

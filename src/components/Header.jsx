@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Menu, X, Sun, Moon } from 'lucide-react';
+import { Menu, X, Sun, Moon, Radio } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../utils/supabase';
@@ -514,6 +514,34 @@ export default function Header() {
               overflowY: 'auto'
             }}
           >
+            {/* Mobile Live Broadcast Item */}
+            <div style={{ paddingBottom: '20px', borderBottom: `1px solid ${borderColor}` }}>
+              <a
+                href="/live"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setIsMenuOpen(false)}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  background: isLiveGlobal ? 'rgba(220, 38, 38, 0.12)' : 'rgba(255, 255, 255, 0.05)',
+                  border: `1px solid ${isLiveGlobal ? 'rgba(220, 38, 38, 0.35)' : borderColor}`,
+                  padding: '14px 20px', borderRadius: '14px', textDecoration: 'none',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <Radio size={20} color={isLiveGlobal ? '#dc2626' : textMuted} />
+                  <span style={{ fontFamily: 'var(--font-sinhala)', fontSize: '1.15rem', fontWeight: 700, color: isLiveGlobal ? '#dc2626' : textColor }}>
+                    {isLiveGlobal ? 'සජීවී විකාශය නරඹන්න' : 'සජීවී විකාශය'}
+                  </span>
+                </div>
+                {isLiveGlobal && (
+                  <span style={{ background: '#dc2626', color: '#fff', fontSize: '0.75rem', fontWeight: 800, padding: '4px 10px', borderRadius: '12px', letterSpacing: '0.05em' }}>
+                    LIVE
+                  </span>
+                )}
+              </a>
+            </div>
+
             {allNavItems.map((item) => (
               <div key={item.name} style={{ borderBottom: `1px solid ${borderColor}`, padding: '24px 0' }}>
                 {item.isMegaMenu ? (

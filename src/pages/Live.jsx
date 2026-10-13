@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Radio, Eye, X, FileText, Clock, Download, MessageSquare } from 'lucide-react';
+import { Radio, Eye, X, FileText, Clock, Download, MessageSquare, Volume2, VolumeX, Maximize, Minimize } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../utils/supabase';
@@ -23,6 +23,8 @@ export default function Live() {
   const [pdfUrl, setPdfUrl] = useState('');
   const [timeRemaining, setTimeRemaining] = useState('');
   const [joined, setJoined] = useState(isWebView);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // ─── Watch-Party sync state ───
   const playerRef = useRef(null);
@@ -30,6 +32,62 @@ export default function Live() {
   const [currentVideoTime, setCurrentVideoTime] = useState(0);
   const [lastSyncTime, setLastSyncTime] = useState(null);
   const [startSeconds, setStartSeconds] = useState(0);
+
+  // Fullscreen state listener
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+  };
+
+  const toggleMute = () => {
+    if (!playerRef.current) return;
+    try {
+      if (isMuted) {
+        playerRef.current.unMute();
+        setIsMuted(false);
+      } else {
+        playerRef.current.mute();
+        setIsMuted(true);
+      }
+    } catch (err) {
+      console.warn('Mute toggle error:', err);
+    }
+  };
+
+  const handleJoin = () => {
+    setJoined(true);
+    if (playerRef.current) {
+      try {
+        playerRef.current.unMute();
+        setIsMuted(false);
+        const elapsed = (playbackState === 'playing' && lastSyncTime)
+          ? Math.floor((Date.now() - new Date(lastSyncTime).getTime()) / 1000)
+          : 0;
+        const targetTime = currentVideoTime + elapsed;
+        playerRef.current.seekTo(targetTime, true);
+        if (playbackState === 'playing') {
+          playerRef.current.playVideo();
+        } else {
+          playerRef.current.pauseVideo();
+        }
+      } catch (err) {
+        console.warn('Join player trigger error:', err);
+      }
+    }
+  };
 
   // ─── Real-time live viewer count via Supabase Presence ───
   const [viewerCount, setViewerCount] = useState(1);
@@ -135,6 +193,32 @@ export default function Live() {
     }
   }, [playbackState, currentVideoTime, lastSyncTime]);
 
+  // ─── Periodic drift catch-up for running stream ───
+  useEffect(() => {
+    if (!isLive || playbackState !== 'playing' || !playerRef.current) return;
+
+    const interval = setInterval(() => {
+      if (!playerRef.current || typeof playerRef.current.getCurrentTime !== 'function') return;
+      try {
+        const elapsed = lastSyncTime
+          ? Math.floor((Date.now() - new Date(lastSyncTime).getTime()) / 1000)
+          : 0;
+        const targetTime = currentVideoTime + elapsed;
+        const actualTime = playerRef.current.getCurrentTime();
+
+        // If viewer drifts behind by more than 3.5 seconds, resync smoothly
+        if (Math.abs(actualTime - targetTime) > 3.5) {
+          playerRef.current.seekTo(targetTime, true);
+          playerRef.current.playVideo();
+        }
+      } catch (err) {
+        // Player state transition, safe to ignore
+      }
+    }, 6000);
+
+    return () => clearInterval(interval);
+  }, [isLive, playbackState, currentVideoTime, lastSyncTime]);
+
   // ─── Countdown timer ───
   useEffect(() => {
     if (isLive || !nextScheduledTime) return;
@@ -210,10 +294,31 @@ export default function Live() {
                 rel: 0,
                 modestbranding: 1,
                 playsinline: 1,
+                origin: typeof window !== 'undefined' ? window.location.origin : undefined,
                 start: Math.floor(startSeconds),
               },
             }}
-            onReady={(e) => { playerRef.current = e.target; }}
+            onReady={(e) => {
+              playerRef.current = e.target;
+              if (joined || isWebView) {
+                try {
+                  e.target.unMute();
+                  setIsMuted(false);
+                  const elapsed = (playbackState === 'playing' && lastSyncTime)
+                    ? Math.floor((Date.now() - new Date(lastSyncTime).getTime()) / 1000)
+                    : 0;
+                  const targetTime = currentVideoTime + elapsed;
+                  e.target.seekTo(targetTime, true);
+                  if (playbackState === 'playing') {
+                    e.target.playVideo();
+                  } else {
+                    e.target.pauseVideo();
+                  }
+                } catch (err) {
+                  console.warn('Player onReady trigger notice:', err);
+                }
+              }
+            }}
             style={{ width: '100%', height: '100%', border: 'none' }}
           />
         ) : (
@@ -338,7 +443,57 @@ export default function Live() {
               </div>
 
               {/* Right: Actions, Live Badge & Viewer Count */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+                {/* Audio Mute/Unmute Toggle Button */}
+                <button
+                  onClick={toggleMute}
+                  title={isMuted ? "Unmute Audio" : "Mute Audio"}
+                  style={{
+                    pointerEvents: 'auto',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '50%',
+                    background: isMuted ? 'rgba(220, 38, 38, 0.25)' : 'rgba(255, 255, 255, 0.1)',
+                    border: `1px solid ${isMuted ? 'rgba(220, 38, 38, 0.4)' : 'rgba(255, 255, 255, 0.15)'}`,
+                    color: '#fff',
+                    cursor: 'pointer',
+                    backdropFilter: 'blur(10px)',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = isMuted ? 'rgba(220, 38, 38, 0.4)' : 'rgba(255, 255, 255, 0.2)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = isMuted ? 'rgba(220, 38, 38, 0.25)' : 'rgba(255, 255, 255, 0.1)'; }}
+                >
+                  {isMuted ? <VolumeX size={17} color="#ef4444" /> : <Volume2 size={17} />}
+                </button>
+
+                {/* Fullscreen Toggle Button */}
+                <button
+                  onClick={toggleFullscreen}
+                  title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+                  style={{
+                    pointerEvents: 'auto',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '50%',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: '#fff',
+                    cursor: 'pointer',
+                    backdropFilter: 'blur(10px)',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; }}
+                >
+                  {isFullscreen ? <Minimize size={17} /> : <Maximize size={17} />}
+                </button>
+
                 {/* Chat Toggle Button */}
                 <button
                   onClick={() => setIsChatOpen((prev) => !prev)}
@@ -489,7 +644,7 @@ export default function Live() {
               </p>
             )}
             <button
-              onClick={() => setJoined(true)}
+              onClick={handleJoin}
               style={{
                 background: '#8c1515', color: '#fff', border: 'none',
                 padding: 'clamp(14px, 3vw, 20px) clamp(28px, 5vw, 48px)',
