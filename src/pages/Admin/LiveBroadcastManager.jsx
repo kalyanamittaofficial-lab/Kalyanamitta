@@ -1,6 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { supabase } from '../../utils/supabase';
-import { Radio, Save, Clock, Video, User, FileText, AlignLeft, CheckCircle, AlertCircle, Loader2, Eye, ExternalLink, Copy, Play, Pause } from 'lucide-react';
+import {
+  Radio, Save, Clock, Video, User, FileText,
+  AlignLeft, CheckCircle, AlertCircle, Loader2,
+  Eye, ExternalLink, Copy, Play, Pause, RefreshCw,
+  Sparkles, Check, Globe
+} from 'lucide-react';
 import YouTube from 'react-youtube';
 
 const INITIAL_DATA = {
@@ -15,80 +21,27 @@ const INITIAL_DATA = {
   current_video_time: 0,
 };
 
-function InputField({ label, icon, children, hint }) {
-  return (
-    <div>
-      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-main)', marginBottom: '8px', letterSpacing: '0.02em' }}>
-        {icon} {label}
-      </label>
-      {children}
-      {hint && <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '6px', lineHeight: 1.5 }}>{hint}</p>}
-    </div>
-  );
-}
+// Helper: Auto-extract 11-character YouTube video ID from any format
+function extractYouTubeId(urlOrId) {
+  if (!urlOrId) return '';
+  const trimmed = urlOrId.trim();
+  // If it's already an 11-char ID
+  if (/^[A-Za-z0-9_-]{11}$/.test(trimmed)) return trimmed;
 
-function TextInput({ value, onChange, placeholder, type = 'text' }) {
-  const [focused, setFocused] = useState(false);
-  return (
-    <input
-      type={type}
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
-      style={{
-        width: '100%',
-        padding: '12px 16px',
-        borderRadius: '10px',
-        border: `1px solid ${focused ? 'var(--primary)' : 'var(--glass-border)'}`,
-        background: 'rgba(0,0,0,0.15)',
-        color: 'var(--text-main)',
-        fontSize: '1rem',
-        outline: 'none',
-        transition: 'border-color 0.2s',
-        boxSizing: 'border-box',
-      }}
-    />
-  );
-}
-
-function TextareaInput({ value, onChange, placeholder, rows = 3 }) {
-  const [focused, setFocused] = useState(false);
-  return (
-    <textarea
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      rows={rows}
-      onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
-      style={{
-        width: '100%',
-        padding: '12px 16px',
-        borderRadius: '10px',
-        border: `1px solid ${focused ? 'var(--primary)' : 'var(--glass-border)'}`,
-        background: 'rgba(0,0,0,0.15)',
-        color: 'var(--text-main)',
-        fontSize: '1rem',
-        outline: 'none',
-        transition: 'border-color 0.2s',
-        resize: 'vertical',
-        fontFamily: 'inherit',
-        boxSizing: 'border-box',
-      }}
-    />
-  );
+  // Match youtube.com/watch?v=ID, youtu.be/ID, youtube.com/live/ID, youtube.com/embed/ID
+  const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|live)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+  const match = trimmed.match(regExp);
+  return match ? match[1] : trimmed;
 }
 
 export default function LiveBroadcastManager() {
+  const { userRole, showToast, openConfirmModal } = useOutletContext();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState(null); // { type: 'success'|'error', message }
   const [data, setData] = useState(INITIAL_DATA);
   const [activeViewerCount, setActiveViewerCount] = useState(0);
+  const [rawVideoInput, setRawVideoInput] = useState('');
   const playerRef = useRef(null);
-
   const syncChannelRef = useRef(null);
 
   // Real-time live viewer presence
@@ -106,7 +59,7 @@ export default function LiveBroadcastManager() {
       })
       .subscribe();
 
-    // WebSocket Broadcast Channel for instant sub-50ms sync to all viewers
+    // WebSocket Broadcast Channel for sub-50ms sync to all viewers
     const syncChannel = supabase.channel('live_stream_sync_room', {
       config: { broadcast: { self: false } },
     });
@@ -119,105 +72,122 @@ export default function LiveBroadcastManager() {
     };
   }, []);
 
-  // Show toast then auto-hide
-  const showToast = (type, message) => {
-    setToast({ type, message });
-    setTimeout(() => setToast(null), 4000);
-  };
-
-  const set = (key) => (e) => setData((prev) => ({ ...prev, [key]: e.target.value }));
-
+  // Fetch broadcast settings
   useEffect(() => {
     (async () => {
-      const { data: broadcast, error } = await supabase
-        .from('live_broadcast')
-        .select('*')
-        .eq('id', 1)
-        .single();
+      try {
+        const { data: broadcast, error } = await supabase
+          .from('live_broadcast')
+          .select('*')
+          .eq('id', 1)
+          .single();
 
-      if (error) {
-        showToast('error', 'Failed to load broadcast settings.');
+        if (error) {
+          showToast?.('error', 'Failed to load broadcast settings.');
+          setLoading(false);
+          return;
+        }
+
+        if (broadcast) {
+          const dateObj = broadcast.next_scheduled_time ? new Date(broadcast.next_scheduled_time) : null;
+          const localDateTime = dateObj
+            ? new Date(dateObj.getTime() - dateObj.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+            : '';
+
+          setData({
+            is_live: broadcast.is_live ?? false,
+            video_id: broadcast.video_id || '',
+            next_scheduled_time: localDateTime,
+            next_title: broadcast.next_title || '',
+            sermon_title: broadcast.sermon_title || '',
+            speaker_name: broadcast.speaker_name || '',
+            description: broadcast.description || '',
+            pdf_url: broadcast.pdf_url || '',
+            current_video_time: broadcast.current_video_time || 0,
+          });
+          setRawVideoInput(broadcast.video_id || '');
+        }
+      } catch (err) {
+        showToast?.('error', err.message);
+      } finally {
         setLoading(false);
-        return;
       }
-
-      if (broadcast) {
-        const dateObj = broadcast.next_scheduled_time ? new Date(broadcast.next_scheduled_time) : null;
-        const localDateTime = dateObj
-          ? new Date(dateObj.getTime() - dateObj.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
-          : '';
-
-        setData({
-          is_live: broadcast.is_live ?? false,
-          video_id: broadcast.video_id || '',
-          next_scheduled_time: localDateTime,
-          next_title: broadcast.next_title || '',
-          sermon_title: broadcast.sermon_title || '',
-          speaker_name: broadcast.speaker_name || '',
-          description: broadcast.description || '',
-          pdf_url: broadcast.pdf_url || '',
-          current_video_time: broadcast.current_video_time || 0,
-        });
-      }
-      setLoading(false);
     })();
-  }, []);
+  }, [showToast]);
+
+  const handleVideoInputChange = (e) => {
+    const val = e.target.value;
+    setRawVideoInput(val);
+    const extracted = extractYouTubeId(val);
+    setData((prev) => ({ ...prev, video_id: extracted }));
+  };
+
+  const setField = (key) => (e) => {
+    setData((prev) => ({ ...prev, [key]: e.target.value }));
+  };
 
   const handleSave = async () => {
-    const normalizedVideoId = data.video_id.trim();
+    const normalizedVideoId = extractYouTubeId(data.video_id.trim());
     const isValidVideoId = normalizedVideoId === '' || /^[A-Za-z0-9_-]{11}$/.test(normalizedVideoId);
 
     if (!isValidVideoId) {
-      showToast('error', 'Please enter a valid 11-character YouTube video ID, or leave it empty.');
+      showToast?.('error', 'Please enter a valid 11-character YouTube video ID, or leave it empty.');
       return;
     }
 
     setSaving(true);
     const isoDate = data.next_scheduled_time ? new Date(data.next_scheduled_time).toISOString() : null;
 
-    const { error } = await supabase
-      .from('live_broadcast')
-      .update({
-        video_id: normalizedVideoId,
-        next_scheduled_time: isoDate,
-        next_title: data.next_title.trim(),
-        sermon_title: data.sermon_title.trim(),
-        speaker_name: data.speaker_name.trim(),
-        description: data.description.trim(),
-        pdf_url: data.pdf_url.trim(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', 1);
+    try {
+      const { error } = await supabase
+        .from('live_broadcast')
+        .update({
+          video_id: normalizedVideoId,
+          next_scheduled_time: isoDate,
+          next_title: data.next_title.trim(),
+          sermon_title: data.sermon_title.trim(),
+          speaker_name: data.speaker_name.trim(),
+          description: data.description.trim(),
+          pdf_url: data.pdf_url.trim(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', 1);
 
-    setSaving(false);
-    if (error) {
-      showToast('error', `Failed to save: ${error.message}`);
-    } else {
-      showToast('success', 'Broadcast settings saved successfully!');
+      if (error) throw error;
+      showToast?.('success', 'Broadcast settings saved successfully!');
+    } catch (err) {
+      showToast?.('error', `Failed to save: ${err.message}`);
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleToggleLive = async () => {
-    const next = !data.is_live;
-    const msg = next
-      ? 'Turn ON live broadcast? All visitors will see the LIVE indicator immediately.'
-      : 'Turn OFF live broadcast? All viewers will be disconnected immediately.';
+  const handleToggleLive = () => {
+    const nextState = !data.is_live;
 
-    if (!window.confirm(msg)) return;
+    openConfirmModal?.({
+      title: nextState ? 'Go Live to All Viewers?' : 'Turn Off Live Broadcast?',
+      message: nextState
+        ? 'Activating Live will spotlight the broadcast on the Home Notice Board and enable the live player for all visitors immediately.'
+        : 'Turning off Live will transition all active viewers to the offline countdown screen.',
+      confirmText: nextState ? 'Turn Live ON' : 'Turn Live OFF',
+      danger: !nextState,
+      onConfirm: async () => {
+        setData((prev) => ({ ...prev, is_live: nextState }));
 
-    setData((prev) => ({ ...prev, is_live: next }));
+        const { error } = await supabase
+          .from('live_broadcast')
+          .update({ is_live: nextState, updated_at: new Date().toISOString() })
+          .eq('id', 1);
 
-    const { error } = await supabase
-      .from('live_broadcast')
-      .update({ is_live: next, updated_at: new Date().toISOString() })
-      .eq('id', 1);
+        if (error) {
+          setData((prev) => ({ ...prev, is_live: !nextState }));
+          throw error;
+        }
 
-    if (error) {
-      setData((prev) => ({ ...prev, is_live: !next })); // revert
-      showToast('error', 'Failed to toggle live status.');
-    } else {
-      showToast('success', next ? '🔴 Broadcast is now LIVE.' : '⚫ Broadcast turned OFF.');
-    }
+        showToast?.('success', nextState ? '🔴 Broadcast is now LIVE for all visitors.' : '⚫ Broadcast turned OFFLINE.');
+      },
+    });
   };
 
   const broadcastAndSavePlayback = async (stateString, currentTime) => {
@@ -231,7 +201,7 @@ export default function LiveBroadcastManager() {
       last_sync_time: new Date().toISOString(),
     };
 
-    // 1. Instant WebSocket broadcast directly to all live viewers (< 50ms)
+    // Instant WebSocket broadcast directly to all live viewers (< 50ms)
     try {
       if (syncChannelRef.current) {
         syncChannelRef.current.send({
@@ -244,7 +214,7 @@ export default function LiveBroadcastManager() {
       console.warn('Realtime sync broadcast notice:', err);
     }
 
-    // 2. Persist to DB for users joining or refreshing later
+    // Persist to DB for users joining or refreshing later
     try {
       await supabase
         .from('live_broadcast')
@@ -266,292 +236,371 @@ export default function LiveBroadcastManager() {
     await broadcastAndSavePlayback(stateString, currentTime);
   };
 
+  const copyLiveLink = () => {
+    const liveUrl = `${window.location.origin}/live`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(liveUrl);
+      showToast?.('success', 'Live stream URL copied to clipboard!');
+    }
+  };
+
   if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh', gap: '12px', color: 'var(--text-muted)' }}>
-        <Loader2 size={32} style={{ animation: 'spin 1s linear infinite' }} />
-        <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
-        <span>Loading broadcast settings…</span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh', gap: '12px', color: 'var(--adm-text-muted)' }}>
+        <Loader2 size={32} className="adm-spin" />
+        <span>Loading broadcast control settings…</span>
       </div>
     );
   }
 
+  const isValidId = data.video_id && /^[A-Za-z0-9_-]{11}$/.test(data.video_id);
+
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '40px', position: 'relative' }}>
-
-      {/* Toast Notification */}
-      {toast && (
-        <div style={{
-          position: 'fixed', top: '24px', right: '24px', zIndex: 9999,
-          display: 'flex', alignItems: 'center', gap: '12px',
-          background: toast.type === 'success' ? 'rgba(22, 163, 74, 0.95)' : 'rgba(220, 38, 38, 0.95)',
-          color: '#fff', padding: '14px 20px', borderRadius: '12px',
-          boxShadow: '0 8px 30px rgba(0,0,0,0.3)', backdropFilter: 'blur(10px)',
-          fontSize: '0.95rem', fontWeight: 500, maxWidth: '360px',
-        }}>
-          {toast.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
-          {toast.message}
-        </div>
-      )}
-
-      {/* Header */}
-      <div style={{ marginBottom: '40px', borderBottom: '1px solid var(--glass-border)', paddingBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+    <div style={{ maxWidth: '1240px', margin: '0 auto', paddingBottom: '50px' }}>
+      {/* ── Studio Header ── */}
+      <div
+        style={{
+          marginBottom: '32px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          flexWrap: 'wrap',
+          gap: '20px',
+        }}
+      >
         <div>
-          <h2 style={{ fontFamily: 'var(--font-serif)', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '2rem', margin: '0 0 8px 0' }}>
-            <Radio size={32} color="var(--primary)" /> Live Broadcast Control Panel
-          </h2>
-          <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '1rem' }}>
-            Manage live streams, watch-party sync, scheduled countdowns, and all viewer-facing content.
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+            <span className={`adm-badge ${data.is_live ? 'adm-badge-live' : 'adm-badge-neutral'}`}>
+              <span
+                style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor' }}
+                className={data.is_live ? 'adm-pulse' : ''}
+              />
+              {data.is_live ? 'BROADCAST IS LIVE' : 'BROADCAST IS OFFLINE'}
+            </span>
+            <span style={{ fontSize: '0.85rem', color: 'var(--adm-text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Eye size={14} /> {activeViewerCount} active {activeViewerCount === 1 ? 'viewer' : 'viewers'}
+            </span>
+          </div>
+
+          <h1 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--adm-text-main)', margin: '0 0 6px 0', letterSpacing: '-0.5px' }}>
+            Live Broadcast Studio
+          </h1>
+          <p style={{ color: 'var(--adm-text-muted)', margin: 0, fontSize: '0.95rem' }}>
+            Master controls for YouTube stream playback, global sync, sermon information, and countdown scheduling.
           </p>
         </div>
 
-        {/* Quick Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <button
-            onClick={() => {
-              const liveUrl = `${window.location.origin}/live`;
-              if (navigator.clipboard) {
-                navigator.clipboard.writeText(liveUrl);
-                showToast('success', 'Live link copied to clipboard!');
-              }
-            }}
-            title="Copy live stream link for WhatsApp/Facebook"
-            style={{
-              display: 'flex', alignItems: 'center', gap: '8px',
-              background: 'rgba(255,255,255,0.06)', border: '1px solid var(--glass-border)',
-              color: 'var(--text-main)', padding: '10px 16px', borderRadius: '10px',
-              fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
-            }}
-          >
-            <Copy size={16} /> Copy Link
+        {/* Quick Share & Preview Buttons */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <button onClick={copyLiveLink} className="adm-btn adm-btn-secondary" title="Copy public live link">
+            <Copy size={16} /> Copy Public Link
           </button>
 
           <a
             href="/live"
             target="_blank"
             rel="noopener noreferrer"
-            title="Open viewer page in a new tab"
-            style={{
-              display: 'flex', alignItems: 'center', gap: '8px',
-              background: 'rgba(140,21,21,0.25)', border: '1px solid rgba(140,21,21,0.4)',
-              color: '#fff', padding: '10px 18px', borderRadius: '10px',
-              fontSize: '0.88rem', fontWeight: 600, textDecoration: 'none',
-              transition: 'all 0.2s',
-            }}
+            className="adm-btn adm-btn-secondary"
+            title="Open viewer live page"
           >
             <ExternalLink size={16} /> Open Viewer Page
           </a>
-        </div>
-      </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '40px' }}>
-
-        {/* ─── LEFT: Control Form ─── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-
-          {/* Master On/Off Toggle */}
-          <div style={{
-            background: 'var(--bg-secondary)', padding: '28px', borderRadius: '16px',
-            border: `1px solid ${data.is_live ? 'rgba(220,38,38,0.35)' : 'var(--glass-border)'}`,
-            transition: 'border-color 0.3s',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <h3 style={{ fontSize: '1.1rem', margin: '0 0 6px 0', color: data.is_live ? '#dc2626' : 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: data.is_live ? '#dc2626' : '#555', boxShadow: data.is_live ? '0 0 8px #dc2626' : 'none', transition: 'all 0.3s' }} />
-                  {data.is_live ? 'BROADCAST IS LIVE' : 'BROADCAST IS OFFLINE'}
-                </h3>
-                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                  {data.is_live
-                    ? `Global visibility is ON · ${activeViewerCount} live ${activeViewerCount === 1 ? 'viewer' : 'viewers'}`
-                    : 'Visitors see the countdown / offline screen.'}
-                </p>
-              </div>
-              {/* Toggle Switch */}
-              <button
-                onClick={handleToggleLive}
-                title={data.is_live ? 'Click to go Offline' : 'Click to go Live'}
-                style={{
-                  position: 'relative', width: '56px', height: '30px', borderRadius: '15px',
-                  border: 'none', cursor: 'pointer', padding: 0,
-                  background: data.is_live ? '#dc2626' : 'rgba(120,120,120,0.3)',
-                  transition: 'background 0.3s', flexShrink: 0,
-                }}
-              >
-                <span style={{
-                  position: 'absolute', top: '4px',
-                  left: data.is_live ? '28px' : '4px',
-                  width: '22px', height: '22px', borderRadius: '50%',
-                  background: '#fff', transition: 'left 0.3s',
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
-                }} />
-              </button>
-            </div>
-          </div>
-
-          {/* Content Settings Card */}
-          <div style={{ background: 'var(--bg-secondary)', padding: '28px', borderRadius: '16px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <h3 style={{ margin: '0 0 4px 0', fontSize: '1.05rem', color: 'var(--text-main)', fontWeight: 700 }}>📺 Video Settings</h3>
-
-            <InputField
-              label="YouTube Video ID"
-              icon={<Video size={16} color="var(--text-muted)" />}
-              hint={<>Extract from the YouTube URL. e.g., youtube.com/watch?v=<strong style={{ color: 'var(--text-main)' }}>jfKfPfyJRdk</strong>. Leave empty if not set yet.</>}
-            >
-              <TextInput
-                value={data.video_id}
-                onChange={set('video_id')}
-                placeholder="e.g., jfKfPfyJRdk"
-              />
-            </InputField>
-
-            <InputField
-              label="Sermon Title (Sinhala) — shown in Live player header"
-              icon={<Radio size={16} color="var(--text-muted)" />}
-              hint="Displayed as the main title inside the immersive live viewer."
-            >
-              <TextInput
-                value={data.sermon_title}
-                onChange={set('sermon_title')}
-                placeholder="e.g., සජීවී ධර්ම දේශනාව"
-              />
-            </InputField>
-
-            <InputField
-              label="Speaker / Monk Name — shown below the title"
-              icon={<User size={16} color="var(--text-muted)" />}
-              hint="Displayed as a subtitle in the live viewer (e.g., monk's name)."
-            >
-              <TextInput
-                value={data.speaker_name}
-                onChange={set('speaker_name')}
-                placeholder="e.g., පූජ්‍ය අගලකඩ සිරිසුමන නාහිමි"
-              />
-            </InputField>
-
-            <InputField
-              label="Session Description"
-              icon={<AlignLeft size={16} color="var(--text-muted)" />}
-              hint="Optional short description shown on the broadcast landing page."
-            >
-              <TextareaInput
-                value={data.description}
-                onChange={set('description')}
-                placeholder="e.g., ධම්මචක්ක සූත්‍රය ඇසුරෙන් ආර්ය අෂ්ටාංගික මාර්ගය..."
-              />
-            </InputField>
-
-            <InputField
-              label="Related PDF / Sutta Download URL"
-              icon={<FileText size={16} color="var(--text-muted)" />}
-              hint="Direct link to a PDF (Google Drive, Supabase Storage, etc.). Shown in the live player as a download button."
-            >
-              <TextInput
-                value={data.pdf_url}
-                onChange={set('pdf_url')}
-                placeholder="https://example.com/sutta.pdf"
-              />
-            </InputField>
-          </div>
-
-          {/* Schedule Card */}
-          <div style={{ background: 'var(--bg-secondary)', padding: '28px', borderRadius: '16px', border: '1px solid var(--glass-border)', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <h3 style={{ margin: '0 0 4px 0', fontSize: '1.05rem', color: 'var(--text-main)', fontWeight: 700 }}>📅 Schedule (Offline Countdown)</h3>
-
-            <InputField
-              label="Next Session Title — shown on countdown screen"
-              icon={<Radio size={16} color="var(--text-muted)" />}
-            >
-              <TextInput
-                value={data.next_title}
-                onChange={set('next_title')}
-                placeholder="e.g., ධම්මචක්ක පවත්තන සූත්‍ර දේශනාව"
-              />
-            </InputField>
-
-            <InputField
-              label="Next Scheduled Date & Time"
-              icon={<Clock size={16} color="var(--text-muted)" />}
-              hint="When offline, a live countdown is shown to visitors until this time."
-            >
-              <TextInput
-                value={data.next_scheduled_time}
-                onChange={set('next_scheduled_time')}
-                type="datetime-local"
-              />
-            </InputField>
-          </div>
-
-          {/* Save Button */}
           <button
             onClick={handleSave}
             disabled={saving}
-            style={{
-              background: saving ? 'rgba(140,21,21,0.5)' : 'var(--primary)',
-              color: '#fff', border: 'none', padding: '16px 24px',
-              borderRadius: '12px', fontWeight: 700, fontSize: '1rem',
-              display: 'flex', justifyContent: 'center', alignItems: 'center',
-              gap: '10px', cursor: saving ? 'not-allowed' : 'pointer',
-              boxShadow: saving ? 'none' : '0 4px 14px rgba(140,21,21,0.4)',
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={e => { if (!saving) e.currentTarget.style.transform = 'translateY(-2px)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
+            className="adm-btn adm-btn-primary"
+            style={{ padding: '11px 22px' }}
           >
-            {saving
-              ? <><Loader2 size={20} style={{ animation: 'spin 1s linear infinite' }} /> Saving…</>
-              : <><Save size={20} /> Save All Settings</>
-            }
+            {saving ? (
+              <><Loader2 size={16} className="adm-spin" /> Saving…</>
+            ) : (
+              <><Save size={16} /> Save All Settings</>
+            )}
           </button>
         </div>
+      </div>
 
-        {/* ─── RIGHT: Master Preview Player ─── */}
+      {/* ── Studio Main Layout ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))', gap: '32px' }}>
+        
+        {/* ── LEFT COLUMN: Configuration Forms ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          <div style={{ background: 'var(--bg-secondary)', padding: '28px', borderRadius: '16px', border: '1px solid var(--glass-border)', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <h3 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Video size={20} color="var(--text-muted)" /> Master Preview Player
+
+          {/* Master Live Switch Card */}
+          <div
+            className="adm-card"
+            style={{
+              background: data.is_live
+                ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(20, 20, 24, 0.95) 100%)'
+                : 'var(--adm-bg-card)',
+              border: `1px solid ${data.is_live ? 'rgba(239, 68, 68, 0.4)' : 'var(--adm-border)'}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '24px 28px',
+            }}
+          >
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                <span className={`adm-badge ${data.is_live ? 'adm-badge-live' : 'adm-badge-neutral'}`}>
+                  {data.is_live ? 'GLOBAL STREAM ACTIVE' : 'OFFLINE MODE'}
+                </span>
+              </div>
+              <h3 style={{ margin: '0 0 4px 0', fontSize: '1.15rem', color: 'var(--adm-text-main)', fontWeight: 700 }}>
+                Master Broadcast Status
               </h3>
+              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--adm-text-muted)' }}>
+                {data.is_live
+                  ? 'All site visitors currently see the LIVE beacon and synchronized stream.'
+                  : 'Visitors currently see the offline screen and countdown.'}
+              </p>
+            </div>
+
+            {/* Toggle Switch */}
+            <button
+              onClick={handleToggleLive}
+              title={data.is_live ? 'Click to turn offline' : 'Click to go live'}
+              style={{
+                position: 'relative',
+                width: '64px',
+                height: '34px',
+                borderRadius: '17px',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+                background: data.is_live ? 'var(--adm-live)' : 'rgba(255, 255, 255, 0.15)',
+                transition: 'background 0.25s ease',
+                flexShrink: 0,
+              }}
+            >
+              <span
+                style={{
+                  position: 'absolute',
+                  top: '4px',
+                  left: data.is_live ? '34px' : '4px',
+                  width: '26px',
+                  height: '26px',
+                  borderRadius: '50%',
+                  background: '#fff',
+                  transition: 'left 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                }}
+              />
+            </button>
+          </div>
+
+          {/* Video Stream Settings */}
+          <div className="adm-card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ borderBottom: '1px solid var(--adm-border)', paddingBottom: '14px' }}>
+              <h3 style={{ margin: '0 0 4px 0', fontSize: '1.1rem', color: 'var(--adm-text-main)', fontWeight: 700 }}>
+                1. Stream & YouTube Configuration
+              </h3>
+              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--adm-text-muted)' }}>
+                Paste any YouTube URL or 11-character video ID.
+              </p>
+            </div>
+
+            {/* Smart Video ID Input */}
+            <div className="adm-input-group">
+              <label className="adm-label">
+                <Video size={16} color="var(--adm-primary)" />
+                YouTube Video ID or Full Link
+              </label>
+              <input
+                type="text"
+                className="adm-input"
+                placeholder="e.g. https://www.youtube.com/watch?v=jfKfPfyJRdk or jfKfPfyJRdk"
+                value={rawVideoInput}
+                onChange={handleVideoInputChange}
+              />
+              {data.video_id && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', marginTop: '4px' }}>
+                  {isValidId ? (
+                    <span style={{ color: 'var(--adm-success)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Check size={14} /> Active Video ID: <strong style={{ color: '#fff' }}>{data.video_id}</strong>
+                    </span>
+                  ) : (
+                    <span style={{ color: 'var(--adm-live)' }}>
+                      ⚠️ Invalid ID detected ({data.video_id}). Must be 11 characters.
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Sermon Title */}
+            <div className="adm-input-group">
+              <label className="adm-label">
+                <Radio size={16} color="var(--adm-primary)" />
+                Sermon Title (Sinhala) — Header Title
+              </label>
+              <input
+                type="text"
+                className="adm-input"
+                placeholder="e.g. සිද්ධියට එළඹීමම ප්‍රමාණවත් | අකම්පිත"
+                value={data.sermon_title}
+                onChange={setField('sermon_title')}
+                style={{ fontFamily: 'var(--adm-font-sinhala)' }}
+              />
+            </div>
+
+            {/* Speaker Monk */}
+            <div className="adm-input-group">
+              <label className="adm-label">
+                <User size={16} color="var(--adm-primary)" />
+                Venerable Speaker (Monk Name)
+              </label>
+              <input
+                type="text"
+                className="adm-input"
+                placeholder="e.g. පූජ්‍ය ගොතටුවේ රේවත හිමි"
+                value={data.speaker_name}
+                onChange={setField('speaker_name')}
+                style={{ fontFamily: 'var(--adm-font-sinhala)' }}
+              />
+            </div>
+
+            {/* Description */}
+            <div className="adm-input-group">
+              <label className="adm-label">
+                <AlignLeft size={16} color="var(--adm-primary)" />
+                Sermon Excerpt / Sutta Description
+              </label>
+              <textarea
+                rows={3}
+                className="adm-textarea"
+                placeholder="දේශනාව පිළිබඳ කෙටි හැඳින්වීමක්..."
+                value={data.description}
+                onChange={setField('description')}
+                style={{ fontFamily: 'var(--adm-font-sinhala)', lineHeight: 1.6 }}
+              />
+            </div>
+
+            {/* PDF URL */}
+            <div className="adm-input-group">
+              <label className="adm-label">
+                <FileText size={16} color="var(--adm-primary)" />
+                Related Sutta PDF Download URL (Optional)
+              </label>
+              <input
+                type="url"
+                className="adm-input"
+                placeholder="https://drive.google.com/... or https://.../sutta.pdf"
+                value={data.pdf_url}
+                onChange={setField('pdf_url')}
+              />
+            </div>
+          </div>
+
+          {/* Schedule Settings */}
+          <div className="adm-card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ borderBottom: '1px solid var(--adm-border)', paddingBottom: '14px' }}>
+              <h3 style={{ margin: '0 0 4px 0', fontSize: '1.1rem', color: 'var(--adm-text-main)', fontWeight: 700 }}>
+                2. Offline Schedule & Countdown
+              </h3>
+              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--adm-text-muted)' }}>
+                Displayed to visitors on `/live` when the stream is offline.
+              </p>
+            </div>
+
+            <div className="adm-input-group">
+              <label className="adm-label">
+                <Clock size={16} color="var(--adm-warning)" />
+                Next Scheduled Sermon Title
+              </label>
+              <input
+                type="text"
+                className="adm-input"
+                placeholder="e.g. ධම්මචක්ක පවත්තන සූත්‍ර දේශනාව"
+                value={data.next_title}
+                onChange={setField('next_title')}
+                style={{ fontFamily: 'var(--adm-font-sinhala)' }}
+              />
+            </div>
+
+            <div className="adm-input-group">
+              <label className="adm-label">
+                <Clock size={16} color="var(--adm-warning)" />
+                Next Scheduled Date & Time
+              </label>
+              <input
+                type="datetime-local"
+                className="adm-input"
+                value={data.next_scheduled_time}
+                onChange={setField('next_scheduled_time')}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* ── RIGHT COLUMN: Master Preview Player Studio ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          
+          <div className="adm-card" style={{ padding: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', background: 'rgba(255,255,255,0.04)', padding: '4px 10px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid var(--glass-border)' }}>
-                  <Eye size={13} color="var(--primary)" />
-                  <strong style={{ color: 'var(--text-main)' }}>{activeViewerCount}</strong> {activeViewerCount === 1 ? 'Viewer' : 'Viewers'}
+                <Video size={18} color="var(--adm-primary)" />
+                <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--adm-text-main)', fontWeight: 700 }}>
+                  Master Video Player
+                </h3>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="adm-badge adm-badge-info" style={{ padding: '3px 8px', fontSize: '0.72rem' }}>
+                  <Eye size={12} /> {activeViewerCount} Viewers
                 </span>
                 {data.is_live && (
-                  <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#dc2626', background: 'rgba(220,38,38,0.1)', padding: '4px 10px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid rgba(220,38,38,0.3)' }}>
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#dc2626', animation: 'pulse 2s infinite' }} />
-                    SYNC ACTIVE
-                    <style>{`@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }`}</style>
+                  <span className="adm-badge adm-badge-live" style={{ padding: '3px 8px', fontSize: '0.72rem' }}>
+                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'currentColor' }} className="adm-pulse" />
+                    SYNC ON
                   </span>
                 )}
               </div>
             </div>
 
-            <div style={{ background: '#000', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--glass-border)' }}>
-              {data.video_id.trim() ? (
+            {/* Video Player Box */}
+            <div
+              style={{
+                background: '#000',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                border: '1px solid var(--adm-border)',
+                position: 'relative',
+              }}
+            >
+              {isValidId ? (
                 <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
                   <YouTube
                     videoId={data.video_id.trim()}
                     opts={{
                       width: '100%',
                       height: '100%',
-                      playerVars: { autoplay: 0, controls: 1, modestbranding: 1, rel: 0, start: Math.floor(data.current_video_time || 0) },
+                      playerVars: {
+                        autoplay: 0,
+                        controls: 1,
+                        modestbranding: 1,
+                        rel: 0,
+                        start: Math.floor(data.current_video_time || 0),
+                      },
                     }}
-                    onReady={(e) => { playerRef.current = e.target; }}
+                    onReady={(e) => {
+                      playerRef.current = e.target;
+                    }}
                     onStateChange={handlePlayerStateChange}
                     style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
                   />
                 </div>
               ) : (
-                <div style={{ padding: '80px 20px', textAlign: 'center', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-                  <Video size={48} style={{ opacity: 0.2 }} />
-                  <span style={{ fontSize: '0.95rem' }}>Enter a Video ID above to see the preview</span>
+                <div style={{ padding: '70px 20px', textAlign: 'center', color: 'var(--adm-text-muted)' }}>
+                  <Video size={44} style={{ opacity: 0.25, margin: '0 auto 12px auto' }} />
+                  <div style={{ fontSize: '0.95rem' }}>Enter a valid YouTube Video ID or URL to initialize the player</div>
                 </div>
               )}
             </div>
 
             {/* Direct Master Control Buttons */}
-            {data.video_id.trim() && (
+            {isValidId && (
               <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <button
                   type="button"
@@ -560,19 +609,13 @@ export default function LiveBroadcastManager() {
                       playerRef.current.pauseVideo();
                       const curr = typeof playerRef.current.getCurrentTime === 'function' ? playerRef.current.getCurrentTime() : 0;
                       await broadcastAndSavePlayback('paused', curr);
-                      showToast('success', '⏸️ Broadcast PAUSED for all viewers instantly!');
+                      showToast?.('success', '⏸️ Broadcast PAUSED for all viewers instantly!');
                     }
                   }}
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                    padding: '12px 14px', borderRadius: '10px', border: '1px solid rgba(239,68,68,0.4)',
-                    background: 'rgba(239,68,68,0.15)', color: '#fff', fontWeight: 700,
-                    fontSize: '0.88rem', cursor: 'pointer', transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.25)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.15)'}
+                  className="adm-btn adm-btn-danger"
+                  style={{ padding: '12px', borderRadius: '10px' }}
                 >
-                  <Pause size={17} color="#ef4444" /> Pause Viewers
+                  <Pause size={17} /> Pause Viewers
                 </button>
 
                 <button
@@ -582,69 +625,83 @@ export default function LiveBroadcastManager() {
                       playerRef.current.playVideo();
                       const curr = typeof playerRef.current.getCurrentTime === 'function' ? playerRef.current.getCurrentTime() : 0;
                       await broadcastAndSavePlayback('playing', curr);
-                      showToast('success', '▶️ Broadcast PLAYING for all viewers!');
+                      showToast?.('success', '▶️ Broadcast PLAYING for all viewers!');
                     }
                   }}
                   style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                    padding: '12px 14px', borderRadius: '10px', border: '1px solid rgba(34,197,94,0.4)',
-                    background: 'rgba(34,197,94,0.15)', color: '#fff', fontWeight: 700,
-                    fontSize: '0.88rem', cursor: 'pointer', transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    padding: '12px',
+                    borderRadius: '10px',
+                    border: '1px solid rgba(16, 185, 129, 0.4)',
+                    background: 'rgba(16, 185, 129, 0.15)',
+                    color: '#34d399',
+                    fontWeight: 700,
+                    cursor: 'pointer',
                   }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.25)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(34,197,94,0.15)'}
                 >
-                  <Play size={17} color="#22c55e" /> Resume Viewers
+                  <Play size={17} /> Resume Viewers
                 </button>
               </div>
             )}
           </div>
 
-          {/* Watch Party Instructions */}
-          <div style={{ background: 'var(--bg-secondary)', padding: '24px 28px', borderRadius: '16px', border: '1px solid var(--glass-border)', fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.8 }}>
-            <p style={{ margin: '0 0 14px 0', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
-              🎭 How Watch-Party Sync Works
-            </p>
-            <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <li>You (Admin) control the Master player above. Viewers cannot pause, seek, or rewind.</li>
-              <li>When you <strong>pause</strong>, all viewers are instantly paused at the same frame.</li>
-              <li>When you <strong>seek</strong>, all viewers jump to that exact timestamp.</li>
-              <li>Viewers joining late automatically sync to your current playback position.</li>
-              <li>Toggle <strong>LIVE ON</strong> only after setting the Video ID and saving settings.</li>
+          {/* Sync Behavior Instructions */}
+          <div className="adm-card" style={{ fontSize: '0.88rem', color: 'var(--adm-text-muted)', lineHeight: 1.7 }}>
+            <h4 style={{ margin: '0 0 10px 0', color: 'var(--adm-text-main)', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Sparkles size={16} color="var(--adm-gold)" /> How Master Watch-Party Sync Operates
+            </h4>
+            <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <li>
+                You control the Master player. Viewers have no individual play/pause control on their screen.
+              </li>
+              <li>
+                When you <strong>pause</strong> or <strong>seek</strong>, all viewers receive sub-50ms WebSocket commands to sync immediately.
+              </li>
+              <li>
+                Late-joining visitors automatically start playing from your current broadcast second.
+              </li>
+              <li>
+                Ensure you click <strong>Save All Settings</strong> before flipping the Live switch ON.
+              </li>
             </ul>
           </div>
 
-          {/* Live Viewer Content Preview */}
-          <div style={{ background: 'var(--bg-secondary)', padding: '24px 28px', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
-            <p style={{ margin: '0 0 16px 0', fontWeight: 700, color: 'var(--text-main)', fontSize: '1rem' }}>
-              👁 What Viewers See
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.9rem' }}>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <span style={{ color: 'var(--text-muted)', minWidth: '120px' }}>Player Title:</span>
-                <span style={{ color: 'var(--text-main)', fontWeight: 500 }}>{data.sermon_title || <em style={{ opacity: 0.5 }}>Not set</em>}</span>
-              </div>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <span style={{ color: 'var(--text-muted)', minWidth: '120px' }}>Speaker:</span>
-                <span style={{ color: 'var(--text-main)', fontWeight: 500 }}>{data.speaker_name || <em style={{ opacity: 0.5 }}>Not set</em>}</span>
-              </div>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <span style={{ color: 'var(--text-muted)', minWidth: '120px' }}>PDF Download:</span>
-                <span style={{ color: data.pdf_url ? '#16a34a' : 'var(--text-muted)', fontWeight: 500 }}>
-                  {data.pdf_url ? '✓ URL configured' : <em style={{ opacity: 0.5 }}>Not set (button hidden)</em>}
+          {/* Live Viewer Telemetry Inspector */}
+          <div className="adm-card">
+            <h4 style={{ margin: '0 0 14px 0', color: 'var(--adm-text-main)', fontSize: '0.95rem' }}>
+              Current Broadcast Metadata Summary
+            </h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.85rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--adm-border-subtle)', paddingBottom: '8px' }}>
+                <span style={{ color: 'var(--adm-text-dim)' }}>Title:</span>
+                <span style={{ color: 'var(--adm-text-main)', fontWeight: 600, fontFamily: 'var(--adm-font-sinhala)' }}>
+                  {data.sermon_title || '—'}
                 </span>
               </div>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <span style={{ color: 'var(--text-muted)', minWidth: '120px' }}>Countdown:</span>
-                <span style={{ color: 'var(--text-main)', fontWeight: 500 }}>
-                  {data.next_title && data.next_scheduled_time
-                    ? `${data.next_title} @ ${new Date(data.next_scheduled_time).toLocaleString()}`
-                    : <em style={{ opacity: 0.5 }}>Not configured</em>
-                  }
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--adm-border-subtle)', paddingBottom: '8px' }}>
+                <span style={{ color: 'var(--adm-text-dim)' }}>Speaker:</span>
+                <span style={{ color: 'var(--adm-gold)', fontWeight: 600, fontFamily: 'var(--adm-font-sinhala)' }}>
+                  {data.speaker_name || '—'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--adm-border-subtle)', paddingBottom: '8px' }}>
+                <span style={{ color: 'var(--adm-text-dim)' }}>PDF Notes:</span>
+                <span style={{ color: data.pdf_url ? 'var(--adm-success)' : 'var(--adm-text-dim)' }}>
+                  {data.pdf_url ? 'Configured' : 'None'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--adm-text-dim)' }}>Live Stream Status:</span>
+                <span style={{ color: data.is_live ? 'var(--adm-live)' : 'var(--adm-text-muted)', fontWeight: 700 }}>
+                  {data.is_live ? '🔴 BROADCAST ACTIVE' : '⚫ OFFLINE'}
                 </span>
               </div>
             </div>
           </div>
+
         </div>
 
       </div>
