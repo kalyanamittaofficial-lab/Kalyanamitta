@@ -80,9 +80,10 @@ export default function LifeCycleHero() {
       <style>
         {`
           .lc-wrapper {
-             background-color: var(--bg-main);
+             background-color: transparent;
              color: var(--text-main);
              width: 100%;
+             position: relative;
           }
           .lc-hero-container {
              display: flex;
@@ -91,6 +92,7 @@ export default function LifeCycleHero() {
              max-width: 1600px;
              margin: 0 auto;
              position: relative;
+             align-items: flex-start;
           }
           .lc-text-side {
              width: 100%;
@@ -101,15 +103,17 @@ export default function LifeCycleHero() {
           }
           .lc-tv-side {
              width: 100%;
-             height: 40vh;
+             height: 42vh;
+             position: -webkit-sticky;
              position: sticky;
-             top: 60px; /* offset for mobile header */
+             top: 85px; /* offset for fixed header */
              z-index: 20;
              padding: 1rem;
              display: flex;
              align-items: center;
              justify-content: center;
-             background-color: var(--bg-main);
+             align-self: flex-start;
+             background-color: transparent;
           }
           
           .lc-tv-box {
@@ -208,13 +212,17 @@ export default function LifeCycleHero() {
              }
              .lc-text-side {
                 width: 50%;
-                padding: 10rem 4rem;
+                padding: 8rem 4rem 16rem;
              }
              .lc-tv-side {
                 width: 50%;
-                height: calc(100vh - 80px);
-                top: 80px;
-                padding: 2rem 3rem 2rem 1rem;
+                height: calc(100vh - 120px);
+                max-height: 850px;
+                position: -webkit-sticky;
+                position: sticky;
+                top: 95px;
+                align-self: flex-start;
+                padding: 1.5rem 2.5rem 1.5rem 1rem;
              }
              .lc-tv-box {
                 border-radius: 40px;
