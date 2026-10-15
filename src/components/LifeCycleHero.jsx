@@ -80,10 +80,11 @@ export default function LifeCycleHero() {
       <style>
         {`
           .lc-wrapper {
-             background-color: transparent;
+             background-color: var(--bg-main);
              color: var(--text-main);
              width: 100%;
              position: relative;
+             transition: background-color 0.3s ease, color 0.3s ease;
           }
           .lc-hero-container {
              display: flex;
@@ -113,18 +114,19 @@ export default function LifeCycleHero() {
              align-items: center;
              justify-content: center;
              align-self: flex-start;
-             background-color: transparent;
+             background-color: var(--bg-main);
+             transition: background-color 0.3s ease;
           }
           
           .lc-tv-box {
              width: 100%;
              height: 100%;
-             background-color: #020202;
+             background-color: #050508;
              border-radius: 20px;
              position: relative;
              overflow: hidden;
-             box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6);
-             border: 1px solid rgba(255,255,255,0.05);
+             box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.4);
+             border: 1px solid var(--glass-border);
           }
           
           .lc-intro {
@@ -140,7 +142,8 @@ export default function LifeCycleHero() {
           .lc-intro p {
              font-family: var(--font-sinhala);
              font-size: 1.2rem;
-             opacity: 0.7;
+             color: var(--text-main);
+             opacity: 0.9;
              line-height: 1.6;
           }
 
@@ -159,6 +162,7 @@ export default function LifeCycleHero() {
              font-family: var(--font-serif);
              font-size: 2.2rem;
              font-weight: 700;
+             color: var(--text-main);
              margin-bottom: 1.5rem;
              display: flex;
              align-items: baseline;
@@ -167,13 +171,14 @@ export default function LifeCycleHero() {
           .lc-stage-num {
              color: var(--primary);
              font-size: 1.5rem;
-             opacity: 0.5;
-             font-weight: 400;
+             opacity: 0.9;
+             font-weight: 700;
           }
           .lc-stage p {
              font-family: var(--font-sinhala);
              font-size: 1.2rem;
-             opacity: 0.8;
+             color: var(--text-main);
+             opacity: 0.9;
              line-height: 1.6;
           }
 
@@ -187,6 +192,7 @@ export default function LifeCycleHero() {
              font-family: var(--font-serif);
              font-size: 3rem;
              font-weight: 700;
+             color: var(--text-main);
              margin-bottom: 1rem;
           }
           .lc-climax .lc-highlight {
@@ -200,7 +206,8 @@ export default function LifeCycleHero() {
           .lc-climax p {
              font-family: var(--font-sinhala);
              font-size: 1.2rem;
-             opacity: 0.7;
+             color: var(--text-main);
+             opacity: 0.9;
              line-height: 1.6;
              max-width: 600px;
           }
@@ -223,6 +230,7 @@ export default function LifeCycleHero() {
                 top: 95px;
                 align-self: flex-start;
                 padding: 1.5rem 2.5rem 1.5rem 1rem;
+                background-color: var(--bg-main);
              }
              .lc-tv-box {
                 border-radius: 40px;
@@ -308,7 +316,7 @@ export default function LifeCycleHero() {
                   initial={{ opacity: 0 }}
                   whileInView={{ opacity: 1 }}
                   viewport={{ once: false, margin: "-20% 0px -20% 0px" }}
-                  style={{ marginBottom: '3rem', fontSize: '1.8rem', opacity: 0.8 }}
+                  style={{ marginBottom: '3rem', fontSize: '1.8rem', color: 'var(--text-main)', opacity: 0.9 }}
                >
                  එසේ නම්... අපි මුලින්ම සෙවිය යුත්තේ එය නොවේද?
                </motion.p>
