@@ -105,8 +105,8 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="other-chantings" element={<OtherChantings />} />
           <Route path="library/:id" element={<ResourceLanding />} />
-          <Route path="login" element={<Login />} />
-          <Route path="register" element={<Register />} />
+          <Route path="login" element={<ComingSoon defaultTitle="පරිශීලක පිවිසුම (Login)" defaultSubtitle="පරිශීලක ගිණුම් සහ පිවිසුම් පද්ධතිය (Login & Signup) දැනට සංවර්ධනය වෙමින් පවතී." defaultCategory="පරිශීලක සේවා" />} />
+          <Route path="register" element={<ComingSoon defaultTitle="නව ගිණුමක් ලියාපදිංචිය (Sign Up)" defaultSubtitle="පරිශීලක ලියාපදිංචි පද්ධතිය (Registration) දැනට සංවර්ධනය වෙමින් පවතී." defaultCategory="පරිශීලක සේවා" />} />
           <Route 
             path="onboarding" 
             element={

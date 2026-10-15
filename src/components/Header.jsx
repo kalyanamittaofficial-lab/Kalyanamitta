@@ -379,15 +379,39 @@ export default function Header() {
               {isDark ? <Sun size={22} /> : <Moon size={22} />}
             </button>
 
-            {session ? (
-              <Link to="/dashboard" className="premium-desktop-nav" style={{ color: textColor, textDecoration: 'none', fontWeight: 600, fontSize: '0.95rem' }}>
-                Profile
-              </Link>
-            ) : (
-              <Link to="/login" className="premium-desktop-nav" style={{ color: textColor, textDecoration: 'none', fontWeight: 600, fontSize: '0.95rem' }}>
-                Login
-              </Link>
-            )}
+            {/* Desktop Auth - Temporary Coming Soon */}
+            <div 
+              className="premium-desktop-nav" 
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '6px', 
+                color: textMuted, 
+                fontWeight: 600, 
+                fontSize: '0.92rem',
+                cursor: 'default',
+                userSelect: 'none',
+                opacity: 0.85
+              }}
+              title="පරිශීලක පිවිසුම ඉදිරියේදී සක්‍රිය වනු ඇත (Login Coming Soon)"
+            >
+              <span>Login</span>
+              <span 
+                style={{
+                  fontSize: '0.65rem',
+                  fontWeight: '700',
+                  padding: '2px 6px',
+                  borderRadius: '8px',
+                  background: isDark ? 'rgba(212, 175, 55, 0.15)' : 'rgba(140, 21, 21, 0.08)',
+                  color: isDark ? '#d4af37' : 'var(--primary)',
+                  border: isDark ? '1px solid rgba(212, 175, 55, 0.3)' : '1px solid rgba(140, 21, 21, 0.2)',
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase'
+                }}
+              >
+                Soon
+              </span>
+            </div>
 
             <button 
               className="premium-mobile-toggle"
@@ -441,13 +465,49 @@ export default function Header() {
                             <div key={i} style={{ color: textMuted, fontSize: '1.05rem', fontFamily: 'var(--font-sinhala)', display: 'flex', justifyContent: 'space-between', opacity: 0.5, fontWeight: 400 }}>
                               {item.name}
                             </div>
+                          ) : item.isPlaceholder ? (
+                            <div 
+                              key={i}
+                              style={{
+                                color: textMuted,
+                                fontSize: '1.05rem',
+                                fontFamily: 'var(--font-sinhala)',
+                                fontWeight: 500,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: '12px',
+                                cursor: 'default',
+                                opacity: 0.8,
+                                userSelect: 'none'
+                              }}
+                            >
+                              <span>{item.name}</span>
+                              <span 
+                                style={{
+                                  fontSize: '0.72rem',
+                                  fontWeight: '700',
+                                  padding: '2px 8px',
+                                  borderRadius: '10px',
+                                  background: isDark ? 'rgba(212, 175, 55, 0.15)' : 'rgba(140, 21, 21, 0.08)',
+                                  color: isDark ? '#d4af37' : 'var(--primary)',
+                                  border: isDark ? '1px solid rgba(212, 175, 55, 0.3)' : '1px solid rgba(140, 21, 21, 0.2)',
+                                  letterSpacing: '0.04em',
+                                  textTransform: 'uppercase',
+                                  fontFamily: 'sans-serif',
+                                  whiteSpace: 'nowrap'
+                                }}
+                              >
+                                Coming Soon
+                              </span>
+                            </div>
                           ) : (
                             <Link 
                               key={i}
                               to={item.path}
                               onClick={() => setActiveMegaMenu(null)}
                               style={{
-                                color: item.isPlaceholder ? textMuted : textColor,
+                                color: textColor,
                                 textDecoration: 'none',
                                 fontSize: '1.05rem',
                                 fontFamily: 'var(--font-sinhala)',
@@ -463,30 +523,11 @@ export default function Header() {
                                 e.currentTarget.style.transform = 'translateX(4px)';
                               }}
                               onMouseLeave={(e) => { 
-                                e.currentTarget.style.color = item.isPlaceholder ? textMuted : textColor; 
+                                e.currentTarget.style.color = textColor; 
                                 e.currentTarget.style.transform = 'translateX(0)';
                               }}
                             >
                               <span>{item.name}</span>
-                              {item.isPlaceholder && (
-                                <span 
-                                  style={{
-                                    fontSize: '0.72rem',
-                                    fontWeight: '700',
-                                    padding: '2px 8px',
-                                    borderRadius: '10px',
-                                    background: isDark ? 'rgba(212, 175, 55, 0.15)' : 'rgba(140, 21, 21, 0.08)',
-                                    color: isDark ? '#d4af37' : 'var(--primary)',
-                                    border: isDark ? '1px solid rgba(212, 175, 55, 0.3)' : '1px solid rgba(140, 21, 21, 0.2)',
-                                    letterSpacing: '0.04em',
-                                    textTransform: 'uppercase',
-                                    fontFamily: 'sans-serif',
-                                    whiteSpace: 'nowrap'
-                                  }}
-                                >
-                                  Coming Soon
-                                </span>
-                              )}
                             </Link>
                           )
                         ))}
@@ -576,25 +617,25 @@ export default function Header() {
                         <div key={cIdx}>
                           <div style={{ fontSize: '1rem', color: textMuted, fontWeight: 700, marginBottom: '16px' }}>{col.title}</div>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                            {col.items.map(subItem => (
-                              <Link 
-                                key={subItem.name} 
-                                to={subItem.path}
-                                onClick={() => setIsMenuOpen(false)}
-                                style={{ 
-                                  color: subItem.isPlaceholder ? textMuted : textColor, 
-                                  textDecoration: 'none', 
-                                  fontSize: '1.1rem', 
-                                  fontFamily: 'var(--font-sinhala)', 
-                                  fontWeight: 500,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'space-between',
-                                  gap: '12px'
-                                }}
-                              >
-                                <span>{subItem.name}</span>
-                                {subItem.isPlaceholder && (
+                            {col.items.map((subItem, sIdx) => (
+                              subItem.isPlaceholder ? (
+                                <div 
+                                  key={sIdx}
+                                  style={{ 
+                                    color: textMuted, 
+                                    fontSize: '1.1rem', 
+                                    fontFamily: 'var(--font-sinhala)', 
+                                    fontWeight: 500,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    gap: '12px',
+                                    cursor: 'default',
+                                    opacity: 0.8,
+                                    userSelect: 'none'
+                                  }}
+                                >
+                                  <span>{subItem.name}</span>
                                   <span 
                                     style={{
                                       fontSize: '0.68rem',
@@ -612,8 +653,27 @@ export default function Header() {
                                   >
                                     Coming Soon
                                   </span>
-                                )}
-                              </Link>
+                                </div>
+                              ) : (
+                                <Link 
+                                  key={sIdx} 
+                                  to={subItem.path}
+                                  onClick={() => setIsMenuOpen(false)}
+                                  style={{ 
+                                    color: textColor, 
+                                    textDecoration: 'none', 
+                                    fontSize: '1.1rem', 
+                                    fontFamily: 'var(--font-sinhala)', 
+                                    fontWeight: 500,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    gap: '12px'
+                                  }}
+                                >
+                                  <span>{subItem.name}</span>
+                                </Link>
+                              )
                             ))}
                           </div>
                         </div>
@@ -632,25 +692,39 @@ export default function Header() {
               </div>
             ))}
             
-            {/* Mobile Auth Link */}
+            {/* Mobile Auth Link - Temporarily Coming Soon */}
             <div style={{ padding: '32px 0' }}>
-              {session ? (
-                <Link 
-                  to="/dashboard" 
-                  onClick={() => setIsMenuOpen(false)} 
-                  style={{ display: 'block', fontSize: '1.4rem', fontWeight: 700, color: 'var(--primary)', textDecoration: 'none' }}
+              <div 
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  fontSize: '1.25rem', 
+                  fontWeight: 700, 
+                  color: textMuted, 
+                  fontFamily: 'var(--font-sinhala)',
+                  cursor: 'default',
+                  userSelect: 'none',
+                  opacity: 0.85
+                }}
+              >
+                <span>Login / පිවිසෙන්න</span>
+                <span 
+                  style={{
+                    fontSize: '0.72rem',
+                    fontWeight: '700',
+                    padding: '3px 8px',
+                    borderRadius: '8px',
+                    background: isDark ? 'rgba(212, 175, 55, 0.15)' : 'rgba(140, 21, 21, 0.08)',
+                    color: isDark ? '#d4af37' : 'var(--primary)',
+                    border: isDark ? '1px solid rgba(212, 175, 55, 0.3)' : '1px solid rgba(140, 21, 21, 0.2)',
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase'
+                  }}
                 >
-                  Profile / ගිණුම
-                </Link>
-              ) : (
-                <Link 
-                  to="/login" 
-                  onClick={() => setIsMenuOpen(false)} 
-                  style={{ display: 'block', fontSize: '1.4rem', fontWeight: 700, color: 'var(--primary)', textDecoration: 'none' }}
-                >
-                  Login / පිවිසෙන්න
-                </Link>
-              )}
+                  Coming Soon
+                </span>
+              </div>
             </div>
           </motion.div>
         )}
