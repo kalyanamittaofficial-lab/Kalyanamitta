@@ -453,7 +453,10 @@ export default function Header() {
                                 fontFamily: 'var(--font-sinhala)',
                                 fontWeight: 500,
                                 transition: 'color 0.2s, transform 0.2s',
-                                display: 'inline-block'
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: '12px'
                               }}
                               onMouseEnter={(e) => { 
                                 e.currentTarget.style.color = 'var(--primary)'; 
@@ -464,7 +467,26 @@ export default function Header() {
                                 e.currentTarget.style.transform = 'translateX(0)';
                               }}
                             >
-                              {item.name}
+                              <span>{item.name}</span>
+                              {item.isPlaceholder && (
+                                <span 
+                                  style={{
+                                    fontSize: '0.72rem',
+                                    fontWeight: '700',
+                                    padding: '2px 8px',
+                                    borderRadius: '10px',
+                                    background: isDark ? 'rgba(212, 175, 55, 0.15)' : 'rgba(140, 21, 21, 0.08)',
+                                    color: isDark ? '#d4af37' : 'var(--primary)',
+                                    border: isDark ? '1px solid rgba(212, 175, 55, 0.3)' : '1px solid rgba(140, 21, 21, 0.2)',
+                                    letterSpacing: '0.04em',
+                                    textTransform: 'uppercase',
+                                    fontFamily: 'sans-serif',
+                                    whiteSpace: 'nowrap'
+                                  }}
+                                >
+                                  Coming Soon
+                                </span>
+                              )}
                             </Link>
                           )
                         ))}
@@ -559,9 +581,38 @@ export default function Header() {
                                 key={subItem.name} 
                                 to={subItem.path}
                                 onClick={() => setIsMenuOpen(false)}
-                                style={{ color: textColor, textDecoration: 'none', fontSize: '1.1rem', fontFamily: 'var(--font-sinhala)', fontWeight: 500 }}
+                                style={{ 
+                                  color: subItem.isPlaceholder ? textMuted : textColor, 
+                                  textDecoration: 'none', 
+                                  fontSize: '1.1rem', 
+                                  fontFamily: 'var(--font-sinhala)', 
+                                  fontWeight: 500,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  gap: '12px'
+                                }}
                               >
-                                {subItem.name}
+                                <span>{subItem.name}</span>
+                                {subItem.isPlaceholder && (
+                                  <span 
+                                    style={{
+                                      fontSize: '0.68rem',
+                                      fontWeight: '700',
+                                      padding: '2px 8px',
+                                      borderRadius: '10px',
+                                      background: isDark ? 'rgba(212, 175, 55, 0.15)' : 'rgba(140, 21, 21, 0.08)',
+                                      color: isDark ? '#d4af37' : 'var(--primary)',
+                                      border: isDark ? '1px solid rgba(212, 175, 55, 0.3)' : '1px solid rgba(140, 21, 21, 0.2)',
+                                      letterSpacing: '0.04em',
+                                      textTransform: 'uppercase',
+                                      fontFamily: 'sans-serif',
+                                      whiteSpace: 'nowrap'
+                                    }}
+                                  >
+                                    Coming Soon
+                                  </span>
+                                )}
                               </Link>
                             ))}
                           </div>

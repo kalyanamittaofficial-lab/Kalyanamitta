@@ -26,6 +26,7 @@ import HistoryChapter from './pages/HistoryChapter';
 import Sasanaya from './pages/Sasanaya';
 import Notices from './pages/Notices';
 import PracticeGuide from './pages/PracticeGuide';
+import ComingSoon from './pages/ComingSoon';
 
 const AdminLayout = React.lazy(() => import('./pages/Admin/AdminLayout'));
 const AdminDashboard = React.lazy(() => import('./pages/Admin/AdminDashboard'));
@@ -122,6 +123,20 @@ function App() {
               </ProtectedRoute>
             } 
           />
+
+          {/* Under Development / Coming Soon Pages */}
+          <Route path="layman" element={<ComingSoon />} />
+          <Route path="wellness" element={<ComingSoon />} />
+          <Route path="discussions" element={<ComingSoon />} />
+          <Route path="pali" element={<ComingSoon />} />
+          <Route path="sutta" element={<ComingSoon />} />
+          <Route path="pdf-books" element={<ComingSoon />} />
+          <Route path="magazines" element={<ComingSoon />} />
+          <Route path="temple-dev" element={<ComingSoon />} />
+          <Route path="kids" element={<ComingSoon />} />
+          <Route path="social" element={<ComingSoon />} />
+          <Route path="coming-soon" element={<ComingSoon />} />
+
           {/* Fallback */}
           <Route path="*" element={<Home />} />
         </Route>
