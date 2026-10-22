@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronRight, BookOpen } from 'lucide-react';
+import { ChevronRight, BookOpen, MessageCircle, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function HeroSection() {
@@ -18,6 +18,62 @@ export default function HeroSection() {
     }}>
       {/* Left side text and buttons */}
       <div className="text-center-mobile" style={{ maxWidth: '600px', display: 'flex', flexDirection: 'column' }}>
+        {/* Community WhatsApp Portal Entry Pill */}
+        <div 
+          onClick={() => navigate('/join')}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '7px 16px',
+            marginBottom: '20px',
+            background: 'rgba(140, 21, 21, 0.05)',
+            border: '1px solid rgba(140, 21, 21, 0.2)',
+            borderRadius: '999px',
+            cursor: 'pointer',
+            width: 'fit-content',
+            transition: 'all 0.25s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = '#25D366';
+            e.currentTarget.style.background = 'rgba(37, 211, 102, 0.08)';
+            e.currentTarget.style.transform = 'translateY(-2px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(140, 21, 21, 0.2)';
+            e.currentTarget.style.background = 'rgba(140, 21, 21, 0.05)';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+        >
+          <span style={{
+            background: '#25D366',
+            width: '8px',
+            height: '8px',
+            borderRadius: '50%',
+            display: 'inline-block',
+            boxShadow: '0 0 10px #25D366',
+          }} />
+          <span style={{
+            fontSize: '0.85rem',
+            fontWeight: '600',
+            color: 'var(--text-main)',
+            fontFamily: 'var(--font-sinhala)'
+          }}>
+            නිල WhatsApp ධර්ම සාකච්ඡා සමූහයට එක්වන්න
+          </span>
+          <span style={{
+            fontSize: '0.72rem',
+            padding: '2px 8px',
+            background: 'var(--primary)',
+            color: '#fff',
+            borderRadius: '100px',
+            fontWeight: '700',
+            letterSpacing: '0.04em'
+          }}>
+            JOIN NOW →
+          </span>
+        </div>
+
         <h1 style={{
           fontSize: 'clamp(3.5rem, 6vw, 5.5rem)',
           fontWeight: '700',
@@ -64,6 +120,36 @@ export default function HeroSection() {
           onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.transform = 'translateY(0)'; }}
           >
             කල්‍යාණ මිත්‍රත්වය <ChevronRight size={18} />
+          </button>
+          <button 
+            onClick={() => navigate('/join')}
+            style={{
+              background: 'transparent',
+              color: 'var(--text-main)',
+              border: '1px solid var(--border-color)',
+              padding: '16px 28px',
+              borderRadius: '4px',
+              fontSize: '1.05rem',
+              fontWeight: '600',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              fontFamily: 'var(--font-sinhala)',
+            }}
+            onMouseEnter={(e) => { 
+              e.currentTarget.style.borderColor = '#25D366';
+              e.currentTarget.style.color = '#25D366';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseLeave={(e) => { 
+              e.currentTarget.style.borderColor = 'var(--border-color)';
+              e.currentTarget.style.color = 'var(--text-main)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            <MessageCircle size={18} color="#25D366" /> WhatsApp සමූහය
           </button>
         </div>
       </div>

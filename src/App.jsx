@@ -27,6 +27,7 @@ import Sasanaya from './pages/Sasanaya';
 import Notices from './pages/Notices';
 import PracticeGuide from './pages/PracticeGuide';
 import ComingSoon from './pages/ComingSoon';
+import CommunityJoin from './pages/CommunityJoin';
 
 const AdminLayout = React.lazy(() => import('./pages/Admin/AdminLayout'));
 const AdminDashboard = React.lazy(() => import('./pages/Admin/AdminDashboard'));
@@ -34,6 +35,7 @@ const AdminLogin = React.lazy(() => import('./pages/Admin/AdminLogin'));
 const NoticeManager = React.lazy(() => import('./pages/Admin/NoticeManager'));
 const TeamManager = React.lazy(() => import('./pages/Admin/TeamManager'));
 const LiveBroadcastManager = React.lazy(() => import('./pages/Admin/LiveBroadcastManager'));
+const CommunityManager = React.lazy(() => import('./pages/Admin/CommunityManager'));
 
 function ProtectedRoute({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -79,12 +81,15 @@ function App() {
           <Route path="/portal-ops" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="notices" element={<NoticeManager />} />
+            <Route path="community" element={<CommunityManager />} />
             <Route path="team" element={<TeamManager />} />
             <Route path="live" element={<LiveBroadcastManager />} />
           </Route>
 
           {/* STANDALONE IMMERSIVE UI */}
           <Route path="/live" element={<Live />} />
+          <Route path="/join" element={<CommunityJoin />} />
+          <Route path="/community-join" element={<CommunityJoin />} />
 
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />

@@ -3,7 +3,7 @@ import { Outlet, Navigate, Link, useLocation } from 'react-router-dom';
 import { supabase } from '../../utils/supabase';
 import {
   LayoutDashboard, BellRing, Users, LogOut, Radio,
-  ChevronRight, Loader2, Menu, X
+  ChevronRight, Loader2, Menu, X, MessageCircle
 } from 'lucide-react';
 
 export default function AdminLayout() {
@@ -57,6 +57,7 @@ export default function AdminLayout() {
     { name: 'Dashboard',      path: '/portal-ops',         icon: <LayoutDashboard size={18} />, exact: true },
     { name: 'Live Broadcast', path: '/portal-ops/live',    icon: <Radio size={18} /> },
     { name: 'Notices',        path: '/portal-ops/notices', icon: <BellRing size={18} /> },
+    { name: 'WhatsApp Community', path: '/portal-ops/community', icon: <MessageCircle size={18} /> },
     ...(userRole === 'superadmin'
       ? [{ name: 'Team', path: '/portal-ops/team', icon: <Users size={18} /> }]
       : [])
