@@ -13,6 +13,7 @@
   
   --glass-bg: rgba(255, 255, 255, 0.85);
   --glass-border: rgba(0, 0, 0, 0.08);
+  --border-color: rgba(0, 0, 0, 0.08);
   --glass-blur: 16px;
   
   --hover-overlay: rgba(0, 0, 0, 0.04);
@@ -31,6 +32,7 @@
   
   --glass-bg: rgba(28, 25, 23, 0.85);
   --glass-border: rgba(255, 255, 255, 0.08);
+  --border-color: rgba(255, 255, 255, 0.08);
   
   --hover-overlay: rgba(255, 255, 255, 0.04);
   

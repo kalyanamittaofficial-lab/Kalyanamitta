@@ -313,7 +313,7 @@ export default function CommunityManager() {
             <MessageCircle size={14} /> WhatsApp Community Portal
           </div>
           <h1 style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.4rem)', fontWeight: 800, color: '#ffffff', margin: '0 0 6px 0', letterSpacing: '-0.02em' }}>
-            TikTok & WhatsApp සාමාජික කළමනාකරණය
+            WhatsApp ප්‍රජා සාමාජික කළමනාකරණය
           </h1>
           <p style={{ color: '#888', fontSize: '0.92rem', margin: 0 }}>
             Typeform portal හරහා එකතු වූ සාමාජික තොරතුරු, සතිපතා/මාසික සංඛ්‍යාලේඛන සහ Excel බාගත කිරීම් මෙතැනින් සිදු කරන්න.

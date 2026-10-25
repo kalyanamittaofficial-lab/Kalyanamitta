@@ -455,10 +455,17 @@ export default function CommunityJoin() {
           </div>
         </Link>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-          <Sparkles size={16} color="var(--accent-gold)" />
-          <span style={{ fontWeight: 600 }}>TikTok Onboarding</span>
-        </div>
+        <Link to="/" style={{ 
+          fontSize: '0.85rem', 
+          color: 'var(--text-muted)',
+          textDecoration: 'none',
+          padding: '6px 14px',
+          borderRadius: '999px',
+          border: '1px solid var(--border-color)',
+          background: 'var(--bg-secondary)'
+        }}>
+          ප්‍රධාන පිටුවට →
+        </Link>
       </header>
 
       {/* Interactive Main Stage */}
