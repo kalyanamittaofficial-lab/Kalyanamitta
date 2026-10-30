@@ -2,15 +2,25 @@ import React, { useState, useEffect, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { bodhiFactors } from '../data/bodhiFactors';
-import { ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  BookOpen, 
+  Compass, 
+  Sparkles, 
+  CheckCircle2, 
+  ArrowRight,
+  Layers,
+  Award
+} from 'lucide-react';
 
-// Lightweight, High-Performance GPU-friendly Dharma Chakra (0% CPU load)
-const RealisticChakra = memo(() => (
+// Lightweight, High-Performance GPU-friendly Dharma Chakra Seal
+const RealisticChakra = memo(({ size = 120 }) => (
   <svg 
     viewBox="0 0 1000 1000" 
-    width="100%" 
-    height="100%" 
-    style={{ display: 'block', pointerEvents: 'none' }}
+    width={size} 
+    height={size} 
+    style={{ display: 'block', pointerEvents: 'none', filter: 'drop-shadow(0 8px 24px rgba(212, 175, 55, 0.35))' }}
   >
     <defs>
       <linearGradient id="gold-grad-main" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -103,703 +113,726 @@ export default function Path() {
     setViewMode('overview');
   };
 
+  const prevFactor = bodhiFactors.find(f => f.id === (activeId > 1 ? activeId - 1 : bodhiFactors.length));
+  const nextFactor = bodhiFactors.find(f => f.id === (activeId < bodhiFactors.length ? activeId + 1 : 1));
+
   return (
-    <div style={{ background: 'var(--bg-main)', minHeight: '100vh', overflowX: 'clip', transition: 'background-color 0.3s ease, color 0.3s ease' }}>
+    <div style={{ 
+      background: 'var(--bg-main)', 
+      minHeight: '100vh', 
+      overflowX: 'clip', 
+      transition: 'background-color 0.3s ease, color 0.3s ease' 
+    }}>
       <style>{`
-        /* GPU-Accelerated Zero-Lag Rotation */
+        /* Smooth Rotating Chakra */
         @keyframes spinChakraGpu {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
-        .chakra-rotating-element {
-          animation: spinChakraGpu 160s linear infinite;
+        .chakra-rotating-seal {
+          animation: spinChakraGpu 120s linear infinite;
           will-change: transform;
-          transform: translateZ(0);
         }
 
-        .chakra-layout {
-          display: flex;
-          flex-direction: column;
+        /* Responsive Layout Container */
+        .path-container {
           width: 100%;
-          min-height: 100vh;
-          position: relative;
-          padding-bottom: 90px;
+          max-width: 1320px;
+          margin: 0 auto;
+          padding: clamp(36px, 6vh, 56px) 24px 100px;
         }
 
-        /* Dignified Dhamma Header */
-        .path-header {
-          padding: clamp(80px, 11vh, 105px) 24px 16px;
+        /* Noble Dignified Header */
+        .path-header-section {
           text-align: center;
           max-width: 860px;
-          margin: 0 auto;
-          position: relative;
-          z-index: 10;
+          margin: 0 auto 36px;
         }
 
-        .path-eyebrow {
-          font-family: var(--font-sinhala);
-          font-size: 0.85rem;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: var(--primary);
-          font-weight: 700;
-          margin-bottom: 8px;
-        }
-
-        .path-title {
-          font-family: var(--font-serif);
-          font-size: clamp(2.2rem, 4.2vw, 3.4rem);
-          color: var(--text-main);
-          font-weight: 800;
-          letter-spacing: -0.01em;
-          margin: 0 0 10px 0;
-          line-height: 1.25;
-        }
-
-        .path-divider {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 14px;
-          margin: 10px auto 14px;
-          max-width: 260px;
-        }
-
-        .path-divider-line {
-          flex: 1;
-          height: 1px;
-          background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
-          opacity: 0.6;
-        }
-
-        .path-divider-icon {
-          color: var(--accent-gold);
-          font-size: 1.15rem;
-          line-height: 1;
-        }
-
-        .path-subtitle {
-          font-family: var(--font-sinhala);
-          font-size: clamp(0.95rem, 1.6vw, 1.08rem);
-          color: var(--text-muted);
-          line-height: 1.7;
-          max-width: 680px;
-          margin: 0 auto;
-        }
-
-        /* Two-Column Interactive Layout */
-        .chakra-interactive-area {
-          display: flex;
-          flex-direction: column;
-          width: 100%;
-          max-width: 1380px;
-          margin: 10px auto 0;
-          padding: 0 24px;
-          gap: 40px;
-        }
-
-        @media (min-width: 1024px) {
-          .chakra-interactive-area {
-            flex-direction: row;
-            align-items: flex-start;
-            gap: 48px;
-          }
-        }
-
-        /* Wheel Container (Left Column) */
-        .chakra-wheel-side {
-          width: 100%;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 60px 16px 20px;
-        }
-
-        @media (min-width: 1024px) {
-          .chakra-wheel-side {
-            flex: 0.92;
-            position: sticky;
-            top: 90px;
-            align-self: flex-start;
-            padding: 70px 20px 30px;
-          }
-        }
-
-        .wheel-scaler {
-          position: relative;
-          width: 76vw;
-          height: 76vw;
-          max-width: 380px;
-          max-height: 380px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          filter: drop-shadow(0 15px 35px rgba(196, 152, 79, 0.2));
-        }
-
-        @media (min-width: 1280px) {
-          .wheel-scaler {
-            max-width: 410px;
-            max-height: 410px;
-          }
-        }
-
-        /* Interactive Nodes around the Wheel */
-        .chakra-node {
-          position: absolute;
-          transform: translate(-50%, -50%);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-family: var(--font-serif);
-          font-weight: 800;
-          cursor: pointer;
-          background: var(--bg-main);
-          border: 2.5px solid var(--primary);
-          color: var(--primary);
-          z-index: 50;
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-          width: 48px;
-          height: 48px;
-          font-size: 1.1rem;
-          transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
-          user-select: none;
-        }
-
-        @media (min-width: 1024px) {
-          .chakra-node {
-            width: 54px;
-            height: 54px;
-            font-size: 1.25rem;
-            border-width: 3px;
-          }
-        }
-
-        .chakra-node:hover {
-          transform: translate(-50%, -50%) scale(1.14);
-          background: var(--primary);
-          color: #ffffff;
-          border-color: var(--accent-gold);
-          box-shadow: 0 8px 24px rgba(140, 21, 21, 0.35);
-        }
-
-        .chakra-node.active {
-          background: var(--primary);
-          color: #ffffff;
-          border-color: #d4af37;
-          transform: translate(-50%, -50%) scale(1.2);
-          box-shadow: 0 10px 30px rgba(140, 21, 21, 0.45);
-        }
-
-        .node-pulse-ring {
-          position: absolute;
-          inset: -6px;
-          border-radius: 50%;
-          border: 2px solid #d4af37;
-          opacity: 0.7;
-          animation: nodePulse 2s infinite ease-out;
-          pointer-events: none;
-        }
-
-        @keyframes nodePulse {
-          0% { transform: scale(1); opacity: 0.8; }
-          100% { transform: scale(1.35); opacity: 0; }
-        }
-
-        .node-tooltip {
-          position: absolute;
-          top: 100%;
-          left: 50%;
-          transform: translateX(-50%) translateY(8px);
-          background: rgba(28, 25, 23, 0.94);
-          color: #ffffff;
-          font-family: var(--font-sinhala);
-          font-size: 0.78rem;
-          padding: 4px 10px;
-          border-radius: 6px;
-          white-space: nowrap;
-          pointer-events: none;
-          opacity: 0;
-          transition: opacity 0.15s ease;
-          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-          z-index: 60;
-          border: 1px solid rgba(212, 175, 55, 0.35);
-        }
-
-        .chakra-node:hover .node-tooltip {
-          opacity: 1;
-        }
-
-        /* Sequential Step Controls below the Wheel */
-        .wheel-step-controls {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          width: 100%;
-          max-width: 380px;
-          margin-top: 64px;
-          padding: 10px 16px;
-          background: var(--bg-secondary);
-          border: 1px solid var(--glass-border);
-          border-radius: 40px;
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
-        }
-
-        .step-btn {
+        .path-badge {
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          padding: 8px 14px;
-          border-radius: 20px;
-          background: transparent;
-          border: 1px solid transparent;
-          color: var(--text-main);
-          font-family: var(--font-sinhala);
-          font-size: 0.88rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s;
+          gap: 8px;
+          padding: 6px 16px;
+          border-radius: 999px;
+          background: rgba(196, 152, 79, 0.1);
+          border: 1px solid rgba(196, 152, 79, 0.3);
+          color: var(--accent-gold);
+          font-size: 0.84rem;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          margin-bottom: 14px;
         }
 
-        .step-btn:hover {
-          background: var(--primary);
-          color: #ffffff;
-          border-color: var(--primary);
-        }
-
-        .step-info {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          padding: 0 8px;
-        }
-
-        .step-counter {
+        .path-main-title {
           font-family: var(--font-serif);
-          font-size: 0.95rem;
-          color: var(--text-muted);
+          font-size: clamp(2.4rem, 4.5vw, 3.6rem);
+          color: var(--text-main);
+          font-weight: 800;
+          letter-spacing: -0.02em;
+          margin: 0 0 12px 0;
           line-height: 1.2;
         }
 
-        .step-counter strong {
-          color: var(--primary);
-          font-size: 1.15rem;
+        .path-sub-desc {
+          font-family: var(--font-sinhala);
+          font-size: clamp(0.98rem, 1.6vw, 1.12rem);
+          color: var(--text-muted);
+          line-height: 1.75;
+          max-width: 680px;
+          margin: 0 auto 18px;
         }
 
-        .step-active-name {
+        .path-stats-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 16px;
+          background: var(--bg-secondary);
+          border: 1px solid var(--glass-border);
+          padding: 6px 18px;
+          border-radius: 30px;
+          font-size: 0.85rem;
+          color: var(--text-muted);
+        }
+
+        .path-stats-pill strong {
+          color: var(--primary);
+        }
+
+        /* ── 7-Stage Horizontal Bodhi Track ── */
+        .bodhi-track-wrapper {
+          margin-bottom: 36px;
+          position: relative;
+        }
+
+        .bodhi-track {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          gap: 10px;
+          position: relative;
+          z-index: 2;
+        }
+
+        @media (max-width: 1024px) {
+          .bodhi-track {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            padding-bottom: 12px;
+            gap: 12px;
+            -webkit-overflow-scrolling: touch;
+          }
+          .bodhi-track-item {
+            min-width: 170px;
+            flex-shrink: 0;
+            scroll-snap-align: start;
+          }
+        }
+
+        .bodhi-track-item {
+          background: var(--bg-secondary);
+          border: 1px solid var(--glass-border);
+          border-radius: 14px;
+          padding: 14px 14px;
+          cursor: pointer;
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+          text-align: left;
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          min-height: 88px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        }
+
+        .bodhi-track-item:hover {
+          border-color: rgba(196, 152, 79, 0.5);
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .bodhi-track-item.active {
+          background: var(--primary);
+          border-color: var(--accent-gold);
+          color: #ffffff !important;
+          transform: translateY(-3px);
+          box-shadow: 0 10px 26px rgba(140, 21, 21, 0.32);
+        }
+
+        .bodhi-track-top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 6px;
+        }
+
+        .bodhi-track-num {
+          font-family: var(--font-serif);
+          font-weight: 800;
+          font-size: 0.95rem;
+          color: var(--accent-gold);
+          opacity: 0.9;
+        }
+
+        .bodhi-track-item.active .bodhi-track-num {
+          color: #fef08a;
+        }
+
+        .bodhi-track-chip {
+          font-size: 0.72rem;
+          font-weight: 700;
+          padding: 2px 8px;
+          border-radius: 10px;
+          background: rgba(0, 0, 0, 0.05);
+          color: var(--text-muted);
+        }
+
+        .bodhi-track-item.active .bodhi-track-chip {
+          background: rgba(255, 255, 255, 0.2);
+          color: #ffffff;
+        }
+
+        .bodhi-track-title {
           font-family: var(--font-sinhala);
-          font-size: 0.82rem;
+          font-size: 0.92rem;
           font-weight: 700;
           color: var(--text-main);
-          margin-top: 2px;
-          white-space: nowrap;
+          line-height: 1.35;
+          margin: 0;
         }
 
-        /* Right Content Panel */
-        .chakra-content-panel {
-          flex: 1.25;
-          width: 100%;
-          max-width: 820px;
-          margin: 0 auto;
+        .bodhi-track-item.active .bodhi-track-title {
+          color: #ffffff;
         }
 
-        .content-glass-card {
+        /* ── Main Stage Canvas Card ── */
+        .stage-canvas {
           background: var(--bg-secondary);
           border: 1px solid var(--glass-border);
           border-radius: 24px;
           padding: clamp(24px, 4vw, 44px);
-          box-shadow: 0 16px 44px rgba(0, 0, 0, 0.03);
-          transition: background-color 0.3s ease, border-color 0.3s ease;
+          box-shadow: 0 16px 48px rgba(0, 0, 0, 0.04);
+          position: relative;
         }
 
-        .card-top-bar {
+        /* Stage Header Banner */
+        .stage-header-banner {
           display: flex;
-          align-items: flex-start;
+          align-items: center;
           justify-content: space-between;
-          margin-bottom: 1.5rem;
+          gap: 24px;
+          padding-bottom: 28px;
+          margin-bottom: 32px;
+          border-bottom: 1px solid var(--glass-border);
           flex-wrap: wrap;
-          gap: 12px;
         }
 
-        .factor-count-chip {
+        .stage-meta-info {
+          flex: 1;
+          min-width: 280px;
+        }
+
+        .stage-step-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
           font-size: 0.8rem;
+          font-weight: 700;
           color: var(--primary);
           background: rgba(140, 21, 21, 0.08);
           padding: 4px 12px;
-          border-radius: 12px;
-          font-weight: 700;
-          letter-spacing: 0.04em;
+          border-radius: 20px;
+          margin-bottom: 12px;
         }
 
-        .step-sequence {
-          font-size: 0.82rem;
-          color: var(--text-muted);
-          font-weight: 600;
-        }
-
-        .card-watermark {
-          font-family: var(--font-serif);
-          font-size: clamp(2.5rem, 4vw, 3.8rem);
-          color: var(--primary);
-          opacity: 0.16;
-          line-height: 0.8;
-          font-weight: 300;
-          user-select: none;
-        }
-
-        .card-factor-title {
+        .stage-heading {
           font-family: var(--font-sinhala);
-          font-size: clamp(1.8rem, 3.2vw, 2.4rem);
-          color: var(--text-main);
+          font-size: clamp(1.9rem, 3.2vw, 2.6rem);
           font-weight: 800;
+          color: var(--text-main);
           margin: 0 0 6px 0;
           line-height: 1.25;
         }
 
-        .card-factor-subtitle {
-          margin: 0 0 1.2rem 0;
-          font-size: 0.96rem;
+        .stage-subheading {
+          font-family: var(--font-sinhala);
+          font-size: 1.05rem;
           color: var(--accent-gold);
           font-weight: 600;
-          font-family: var(--font-sinhala);
+          margin: 0 0 14px 0;
         }
 
-        .factor-intro-desc {
+        .stage-description {
           font-family: var(--font-sinhala);
-          font-size: 1.1rem;
-          line-height: 1.85;
+          font-size: 1.08rem;
+          line-height: 1.8;
           color: var(--text-main);
-          opacity: 0.9;
-          margin-bottom: 2rem;
+          opacity: 0.92;
+          margin: 0;
+          max-width: 820px;
         }
 
-        /* Factor Items Grid */
-        .factor-items-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 14px;
-          margin-bottom: 2rem;
+        .stage-seal-wrapper {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 140px;
+          height: 140px;
+          flex-shrink: 0;
+          background: radial-gradient(circle, rgba(196, 152, 79, 0.12) 0%, transparent 70%);
+          border-radius: 50%;
         }
 
-        @media (min-width: 640px) {
-          .factor-items-grid {
-            grid-template-columns: repeat(2, 1fr);
+        @media (max-width: 640px) {
+          .stage-seal-wrapper {
+            display: none;
           }
         }
 
-        .factor-item-card {
-          background: var(--bg-main);
-          border: 1px solid var(--glass-border);
-          border-radius: 14px;
-          padding: 18px 20px;
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .factor-item-card:hover {
-          border-color: rgba(140, 21, 21, 0.35);
-          transform: translateY(-2px);
-          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
-        }
-
-        .factor-item-header {
+        /* View Mode Switcher Tabs */
+        .stage-tabs-row {
           display: flex;
           align-items: center;
-          gap: 10px;
+          justify-content: space-between;
+          margin-bottom: 28px;
+          flex-wrap: wrap;
+          gap: 16px;
         }
 
-        .factor-item-num {
+        .view-toggle-group {
           display: inline-flex;
           align-items: center;
-          justify-content: center;
-          width: 26px;
-          height: 26px;
-          border-radius: 50%;
-          background: rgba(140, 21, 21, 0.08);
-          color: var(--primary);
-          font-size: 0.78rem;
-          font-weight: 700;
-          flex-shrink: 0;
+          background: var(--bg-main);
+          border: 1px solid var(--glass-border);
+          border-radius: 12px;
+          padding: 4px;
         }
 
-        .factor-item-title {
-          font-family: var(--font-sinhala);
-          font-size: 1.1rem;
-          font-weight: 700;
-          color: var(--text-main);
-          margin: 0;
-        }
-
-        .factor-item-desc {
-          font-family: var(--font-sinhala);
-          font-size: 0.95rem;
-          color: var(--text-muted);
-          line-height: 1.55;
-          margin: 0;
-        }
-
-        /* Practice Action CTA */
-        .practice-cta-btn {
-          width: 100%;
-          padding: 16px 24px;
-          background: var(--primary);
-          color: #fff;
-          border: none;
-          border-radius: 14px;
-          font-size: 1.05rem;
-          font-weight: 700;
-          font-family: var(--font-sinhala);
-          cursor: pointer;
-          display: flex;
+        .view-toggle-btn {
+          display: inline-flex;
           align-items: center;
-          justify-content: center;
-          gap: 10px;
-          box-shadow: 0 8px 24px rgba(140, 21, 21, 0.3);
+          gap: 8px;
+          padding: 8px 18px;
+          border-radius: 8px;
+          font-family: var(--font-sinhala);
+          font-size: 0.88rem;
+          font-weight: 600;
+          border: none;
+          background: transparent;
+          color: var(--text-muted);
+          cursor: pointer;
           transition: all 0.2s;
         }
 
-        .practice-cta-btn:hover {
-          filter: brightness(1.1);
-          transform: translateY(-1px);
-          box-shadow: 0 12px 28px rgba(140, 21, 21, 0.4);
+        .view-toggle-btn.active {
+          background: var(--primary);
+          color: #ffffff;
+          box-shadow: 0 2px 10px rgba(140, 21, 21, 0.2);
+        }
+
+        /* ── Factor Items Grid ── */
+        .factor-cards-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 18px;
+          margin-bottom: 36px;
+        }
+
+        .factor-card {
+          background: var(--bg-main);
+          border: 1px solid var(--glass-border);
+          border-radius: 16px;
+          padding: 22px 24px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          transition: all 0.25s ease;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        }
+
+        .factor-card:hover {
+          border-color: rgba(140, 21, 21, 0.35);
+          transform: translateY(-3px);
+          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+        }
+
+        .factor-card-top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 12px;
+        }
+
+        .factor-num-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: rgba(140, 21, 21, 0.08);
+          color: var(--primary);
+          font-size: 0.86rem;
+          font-weight: 800;
+          font-family: var(--font-serif);
+        }
+
+        .factor-card-name {
+          font-family: var(--font-sinhala);
+          font-size: 1.18rem;
+          font-weight: 800;
+          color: var(--text-main);
+          margin: 0 0 8px 0;
+          line-height: 1.35;
+        }
+
+        .factor-card-desc {
+          font-family: var(--font-sinhala);
+          font-size: 0.94rem;
+          color: var(--text-muted);
+          line-height: 1.6;
+          margin: 0 0 16px 0;
+          flex-grow: 1;
+        }
+
+        .factor-card-guide-box {
+          background: var(--bg-secondary);
+          border-left: 3px solid var(--accent-gold);
+          border-radius: 0 8px 8px 0;
+          padding: 10px 14px;
+          font-family: var(--font-sinhala);
+          font-size: 0.86rem;
+          color: var(--text-main);
+          line-height: 1.55;
+          margin-bottom: 16px;
+        }
+
+        .factor-card-cta {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-family: var(--font-sinhala);
+          font-size: 0.88rem;
+          font-weight: 700;
+          color: var(--primary);
+          text-decoration: none;
+          transition: gap 0.2s ease, color 0.2s;
+        }
+
+        .factor-card-cta:hover {
+          gap: 10px;
+          color: var(--primary-hover);
+        }
+
+        /* ── Bottom Stage Navigation Bar ── */
+        .stage-bottom-nav {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding-top: 28px;
+          border-top: 1px solid var(--glass-border);
+          flex-wrap: wrap;
+          gap: 16px;
+        }
+
+        .nav-stage-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          padding: 12px 24px;
+          border-radius: 12px;
+          background: var(--bg-main);
+          border: 1px solid var(--glass-border);
+          color: var(--text-main);
+          font-family: var(--font-sinhala);
+          font-size: 0.94rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .nav-stage-btn:hover {
+          background: var(--primary);
+          color: #ffffff;
+          border-color: var(--primary);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 18px rgba(140, 21, 21, 0.25);
+        }
+
+        .stage-indicator-dots {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .stage-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: var(--glass-border);
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .stage-dot.active {
+          width: 24px;
+          border-radius: 8px;
+          background: var(--primary);
         }
       `}</style>
 
-      <div className="chakra-layout">
+      <div className="path-container">
         
-        {/* ── Dignified Dhamma Header ── */}
-        <header className="path-header">
-          <div className="path-eyebrow">චතුරාර්ය සත්‍යාවබෝධය පිණිස</div>
-          <h1 className="path-title">සත්තිස් බෝධිපාක්ෂික ධර්ම</h1>
-          <div className="path-divider">
-            <span className="path-divider-line" />
-            <span className="path-divider-icon">☸</span>
-            <span className="path-divider-line" />
+        {/* ── 1. Dignified Noble Dhamma Header ── */}
+        <header className="path-header-section">
+          <div className="path-badge">
+            <Sparkles size={14} color="var(--accent-gold)" />
+            <span>චතුරාර්ය සත්‍යාවබෝධය පිණිස</span>
           </div>
-          <p className="path-subtitle">
+
+          <h1 className="path-main-title">
+            සත්තිස් බෝධිපාක්ෂික ධර්ම
+          </h1>
+
+          <p className="path-sub-desc">
             නිවන් මඟ සම්පූර්ණ කිරීම උදෙසා භාග්‍යවතුන් වහන්සේ විසින් දේශනා කර වදාළ උතුම් ධර්මතා 37 ක් වූ අධ්‍යාත්මික පදනම.
           </p>
+
+          <div className="path-stats-pill">
+            <span>ප්‍රධාන අදියර <strong>07</strong></span>
+            <span>·</span>
+            <span>සමස්ත ධර්මතා <strong>37</strong></span>
+            <span>·</span>
+            <span>වත්මන් පියවර <strong>0{activeFactor.id} / 07</strong></span>
+          </div>
         </header>
 
-        {/* ── Main Interactive Section (Side-by-Side on Desktop) ── */}
-        <div className="chakra-interactive-area">
-          
-          {/* LEFT: GPU-Accelerated Sticky Golden Wheel */}
-          <div className="chakra-wheel-side">
-            <div className="wheel-scaler">
-              
-              {/* Pure GPU-accelerated rotating wheel element */}
-              <div 
-                className="chakra-rotating-element" 
-                style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
-              >
-                <RealisticChakra />
-              </div>
-
-              {/* 7 Evenly Spaced Factor Nodes */}
-              {bodhiFactors.map((factor, i) => {
-                const rad = (i * 2 * Math.PI) / 7 - Math.PI / 2;
-                const radiusPercent = 56; 
-                const left = `calc(50% + ${Math.cos(rad) * radiusPercent}%)`;
-                const top = `calc(50% + ${Math.sin(rad) * radiusPercent}%)`;
-                const isActive = activeId === factor.id;
-
-                return (
-                  <button
-                    key={factor.id}
-                    className={`chakra-node ${isActive ? 'active' : ''}`}
-                    style={{ left, top }}
-                    onClick={() => { setActiveId(factor.id); setViewMode('overview'); }}
-                    aria-label={`0${factor.id}. ${factor.title}`}
-                  >
-                    <span>0{factor.id}</span>
-                    {isActive && <span className="node-pulse-ring" />}
-                    <span className="node-tooltip">{factor.title}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Quick Step Controls below the Wheel */}
-            <div className="wheel-step-controls">
-              <button onClick={handlePrev} className="step-btn" title="පෙර ධර්මතාවය" aria-label="පෙර ධර්මතාවය">
-                <ChevronLeft size={18} />
-                <span>පෙර</span>
-              </button>
-              
-              <div className="step-info">
-                <div className="step-counter">
-                  <strong>0{activeFactor.id}</strong> / 0{bodhiFactors.length}
+        {/* ── 2. Master 7-Stage Progression Track ── */}
+        <div className="bodhi-track-wrapper">
+          <div className="bodhi-track">
+            {bodhiFactors.map(factor => {
+              const isActive = factor.id === activeId;
+              return (
+                <div
+                  key={factor.id}
+                  onClick={() => { setActiveId(factor.id); setViewMode('overview'); }}
+                  className={`bodhi-track-item ${isActive ? 'active' : ''}`}
+                  title={`${factor.title} - ධර්මතා ${factor.count} ක්`}
+                >
+                  <div className="bodhi-track-top">
+                    <span className="bodhi-track-num">0{factor.id}</span>
+                    <span className="bodhi-track-chip">{factor.count} ක්</span>
+                  </div>
+                  <h3 className="bodhi-track-title">{factor.title}</h3>
                 </div>
-                <div className="step-active-name">
-                  {activeFactor.title}
-                </div>
-              </div>
-
-              <button onClick={handleNext} className="step-btn" title="මීළඟ ධර්මතාවය" aria-label="මීළඟ ධර්මතාවය">
-                <span>මීළඟ</span>
-                <ChevronRight size={18} />
-              </button>
-            </div>
+              );
+            })}
           </div>
+        </div>
 
-          {/* RIGHT: Factor Content Card */}
-          <div className="chakra-content-panel">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeId}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.22, ease: "easeOut" }}
-                className="content-glass-card"
-              >
-                {/* Header */}
-                <div className="card-top-bar">
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                      <span className="factor-count-chip">
-                        ධර්මතා {activeFactor.count} ක්
-                      </span>
-                      <span className="step-sequence">
-                        පියවර 0{activeFactor.id} / 07
-                      </span>
+        {/* ── 3. Active Stage Content Canvas ── */}
+        <div className="stage-canvas">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeId}
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -14 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
+            >
+              {/* Stage Header Banner */}
+              <div className="stage-header-banner">
+                <div className="stage-meta-info">
+                  <div className="stage-step-pill">
+                    <Award size={14} />
+                    <span>අදියර 0{activeFactor.id} / 07 · ධර්මතා {activeFactor.count} ක්</span>
+                  </div>
+
+                  <h2 className="stage-heading">{activeFactor.title}</h2>
+                  
+                  {activeFactor.subtitle && (
+                    <div className="stage-subheading">
+                      ✦ {activeFactor.subtitle}
                     </div>
+                  )}
 
-                    <h2 className="card-factor-title">
-                      {activeFactor.title}
-                    </h2>
-                    
-                    {activeFactor.subtitle && (
-                      <p className="card-factor-subtitle">
-                        ✦ {activeFactor.subtitle}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="card-watermark">
-                    0{activeFactor.id}
-                  </div>
+                  <p className="stage-description">
+                    {activeFactor.description}
+                  </p>
                 </div>
 
-                {viewMode === 'overview' ? (
-                  <>
-                    {/* Description */}
-                    <p className="factor-intro-desc">
-                      {activeFactor.description}
-                    </p>
+                {/* Rotating Gold Chakra Seal */}
+                <div className="stage-seal-wrapper">
+                  <div className="chakra-rotating-seal">
+                    <RealisticChakra size={110} />
+                  </div>
+                </div>
+              </div>
 
-                    {/* Factor Items Grid */}
-                    <div className="factor-items-grid">
-                      {activeFactor.items.map((item, idx) => (
-                        <div key={idx} className="factor-item-card">
-                          <div className="factor-item-header">
-                            <span className="factor-item-num">0{idx + 1}</span>
-                            <h4 className="factor-item-title">{item.name}</h4>
-                          </div>
-                          <p className="factor-item-desc">{item.desc}</p>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Practice Guide Action Button */}
-                    <button 
-                      onClick={() => setViewMode('practice')}
-                      className="practice-cta-btn"
-                    >
-                      <BookOpen size={18} />
-                      <span>ප්‍රායෝගික පුහුණුවට පිවිසෙන්න</span>
-                      <span style={{ marginLeft: '4px' }}>→</span>
-                    </button>
-                  </>
-                ) : (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10 }} 
-                    animate={{ opacity: 1, y: 0 }} 
-                    transition={{ duration: 0.25 }}
+              {/* View Switcher Controls */}
+              <div className="stage-tabs-row">
+                <div className="view-toggle-group">
+                  <button
+                    onClick={() => setViewMode('overview')}
+                    className={`view-toggle-btn ${viewMode === 'overview' ? 'active' : ''}`}
                   >
-                    <button 
-                      onClick={() => setViewMode('overview')} 
-                      style={{ 
-                        background: 'none', 
-                        border: 'none', 
-                        color: 'var(--primary)', 
-                        fontWeight: 700, 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '6px', 
-                        cursor: 'pointer', 
-                        padding: 0, 
-                        marginBottom: '1.5rem',
-                        fontSize: '0.95rem',
-                        fontFamily: 'var(--font-sinhala)'
+                    <Layers size={16} />
+                    <span>ධර්මතා විස්තරය (Overview)</span>
+                  </button>
+                  <button
+                    onClick={() => setViewMode('practice')}
+                    className={`view-toggle-btn ${viewMode === 'practice' ? 'active' : ''}`}
+                  >
+                    <BookOpen size={16} />
+                    <span>දෛනික පුහුණු සිතියම (Practice Map)</span>
+                  </button>
+                </div>
+
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontFamily: 'var(--font-sinhala)' }}>
+                  ධර්මතා {activeFactor.items.length} න් සියල්ල මෙහි දැක්වේ
+                </div>
+              </div>
+
+              {/* Overview Mode: Responsive Factor Cards Grid */}
+              {viewMode === 'overview' ? (
+                <div className="factor-cards-grid">
+                  {activeFactor.items.map((item, idx) => (
+                    <div key={idx} className="factor-card">
+                      <div>
+                        <div className="factor-card-top">
+                          <span className="factor-num-badge">0{idx + 1}</span>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                            {activeFactor.title}
+                          </span>
+                        </div>
+                        <h4 className="factor-card-name">{item.name}</h4>
+                        <p className="factor-card-desc">{item.desc}</p>
+                        
+                        {item.guide && (
+                          <div className="factor-card-guide-box">
+                            <strong>පුහුණු මඟපෙන්වීම:</strong> {item.guide}
+                          </div>
+                        )}
+                      </div>
+
+                      <Link 
+                        to={`/practice/${activeFactor.id}/${idx}`} 
+                        className="factor-card-cta"
+                      >
+                        <span>පුහුණුවට පිවිසෙන්න</span>
+                        <ArrowRight size={15} />
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                /* Practice Map Mode: Sequential Pathway */
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '36px' }}>
+                  {activeFactor.items.map((item, idx) => (
+                    <div 
+                      key={idx}
+                      style={{
+                        background: 'var(--bg-main)',
+                        border: '1px solid var(--glass-border)',
+                        borderRadius: '16px',
+                        padding: '20px 24px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '20px',
+                        flexWrap: 'wrap'
                       }}
                     >
-                      ← ආපසු විස්තරයට (Back to Overview)
-                    </button>
-
-                    <h3 style={{ fontFamily: 'var(--font-sinhala)', fontSize: '1.35rem', color: 'var(--text-main)', marginBottom: '8px', fontWeight: 700 }}>
-                      පුහුණුවීම් සිතියම (Practice Progress Map)
-                    </h3>
-                    <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', lineHeight: 1.6, fontSize: '0.95rem', fontFamily: 'var(--font-sinhala)' }}>
-                      ඔබගේ දෛනික ජීවිතය තුළ මෙම ධර්මතාවය ප්‍රායෝගිකව දියුණු කරන ආකාරය මෙහි දැක්වේ. පියවරෙන් පියවර සම්පූර්ණ කර සලකුණු කරන්න.
-                    </p>
-                    
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', position: 'relative' }}>
-                      <div style={{ position: 'absolute', left: '23px', top: '24px', bottom: '24px', width: '2px', background: 'var(--glass-border)', zIndex: 1 }} />
-                      
-                      {activeFactor.items.map((item, idx) => (
-                        <div key={idx} style={{ display: 'flex', gap: '18px', position: 'relative', zIndex: 2 }}>
-                          <div style={{ width: '46px', height: '46px', borderRadius: '50%', background: 'var(--bg-main)', border: '2px solid var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', fontWeight: 700, flexShrink: 0, boxShadow: '0 4px 10px rgba(0,0,0,0.06)' }}>
-                            {idx + 1}
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', flex: 1, minWidth: '260px' }}>
+                        <div style={{
+                          width: '38px',
+                          height: '38px',
+                          borderRadius: '50%',
+                          background: 'rgba(140, 21, 21, 0.08)',
+                          color: 'var(--primary)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 800,
+                          flexShrink: 0
+                        }}>
+                          {idx + 1}
+                        </div>
+                        <div>
+                          <div style={{ fontFamily: 'var(--font-sinhala)', fontWeight: 800, fontSize: '1.15rem', color: 'var(--text-main)', marginBottom: '4px' }}>
+                            {item.name}
                           </div>
-                          <div style={{ background: 'var(--bg-main)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '18px 22px', flex: 1, boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
-                            <div style={{ fontFamily: 'var(--font-sinhala)', fontWeight: 700, fontSize: '1.15rem', color: 'var(--text-main)', marginBottom: '6px' }}>
-                              {item.name}
-                            </div>
-                            <div style={{ fontSize: '0.95rem', color: 'var(--text-muted)', lineHeight: 1.65, marginBottom: '16px', fontFamily: 'var(--font-sinhala)' }}>
-                              අද දිනයේදී {item.desc} සඳහා කාලය වෙන් කරන්න.
-                            </div>
-                            
-                            <Link to={`/practice/${activeFactor.id}/${idx}`} style={{ textDecoration: 'none' }}>
-                              <button 
-                                style={{ 
-                                  display: 'inline-flex', 
-                                  alignItems: 'center', 
-                                  gap: '8px', 
-                                  cursor: 'pointer', 
-                                  background: 'var(--bg-secondary)', 
-                                  padding: '10px 18px', 
-                                  borderRadius: '10px', 
-                                  border: '1px solid var(--primary)', 
-                                  color: 'var(--primary)', 
-                                  fontWeight: 600, 
-                                  fontFamily: 'var(--font-sinhala)', 
-                                  fontSize: '0.9rem',
-                                  transition: 'all 0.2s' 
-                                }}
-                                onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.color = '#fff'; }}
-                                onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-secondary)'; e.currentTarget.style.color = 'var(--primary)'; }}
-                              >
-                                සවිස්තරාත්මක පුහුණුව අරඹන්න <span>→</span>
-                              </button>
-                            </Link>
+                          <div style={{ fontSize: '0.92rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', lineHeight: 1.5 }}>
+                            {item.desc}
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </motion.div>
-            </AnimatePresence>
-          </div>
+                      </div>
 
+                      <Link 
+                        to={`/practice/${activeFactor.id}/${idx}`}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '10px 20px',
+                          borderRadius: '10px',
+                          background: 'var(--bg-secondary)',
+                          border: '1px solid var(--primary)',
+                          color: 'var(--primary)',
+                          fontWeight: 700,
+                          fontSize: '0.88rem',
+                          textDecoration: 'none',
+                          fontFamily: 'var(--font-sinhala)',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.color = '#fff'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-secondary)'; e.currentTarget.style.color = 'var(--primary)'; }}
+                      >
+                        <BookOpen size={16} />
+                        <span>පුහුණු උපදෙස්</span>
+                        <ArrowRight size={14} />
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* ── 4. Bottom Previous / Next Controls ── */}
+              <div className="stage-bottom-nav">
+                <button 
+                  onClick={handlePrev}
+                  className="nav-stage-btn"
+                  title={`පෙර අදියර: ${prevFactor.title}`}
+                >
+                  <ChevronLeft size={18} />
+                  <span>පෙර: {prevFactor.title}</span>
+                </button>
+
+                <div className="stage-indicator-dots">
+                  {bodhiFactors.map(f => (
+                    <div 
+                      key={f.id}
+                      onClick={() => { setActiveId(f.id); setViewMode('overview'); }}
+                      className={`stage-dot ${f.id === activeId ? 'active' : ''}`}
+                      title={f.title}
+                    />
+                  ))}
+                </div>
+
+                <button 
+                  onClick={handleNext}
+                  className="nav-stage-btn"
+                  title={`මීළඟ අදියර: ${nextFactor.title}`}
+                >
+                  <span>මීළඟ: {nextFactor.title}</span>
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            </motion.div>
+          </AnimatePresence>
         </div>
+
       </div>
     </div>
   );
