@@ -36,6 +36,8 @@ const NoticeManager = React.lazy(() => import('./pages/Admin/NoticeManager'));
 const TeamManager = React.lazy(() => import('./pages/Admin/TeamManager'));
 const LiveBroadcastManager = React.lazy(() => import('./pages/Admin/LiveBroadcastManager'));
 const CommunityManager = React.lazy(() => import('./pages/Admin/CommunityManager'));
+const AnumodanaManager = React.lazy(() => import('./pages/Admin/AnumodanaManager'));
+const AnumodanaWebView = React.lazy(() => import('./pages/AnumodanaWebView'));
 
 function ProtectedRoute({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -82,6 +84,7 @@ function App() {
             <Route index element={<AdminDashboard />} />
             <Route path="notices" element={<NoticeManager />} />
             <Route path="community" element={<CommunityManager />} />
+            <Route path="anumodana" element={<AnumodanaManager />} />
             <Route path="team" element={<TeamManager />} />
             <Route path="live" element={<LiveBroadcastManager />} />
           </Route>
@@ -90,6 +93,7 @@ function App() {
           <Route path="/live" element={<Live />} />
           <Route path="/join" element={<CommunityJoin />} />
           <Route path="/community-join" element={<CommunityJoin />} />
+          <Route path="/anumodana/:id" element={<AnumodanaWebView />} />
 
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
