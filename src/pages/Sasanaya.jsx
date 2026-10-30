@@ -6,16 +6,8 @@ import {
   Heart, 
   Sparkles, 
   MessageCircle, 
-  ChevronRight,
-  BookOpen,
-  Award,
-  ExternalLink,
-  ShieldCheck,
-  Clock,
-  CheckCircle2,
-  PhoneCall
+  BookOpen
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
 export default function Sasanaya() {
   // Direct WhatsApp contact with pre-filled message for donor inquiries
@@ -264,24 +256,7 @@ export default function Sasanaya() {
           border-color: rgba(196, 152, 79, 0.4);
         }
 
-        /* Digital Punyanumodana Showcase */
-        .sn-cert-spotlight {
-          background: var(--bg-secondary);
-          border: 1px solid var(--glass-border);
-          border-radius: 28px;
-          padding: clamp(28px, 5vw, 52px);
-          display: flex;
-          flex-direction: column;
-          gap: 32px;
-        }
 
-        @media (min-width: 992px) {
-          .sn-cert-spotlight {
-            flex-direction: row;
-            align-items: center;
-            gap: 48px;
-          }
-        }
 
         .sn-btn-whatsapp {
           display: inline-flex;
@@ -458,96 +433,7 @@ export default function Sasanaya() {
           </div>
         </section>
 
-        {/* ── Section 3: Official Certified Digital Punyanumodana Notice ── */}
-        <section className="sn-cert-spotlight">
-          <div style={{ flex: 1.2 }}>
-            <div className="sn-section-tag">
-              <Award size={14} /> කල්‍යාණමිත්ත ගෞරවනීය උපහාරය
-            </div>
-            <h2 className="sn-section-h2" style={{ margin: '0 0 16px 0' }}>
-              රාජකීය ඩිජිටල් පුණ්‍යානුමෝදනා පත්‍රිකාව
-            </h2>
-            <p style={{ fontFamily: 'var(--font-sinhala)', fontSize: '1.08rem', color: 'var(--text-main)', opacity: 0.9, lineHeight: 1.85, margin: '0 0 20px 0' }}>
-              පැපොල්ගස්දෙණිය විහාරස්ථානයේ මහා සම්බුද්ධ පූජාව ඇතුළු ශාසනික කටයුතුවලට දායක වන සෑම සැදැහැවතෙකු උදෙසාම, <strong>ඔවුන්ගේ නමින්ම සැකසූ සුවිශේෂී, රාජකීය ඩිජිටල් පුණ්‍යානුමෝදනා පත්‍රිකාවක් සහ අද්විතීය Webview සබැඳියක් (Unique Link)</strong> කල්‍යාණමිත්ත ශාසනික මෙහෙවර මණ්ඩලය විසින් සෘජුවම ඔවුන්ගේ WhatsApp හෝ Email වෙත පිරිනමනු ලැබේ.
-            </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '26px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem', color: 'var(--text-main)' }}>
-                <CheckCircle2 size={18} color="#25d366" />
-                <span>සෑම දායකයෙකුටම හිමිවන අද්විතීය Webview පිටුව (Full Screen Sacred Blessing)</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem', color: 'var(--text-main)' }}>
-                <CheckCircle2 size={18} color="#25d366" />
-                <span>9:16 Full HD WhatsApp Status Card එක 1-Click එකකින් බාගත කිරීමේ හැකියාව</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem', color: 'var(--text-main)' }}>
-                <CheckCircle2 size={18} color="#25d366" />
-                <span>නම, පූජාමය දායකත්වය සහ පින් අනුමෝදනා ප්‍රාර්ථනාව සහිත නිල සහතිකය</span>
-              </div>
-            </div>
-
-            <a 
-              href="/anumodana/km-bless-01" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '12px 24px',
-                borderRadius: '12px',
-                background: 'var(--bg-main)',
-                border: '1px solid var(--primary)',
-                color: 'var(--primary)',
-                fontWeight: 700,
-                textDecoration: 'none',
-                fontSize: '0.95rem',
-                fontFamily: 'var(--font-sinhala)',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.color = '#fff'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-main)'; e.currentTarget.style.color = 'var(--primary)'; }}
-            >
-              <span>ආදර්ශ පුණ්‍යානුමෝදනා Webview එක බලන්න</span>
-              <ExternalLink size={16} />
-            </a>
-          </div>
-
-          {/* Certificate Miniature Showcase Card */}
-          <div style={{ flex: 0.9, display: 'flex', justifyContent: 'center' }}>
-            <div style={{
-              width: '100%',
-              maxWidth: '380px',
-              background: '#130303',
-              border: '2.5px solid #d4af37',
-              borderRadius: '20px',
-              padding: '28px 24px',
-              textAlign: 'center',
-              boxShadow: '0 20px 50px rgba(0,0,0,0.35)',
-              position: 'relative'
-            }}>
-              <div style={{ fontSize: '2.2rem', color: '#d4af37', marginBottom: '6px' }}>☸</div>
-              <div style={{ fontSize: '0.75rem', color: '#fef08a', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                කල්‍යාණමිත්ත ශාසනික මෙහෙවර
-              </div>
-              <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.25rem', color: '#ffffff', fontWeight: 800, margin: '6px 0 14px 0' }}>
-                මහා සම්බුද්ධ පූජා පුණ්‍යානුමෝදනාව
-              </div>
-              <div style={{ background: 'rgba(140,21,21,0.5)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.78rem', color: '#facc15', marginBottom: '14px' }}>
-                පැපොල්ගස්දෙණිය විහාරස්ථානය · 2026 ඔක්තෝබර් 17
-              </div>
-              <div style={{ fontSize: '0.8rem', color: '#d4af37' }}>උතුම් දායකත්වය:</div>
-              <div style={{ fontSize: '1.15rem', color: '#ffffff', fontWeight: 800, marginBottom: '10px' }}>
-                ශ්‍රද්ධාසම්පන්න දායක පවුල
-              </div>
-              <div style={{ fontSize: '0.8rem', color: '#facc15', fontStyle: 'italic', borderTop: '1px solid rgba(212,175,55,0.3)', paddingTop: '10px' }}>
-                "භවතු සබ්බ මංගලං රක්ඛන්තු සබ්බ දේවතා"
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── Section 4: Future Sasana Projects ── */}
+        {/* ── Section 3: Future Sasana Projects ── */}
         <section>
           <div style={{ textAlign: 'center', maxWidth: '780px', margin: '0 auto 36px' }}>
             <div className="sn-section-tag">

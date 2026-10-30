@@ -277,7 +277,7 @@ export default function AnumodanaWebView() {
     if (!record) return;
     const url = window.location.href;
     const text = encodeURIComponent(
-      `☸️ *කල්‍යාණමිත්ත රාජකීය ධර්ම ප්‍රසාද පුණ්‍යානුමෝදනාව*\n\n` +
+      `☸️ *කල්‍යාණමිත්ත උතුම් ශාසනික පුණ්‍යානුමෝදනාව*\n\n` +
       `ගෞරවනීය *${record.donor_name}* විසින් 2026 ඔක්තෝබර් 17 වන දින පැපොල්ගස්දෙණිය විහාරස්ථානයේදී පැවැත්වෙන මහා සම්බුද්ධ පූජාව සඳහා සිදුකළ උතුම් *${record.puja_type}* දායකත්වය වෙනුවෙන් පිරිනැමෙන විශේෂිත ඩිජිටල් පුණ්‍යානුමෝදනා පත්‍රිකාවයි.\n\n` +
       `✨ *ප්‍රාර්ථනාව:* ${record.dedication}\n\n` +
       `🌸 *භවතු සබ්බ මංගලං රක්ඛන්තු සබ්බ දේවතා*\n` +
@@ -337,7 +337,7 @@ export default function AnumodanaWebView() {
               Kalyanamitta
             </div>
             <div style={{ fontSize: '0.72rem', color: '#d4af37', letterSpacing: '0.04em' }}>
-              රාජකීය ශාසනික මෙහෙවර
+              උතුම් ශාසනික මෙහෙවර
             </div>
           </div>
         </Link>
