@@ -1,0 +1,43 @@
+[
+  {
+    "id": "snp1.8",
+    "slug": "snp1.8",
+    "canonicalRef": "Snp 1.8 / Khp 9",
+    "titlePali": "Mettasutta (Karaṇīya Mettā Sutta)",
+    "titleSinhala": "කරණීය මෙත්ත සූත්‍රය",
+    "titleEnglish": "Discourse on Loving-Kindness",
+    "nikaya": "Khuddaka Nikāya",
+    "nikayaSinhala": "ඛුද්දක නිකාය",
+    "vagga": "Uragavagga",
+    "vaggaSinhala": "උරග වග්ගය",
+    "description": "අධ්‍යාත්මික සුවය, සමාධිය සහ සියලු සත්ත්වයන් කෙරෙහි අප්‍රමාණ මෙත් සිත පැතිරවීම පිළිබඳ බුදුරජාණන් වහන්සේගේ උතුම් මඟපෙන්වීම.",
+    "segmentCount": 43,
+    "availableTranslations": [
+      { "lang": "en", "author": "Bhikkhu Sujato", "name": "English Translation" },
+      { "lang": "si", "author": "Buddha Jayanti / AP de Zoysa", "name": "සිංහල පරිවර්තනය" }
+    ],
+    "hasCommentary": true,
+    "hasVariants": true,
+    "hasReferences": true
+  },
+  {
+    "id": "dhp1-20",
+    "slug": "dhp1-20",
+    "canonicalRef": "Dhp 1-20",
+    "titlePali": "Yamakavagga (Dhammapada)",
+    "titleSinhala": "යමක වග්ගය (ධම්මපදය)",
+    "titleEnglish": "The Pairs (Twin Verses)",
+    "nikaya": "Khuddaka Nikāya",
+    "nikayaSinhala": "ඛුද්දක නිකාය",
+    "vagga": "Yamakavagga",
+    "vaggaSinhala": "යමක වග්ගය",
+    "description": "මනෝපුබ්බංගමා ධම්මා ඇතුළු යුගල ගාථා විස්සකින් යුත් ධම්මපදයේ පළමු වග්ගය.",
+    "segmentCount": 115,
+    "availableTranslations": [
+      { "lang": "en", "author": "Bhikkhu Sujato", "name": "English Translation" }
+    ],
+    "hasCommentary": true,
+    "hasVariants": true,
+    "hasReferences": true
+  }
+]

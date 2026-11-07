@@ -36,7 +36,8 @@ const allNavItems = [
         items: [
           { name: 'බුදු සසුනේ ඉතිහාසය', path: '/history' },
           { name: 'පාලි භාෂාව', path: '/pali', isPlaceholder: true },
-          { name: 'සූත්‍ර අධ්‍යයනය', path: '/sutta', isPlaceholder: true }
+          { name: 'සූත්‍ර අධ්‍යයනය', path: '/sutta' },
+          { name: 'ධර්ම අධ්‍යයන ගමන්මඟ', path: '/roadmap' }
         ]
       }
     ]

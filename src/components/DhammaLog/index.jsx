@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, BookMarked, Trash2 } from 'lucide-react';
+import { X, BookMarked, Trash2, Compass } from 'lucide-react';
 import { loadJourney, getAllPages, getPageMeta, formatMs, formatTimestamp, clearAllData } from '../DhammaTracker/trackerStore';
 import { useReadingTracker } from '../DhammaTracker/useReadingTracker';
 
@@ -417,6 +417,41 @@ export default function DhammaLog() {
                   ))}
                 </div>
               )}
+
+              {/* ── Personal Study Roadmap Quick Link ─────────── */}
+              <div style={{
+                padding: '10px 18px',
+                borderBottom: '1px solid var(--glass-border)',
+                background: 'rgba(140, 21, 21, 0.04)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Compass size={16} color="#8C1515" />
+                  <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#8C1515' }}>
+                    ධර්ම අධ්‍යයන ගමන්මඟ
+                  </span>
+                </div>
+                <button
+                  onClick={() => {
+                    setIsOpen(false);
+                    navigate('/roadmap');
+                  }}
+                  style={{
+                    border: 'none',
+                    background: '#8C1515',
+                    color: '#FFFFFF',
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  විවෘත කරන්න →
+                </button>
+              </div>
 
               {/* ── Log list ────────────────────────────────── */}
               <div style={{

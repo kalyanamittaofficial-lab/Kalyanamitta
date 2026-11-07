@@ -28,6 +28,8 @@ import Notices from './pages/Notices';
 import PracticeGuide from './pages/PracticeGuide';
 import ComingSoon from './pages/ComingSoon';
 import CommunityJoin from './pages/CommunityJoin';
+import SuttaStudy from './pages/SuttaStudy';
+import PersonalRoadmap from './pages/PersonalRoadmap';
 
 const AdminLayout = React.lazy(() => import('./pages/Admin/AdminLayout'));
 const AdminDashboard = React.lazy(() => import('./pages/Admin/AdminDashboard'));
@@ -138,7 +140,9 @@ function App() {
           <Route path="wellness" element={<ComingSoon />} />
           <Route path="discussions" element={<ComingSoon />} />
           <Route path="pali" element={<ComingSoon />} />
-          <Route path="sutta" element={<ComingSoon />} />
+          <Route path="sutta" element={<SuttaStudy />} />
+          <Route path="sutta/:suttaId" element={<SuttaStudy />} />
+          <Route path="roadmap" element={<PersonalRoadmap />} />
           <Route path="pdf-books" element={<ComingSoon />} />
           <Route path="magazines" element={<ComingSoon />} />
           <Route path="temple-dev" element={<ComingSoon />} />
