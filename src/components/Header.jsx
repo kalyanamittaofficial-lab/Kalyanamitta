@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Menu, X, Sun, Moon, Radio, LogOut, User } from 'lucide-react';
+import { Menu, X, Sun, Moon, Radio, LogOut, User, FlaskConical } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../utils/supabase';
@@ -374,6 +374,38 @@ export default function Header() {
                 LIVE
               </motion.div>
             </a>
+
+            {/* Kalyanamitta Lab Pill */}
+            <Link
+              to="/lab"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '4px 12px',
+                borderRadius: '16px',
+                textDecoration: 'none',
+                background: isDark ? 'rgba(140, 21, 21, 0.2)' : 'rgba(140, 21, 21, 0.08)',
+                color: isDark ? '#ff8a8a' : 'var(--primary)',
+                border: isDark ? '1px solid rgba(140, 21, 21, 0.4)' : '1px solid rgba(140, 21, 21, 0.2)',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                letterSpacing: '0.02em',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.background = isDark ? 'rgba(140, 21, 21, 0.35)' : 'rgba(140, 21, 21, 0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.background = isDark ? 'rgba(140, 21, 21, 0.2)' : 'rgba(140, 21, 21, 0.08)';
+              }}
+              title="Kalyanamitta Academic Dhamma Research Lab"
+            >
+              <FlaskConical size={14} />
+              <span>Lab</span>
+            </Link>
 
             <button onClick={toggleTheme} style={{ background: 'none', border: 'none', color: textColor, cursor: 'pointer', opacity: 0.7, padding: 0, display: 'flex', transition: 'opacity 0.2s' }} onMouseEnter={e => e.currentTarget.style.opacity = 1} onMouseLeave={e => e.currentTarget.style.opacity = 0.7}>
               {isDark ? <Sun size={22} /> : <Moon size={22} />}
@@ -764,8 +796,48 @@ export default function Header() {
               </div>
             ))}
             
+            {/* Mobile Lab Link */}
+            <div style={{ padding: '16px 0 0 0' }}>
+              <Link
+                to="/lab"
+                onClick={() => setIsMenuOpen(false)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  textDecoration: 'none',
+                  background: isDark ? 'rgba(140, 21, 21, 0.15)' : 'rgba(140, 21, 21, 0.06)',
+                  border: isDark ? '1px solid rgba(140, 21, 21, 0.3)' : '1px solid rgba(140, 21, 21, 0.15)',
+                  color: isDark ? '#ff8a8a' : 'var(--primary)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <FlaskConical size={18} />
+                  <span style={{ fontWeight: 700, fontSize: '1rem', fontFamily: 'var(--font-sinhala)' }}>
+                    Kalyanamitta Lab
+                  </span>
+                </div>
+                <span
+                  style={{
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    background: 'var(--primary)',
+                    color: '#ffffff',
+                    padding: '2px 8px',
+                    borderRadius: '6px'
+                  }}
+                >
+                  Research
+                </span>
+              </Link>
+            </div>
+
             {/* Mobile Auth Link */}
-            <div style={{ padding: '24px 0', borderTop: `1px solid ${borderColor}`, marginTop: '16px' }}>
+            <div style={{ padding: '20px 0 24px 0', borderTop: `1px solid ${borderColor}`, marginTop: '16px' }}>
               {session ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
