@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabase';
 import { User, Activity, BookOpen, ArrowRight, Edit2, Save, X } from 'lucide-react';
+import MemberIdCard from '../components/MemberIdCard/MemberIdCard';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -138,6 +139,19 @@ export default function Dashboard() {
         <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', fontSize: '0.95rem' }}>
           (දුස්සීලව, නොසන්සුන් සිතින් යුතුව අවුරුදු සීයක් ජීවත් වෙනවාට වඩා, සිල්වත්ව, ධ්‍යාන වඩමින් එක දවසක් ජීවත් වීම උතුම් ය.)
         </p>
+      </div>
+
+      {/* 3D Digital Seeker ID Card Section */}
+      <div style={{ marginBottom: '44px', textAlign: 'center' }}>
+        <div style={{ marginBottom: '14px' }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-main)', margin: '0 0 4px 0', fontFamily: 'var(--font-serif)' }}>
+            ඔබේ නිල කල්‍යාණමිත්ත 3D සාමාජික හැඳුනුම්පත (Digital Seeker Pass)
+          </h2>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>
+            Card එක මත cursor එක චලනය කර 3D tilt පරීක්ෂා කරන්න. බාගත කිරීමට හෝ Share කිරීමට පහත බොත්තම් භාවිත කරන්න.
+          </p>
+        </div>
+        <MemberIdCard user={user} profile={profile} />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '32px' }}>

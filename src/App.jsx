@@ -104,13 +104,9 @@ function App() {
           <Route path="/community-join" element={<CommunityJoin />} />
           <Route path="/anumodana/:id" element={<AnumodanaWebView />} />
 
-          {/* STANDALONE KALYANAMITTA LAB (Academic Research & Sutta Workspace) */}
-          <Route path="/lab" element={<LabLayout />}>
-            <Route index element={<LabHome />} />
-            <Route path="roadmap" element={<PersonalRoadmap />} />
-            <Route path="sutta" element={<SuttaStudy />} />
-            <Route path="sutta/:suttaId" element={<SuttaStudy />} />
-          </Route>
+          {/* STANDALONE KALYANAMITTA LAB (Coming Soon) */}
+          <Route path="/lab" element={<ComingSoon defaultTitle="Kalyanamitta Lab (කල්‍යාණමිත්ත පර්යේෂණාගාරය)" defaultSubtitle="SuttaCentral Bilara 3-Layer කැනොනික සූත්‍ර අධ්‍යයන අවකාශය, පාලි ශබ්දකෝෂය සහ පෞද්ගලික ධර්ම අධ්‍යයන ගමන්මඟ (Personal Study Roadmap) ළඟදීම ඔබ වෙත මුදාහැරේ." defaultCategory="විද්වත් පර්යේෂණ · Academic Lab" />} />
+          <Route path="/lab/*" element={<ComingSoon defaultTitle="Kalyanamitta Lab (කල්‍යාණමිත්ත පර්යේෂණාගාරය)" defaultSubtitle="SuttaCentral Bilara 3-Layer කැනොනික සූත්‍ර අධ්‍යයන අවකාශය, පාලි ශබ්දකෝෂය සහ පෞද්ගලික ධර්ම අධ්‍යයන ගමන්මඟ (Personal Study Roadmap) ළඟදීම ඔබ වෙත මුදාහැරේ." defaultCategory="විද්වත් පර්යේෂණ · Academic Lab" />} />
 
           {/* MAIN PUBLIC WEBSITE */}
           <Route path="/" element={<Layout />}>

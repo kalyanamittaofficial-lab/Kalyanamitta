@@ -4,6 +4,22 @@ import { motion } from 'framer-motion';
 import { Compass, BookOpen, Headphones, Home, ArrowLeft } from 'lucide-react';
 
 const routeDetailsMap = {
+  '/lab': {
+    title: 'Kalyanamitta Lab (කල්‍යාණමිත්ත පර්යේෂණාගාරය)',
+    subtitle: 'SuttaCentral Bilara 3-Layer කැනොනික සූත්‍ර අධ්‍යයන අවකාශය, පාලි ශබ්දකෝෂය සහ පෞද්ගලික ධර්ම අධ්‍යයන ගමන්මඟ (Personal Study Roadmap) ළඟදීම ඔබ වෙත මුදාහැරේ.',
+    category: 'විද්වත් පර්යේෂණ · Academic Lab'
+  },
+  '/lab/roadmap': {
+    title: 'Personal Study Roadmap',
+    subtitle: 'කැනොනික පාඨ හා බැඳුණු W3C Stand-off අධ්‍යයන ගමන්මඟ ළඟදීම ඔබ වෙත.',
+    category: 'විද්වත් පර්යේෂණ · Academic Lab'
+  },
+  '/lab/sutta': {
+    title: 'Sutta Study Workspace',
+    subtitle: 'ත්‍රිපිටක පාලි මුල් පෙළ සහ විද්වත් පරිවර්තන සමපාත කර හැදෑරීමේ අවකාශය ළඟදීම.',
+    category: 'විද්වත් පර්යේෂණ · Academic Lab'
+  },
+
   '/layman': {
     title: 'ගිහි දිවියේ විනය',
     subtitle: 'ගිහි දිවිය ධර්මානුකූලව සහ සාර්ථකව ගත කිරීමේ ප්‍රතිපත්ති මඟ',
