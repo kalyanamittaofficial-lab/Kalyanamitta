@@ -92,7 +92,7 @@ export default function PersonalRoadmap() {
   });
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-main)', padding: '10vh 5vw 120px 5vw' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-main)', padding: '40px clamp(16px, 4vw, 48px) 120px clamp(16px, 4vw, 48px)' }}>
       <div style={{ maxWidth: '1080px', margin: '0 auto' }}>
         
         {/* Header Breadcrumb & Title */}
@@ -112,7 +112,7 @@ export default function PersonalRoadmap() {
             marginBottom: '16px'
           }}>
             <Compass size={14} />
-            <span>Kalyanamitta — Personal Study Roadmap</span>
+            <span>Kalyanamitta Lab — Personal Study Roadmap</span>
           </div>
 
           <h1 style={{
@@ -232,7 +232,7 @@ export default function PersonalRoadmap() {
             </button>
 
             <Link
-              to="/sutta"
+              to="/lab/sutta"
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -350,7 +350,7 @@ export default function PersonalRoadmap() {
                 සූත්‍ර කියවීමේදී ඔබට ඇතිවන ප්‍රශ්න, මූලාශ්‍ර සහ පැහැදිලි කරගත් කරුණු සටහන් කර ඔබේ ගමන්මඟ ගොඩනගන්න.
               </p>
               <Link
-                to="/sutta/snp1.8"
+                to="/lab/sutta/snp1.8"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -464,7 +464,7 @@ export default function PersonalRoadmap() {
                           </span>
 
                           <Link
-                            to={`/sutta/${item.target?.source}#${item.target?.selector?.value}`}
+                            to={`/lab/sutta/${item.target?.source}#${item.target?.selector?.value}`}
                             style={{
                               display: 'flex',
                               alignItems: 'center',

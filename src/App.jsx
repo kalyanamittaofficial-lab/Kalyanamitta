@@ -29,6 +29,7 @@ import Notices from './pages/Notices';
 import PracticeGuide from './pages/PracticeGuide';
 import ComingSoon from './pages/ComingSoon';
 import CommunityJoin from './pages/CommunityJoin';
+import LabLayout from './pages/Lab/LabLayout';
 import SuttaStudy from './pages/SuttaStudy';
 import PersonalRoadmap from './pages/PersonalRoadmap';
 
@@ -102,6 +103,15 @@ function App() {
           <Route path="/community-join" element={<CommunityJoin />} />
           <Route path="/anumodana/:id" element={<AnumodanaWebView />} />
 
+          {/* STANDALONE KALYANAMITTA LAB (Academic Research & Sutta Workspace) */}
+          <Route path="/lab" element={<LabLayout />}>
+            <Route index element={<PersonalRoadmap />} />
+            <Route path="roadmap" element={<PersonalRoadmap />} />
+            <Route path="sutta" element={<SuttaStudy />} />
+            <Route path="sutta/:suttaId" element={<SuttaStudy />} />
+          </Route>
+
+          {/* MAIN PUBLIC WEBSITE */}
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="words" element={<Words />} />
@@ -144,14 +154,14 @@ function App() {
               } 
             />
 
-            {/* Under Development / Coming Soon Pages */}
+            {/* Under Development / Coming Soon Pages on Public Web */}
             <Route path="layman" element={<ComingSoon />} />
             <Route path="wellness" element={<ComingSoon />} />
             <Route path="discussions" element={<ComingSoon />} />
             <Route path="pali" element={<ComingSoon />} />
-            <Route path="sutta" element={<SuttaStudy />} />
-            <Route path="sutta/:suttaId" element={<SuttaStudy />} />
-            <Route path="roadmap" element={<PersonalRoadmap />} />
+            <Route path="sutta" element={<ComingSoon defaultTitle="සූත්‍ර අධ්‍යයනය (Sutta Study)" defaultSubtitle="සූත්‍ර පිටකය සහ අධ්‍යයන මෙවලම් දැනට සංවර්ධනය වෙමින් පවතී." defaultCategory="දහම් අධ්‍යයනය" />} />
+            <Route path="sutta/:suttaId" element={<ComingSoon defaultTitle="සූත්‍ර අධ්‍යයනය (Sutta Study)" defaultSubtitle="සූත්‍ර පිටකය සහ අධ්‍යයන මෙවලම් දැනට සංවර්ධනය වෙමින් පවතී." defaultCategory="දහම් අධ්‍යයනය" />} />
+            <Route path="roadmap" element={<ComingSoon defaultTitle="ධර්ම අධ්‍යයන ගමන්මඟ (Personal Roadmap)" defaultSubtitle="ධර්ම අධ්‍යයන ගමන්මඟ පද්ධතිය දැනට සංවර්ධනය වෙමින් පවතී." defaultCategory="දහම් අධ්‍යයනය" />} />
             <Route path="pdf-books" element={<ComingSoon />} />
             <Route path="magazines" element={<ComingSoon />} />
             <Route path="temple-dev" element={<ComingSoon />} />

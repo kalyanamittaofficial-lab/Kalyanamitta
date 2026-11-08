@@ -130,7 +130,7 @@ export default function SuttaStudy() {
     });
 
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg-main)', padding: '10vh 5vw 120px 5vw' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--bg-main)', padding: '40px clamp(16px, 4vw, 48px) 120px clamp(16px, 4vw, 48px)' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           
           {/* Header */}
@@ -231,7 +231,7 @@ export default function SuttaStudy() {
             </div>
 
             <Link
-              to="/roadmap"
+              to="/lab/roadmap"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -262,7 +262,7 @@ export default function SuttaStudy() {
                 key={sutta.id}
                 whileHover={{ y: -4, boxShadow: '0 12px 30px rgba(0,0,0,0.08)' }}
                 transition={{ duration: 0.2 }}
-                onClick={() => navigate(`/sutta/${sutta.id}`)}
+                onClick={() => navigate(`/lab/sutta/${sutta.id}`)}
                 style={{
                   background: 'var(--bg-card)',
                   border: '1px solid var(--border-color, rgba(0,0,0,0.08))',
@@ -382,7 +382,7 @@ export default function SuttaStudy() {
           {/* Breadcrumb & Sutta Info */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
             <button
-              onClick={() => navigate('/sutta')}
+              onClick={() => navigate('/lab/sutta')}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -501,7 +501,7 @@ export default function SuttaStudy() {
 
             {/* Layer 3 Roadmap Button */}
             <Link
-              to="/roadmap"
+              to="/lab/roadmap"
               style={{
                 display: 'flex',
                 alignItems: 'center',
