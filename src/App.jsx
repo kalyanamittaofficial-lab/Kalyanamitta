@@ -30,6 +30,7 @@ import PracticeGuide from './pages/PracticeGuide';
 import ComingSoon from './pages/ComingSoon';
 import CommunityJoin from './pages/CommunityJoin';
 import LabLayout from './pages/Lab/LabLayout';
+import LabHome from './pages/Lab/LabHome';
 import SuttaStudy from './pages/SuttaStudy';
 import PersonalRoadmap from './pages/PersonalRoadmap';
 
@@ -105,7 +106,7 @@ function App() {
 
           {/* STANDALONE KALYANAMITTA LAB (Academic Research & Sutta Workspace) */}
           <Route path="/lab" element={<LabLayout />}>
-            <Route index element={<PersonalRoadmap />} />
+            <Route index element={<LabHome />} />
             <Route path="roadmap" element={<PersonalRoadmap />} />
             <Route path="sutta" element={<SuttaStudy />} />
             <Route path="sutta/:suttaId" element={<SuttaStudy />} />

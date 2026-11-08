@@ -113,66 +113,50 @@ export default function PersonalRoadmap() {
     <div style={{ minHeight: '100vh', background: 'var(--bg-main)', padding: '40px clamp(16px, 4vw, 48px) 120px clamp(16px, 4vw, 48px)' }}>
       <div style={{ maxWidth: '1120px', margin: '0 auto' }}>
         
-        {/* Header Breadcrumb & Title */}
-        <div style={{ marginBottom: '32px' }}>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            fontSize: '0.82rem',
-            fontWeight: '700',
-            textTransform: 'uppercase',
-            letterSpacing: '0.12em',
-            color: '#8C1515',
-            background: 'rgba(140, 21, 21, 0.08)',
-            padding: '4px 10px',
-            borderRadius: '6px',
-            marginBottom: '16px'
-          }}>
-            <Compass size={14} />
-            <span>Kalyanamitta Lab — Personal Study Roadmap</span>
+        {/* Sleek Minimalist Header */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px',
+          marginBottom: '20px'
+        }}>
+          <div>
+            <h1 style={{
+              fontSize: 'clamp(1.5rem, 2.5vw, 2rem)',
+              fontWeight: '700',
+              fontFamily: 'var(--font-serif)',
+              color: 'var(--text-main)',
+              margin: '0 0 4px 0',
+              lineHeight: 1.2
+            }}>
+              ධර්ම අධ්‍යයන ගමන්මඟ (Study Roadmap)
+            </h1>
+            <p style={{
+              fontSize: '0.88rem',
+              color: 'var(--text-muted)',
+              margin: 0
+            }}>
+              W3C Stand-off Canonical Concordance & Reflections
+            </p>
           </div>
 
-          <h1 style={{
-            fontSize: 'clamp(2.2rem, 4vw, 3.2rem)',
-            fontWeight: '700',
-            fontFamily: 'var(--font-serif)',
-            color: 'var(--text-main)',
-            marginBottom: '12px',
-            lineHeight: 1.18
-          }}>
-            ධර්ම අධ්‍යයන ගමන්මඟ (Dhamma Research & Concordance)
-          </h1>
-
-          <p style={{
-            fontSize: '1.12rem',
-            color: 'var(--text-muted)',
-            lineHeight: 1.6,
-            maxWidth: '880px'
-          }}>
-            කැනොනික පාඨයන් හා ඍජුව බැඳුණු W3C Stand-off Annotation ගෘහ නිර්මාණ ශිල්පය. අධ්‍යයන ප්‍රශ්න, මූලාශ්‍ර, සහ සටහන් මුල් සූත්‍ර පාඨයෙන් වෙන් නොවී විද්වත් පර්යේෂණාත්මක මට්ටමින් පවත්වාගන්න.
-          </p>
-
-          {/* Design Philosophy Core Banner */}
-          <div style={{
-            marginTop: '20px',
-            padding: '16px 22px',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, rgba(140, 21, 21, 0.05) 0%, rgba(217, 119, 6, 0.05) 100%)',
-            border: '1px solid rgba(140, 21, 21, 0.18)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '14px'
-          }}>
-            <ShieldCheck size={28} color="#8C1515" style={{ flexShrink: 0 }} />
-            <div>
-              <div style={{ fontSize: '0.98rem', fontWeight: '700', color: '#8C1515' }}>
-                "The Dhamma remains the source. The roadmap records the journey of studying it. Neither replaces the other."
-              </div>
-              <div style={{ fontSize: '0.86rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                ධර්මය ඒ ආකාරයෙන්ම පවතී. අපි සටහන් කරන්නේ එය අධ්‍යයනය කළ ගමනයි. ඒ ගමන කිසිවිටෙක ධර්මයට ආදේශයක් නොවෙයි.
-              </div>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '0.74rem',
+              fontWeight: '700',
+              color: '#8C1515',
+              background: 'rgba(140, 21, 21, 0.08)',
+              padding: '4px 10px',
+              borderRadius: '6px'
+            }}>
+              <ShieldCheck size={14} />
+              <span>Stand-off Layer 3</span>
+            </span>
           </div>
         </div>
 

@@ -173,122 +173,58 @@ export default function SuttaStudy() {
       <div style={{ minHeight: '100vh', background: 'var(--bg-main)', padding: '40px clamp(16px, 4vw, 48px) 120px clamp(16px, 4vw, 48px)' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           
-          {/* Header */}
-          <div style={{ marginBottom: '40px' }}>
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              fontSize: '0.82rem',
-              fontWeight: '700',
-              textTransform: 'uppercase',
-              letterSpacing: '0.12em',
-              color: '#8C1515',
-              background: 'rgba(140, 21, 21, 0.08)',
-              padding: '4px 10px',
-              borderRadius: '6px',
-              marginBottom: '16px'
-            }}>
-              <Layers size={14} />
-              <span>3-Layer Canonical Sutta Study Workspace</span>
-            </div>
-
-            <h1 style={{
-              fontSize: 'clamp(2.2rem, 4vw, 3.4rem)',
-              fontWeight: '700',
-              fontFamily: 'var(--font-serif)',
-              color: 'var(--text-main)',
-              marginBottom: '12px',
-              lineHeight: 1.15
-            }}>
-              සූත්‍ර අධ්‍යයන කේන්ද්‍රය (Sutta Study)
-            </h1>
-
-            <p style={{
-              fontSize: '1.15rem',
-              color: 'var(--text-muted)',
-              lineHeight: 1.6,
-              maxWidth: '850px'
-            }}>
-              SuttaCentral Bilara දත්ත පදනම් කරගත්, මුල් ත්‍රිපිටක පාඨය (Layer 1), විද්වත් පරිවර්තන (Layer 2) සහ පෞද්ගලික අධ්‍යයන සටහන් (Layer 3) එකට විමසිය හැකි ශාස්ත්‍රීය අධ්‍යයන අවකාශය.
-            </p>
-
-            {/* Design Philosophy Banner */}
-            <div style={{
-              marginTop: '20px',
-              padding: '14px 20px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, rgba(140, 21, 21, 0.05) 0%, rgba(217, 119, 6, 0.05) 100%)',
-              border: '1px solid rgba(140, 21, 21, 0.15)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '14px'
-            }}>
-              <ShieldCheck size={26} color="#8C1515" style={{ flexShrink: 0 }} />
-              <div>
-                <div style={{ fontSize: '0.95rem', fontWeight: '700', color: '#8C1515' }}>
-                  "The Dhamma remains the source. The roadmap records the journey of studying it. Neither replaces the other."
-                </div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  ධර්මය ඒ ආකාරයෙන්ම පවතී. අපි සටහන් කරන්නේ එය අධ්‍යයනය කළ ගමනයි. ඒ ගමන කිසිවිටෙක ධර්මයට ආදේශයක් නොවෙයි.
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick link to Roadmap */}
+          {/* Sleek Minimalist Catalog Header */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginBottom: '32px',
             flexWrap: 'wrap',
-            gap: '16px'
+            gap: '14px',
+            marginBottom: '24px'
           }}>
+            <div>
+              <h1 style={{
+                fontSize: 'clamp(1.5rem, 2.5vw, 2rem)',
+                fontWeight: '700',
+                fontFamily: 'var(--font-serif)',
+                color: 'var(--text-main)',
+                margin: '0 0 4px 0',
+                lineHeight: 1.2
+              }}>
+                සූත්‍ර අධ්‍යයන කේන්ද්‍රය (Canonical Suttas)
+              </h1>
+              <p style={{
+                fontSize: '0.88rem',
+                color: 'var(--text-muted)',
+                margin: 0
+              }}>
+                SuttaCentral Bilara 3-Layer Corpus (Root Pali · BJ Sinhala · Sujato English)
+              </p>
+            </div>
+
             <div style={{
               position: 'relative',
-              flex: '1',
-              minWidth: '280px',
-              maxWidth: '450px'
+              width: '100%',
+              maxWidth: '360px'
             }}>
-              <Search size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '14px', top: '14px' }} />
+              <Search size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '11px' }} />
               <input
                 type="text"
-                placeholder="සූත්‍ර නාමයක් හෝ සටහනක් සොයන්න..."
+                placeholder="සූත්‍රයක් හෝ පාඨයක් සොයන්න..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
                   width: '100%',
-                  padding: '11px 16px 11px 40px',
-                  borderRadius: '10px',
+                  padding: '8px 14px 8px 36px',
+                  borderRadius: '8px',
                   border: '1px solid var(--border-color, rgba(0,0,0,0.12))',
                   background: 'var(--bg-card)',
                   color: 'var(--text-main)',
-                  fontSize: '0.95rem',
+                  fontSize: '0.88rem',
                   outline: 'none'
                 }}
               />
             </div>
-
-            <Link
-              to="/lab/roadmap"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 20px',
-                borderRadius: '10px',
-                background: '#8C1515',
-                color: '#FFFFFF',
-                textDecoration: 'none',
-                fontWeight: '600',
-                fontSize: '0.92rem',
-                boxShadow: '0 4px 14px rgba(140, 21, 21, 0.25)'
-              }}
-            >
-              <Compass size={18} />
-              <span>මගේ අධ්‍යයන ගමන්මඟ (Personal Roadmap)</span>
-            </Link>
           </div>
 
           {/* Sutta List Cards */}
