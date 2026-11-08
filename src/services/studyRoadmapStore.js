@@ -263,3 +263,109 @@ export function exportStudyTrail(title = 'My Dhamma Study Trail') {
   };
   return JSON.stringify(exportPayload, null, 2);
 }
+
+/**
+ * Export study journey as Academic Markdown Research Draft (.md)
+ */
+export function exportRoadmapAsMarkdown(items = null) {
+  const roadmap = items || getRoadmapItems();
+  const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  
+  let md = `---
+title: "Kalyanamitta Dhamma Study Concordance & Research Notes"
+date: "${dateStr}"
+author: "Kalyanamitta Research Lab"
+generator: "Kalyanamitta W3C Stand-off Annotation Engine"
+conformsTo: "W3C Web Annotation Data Model"
+disclaimer: "${MANDATORY_DISCLAIMER}"
+---
+
+# Dhamma Study Concordance & Research Journal
+*Generated via Kalyanamitta Lab · Canonical Research Edition*  
+*Date: ${dateStr}*
+
+> **Methodological Note:** Canonical Sutta text remains the unalterable source (Layer 1 Pali & Layer 2 Bilara translation). All observations recorded herein represent stand-off user inquiries, lexical notes, and hermeneutical questions (Layer 3) anchored to immutable Bilara segment addresses.
+
+---
+
+## Table of Contents
+`;
+
+  // TOC
+  roadmap.forEach((item, idx) => {
+    const title = item.target?.suttaTitlePali || item.target?.source || `Record #${idx + 1}`;
+    const seg = item.target?.selector?.value || '';
+    md += `${idx + 1}. [${title} (${seg})](#study-note-${idx + 1})\n`;
+  });
+
+  md += `\n---\n\n`;
+
+  // Entries
+  roadmap.forEach((item, idx) => {
+    const pTitle = item.target?.suttaTitlePali || 'Canonical Discourse';
+    const sTitle = item.target?.suttaTitleSinhala ? ` (${item.target.suttaTitleSinhala})` : '';
+    const ref = item.target?.canonicalRef || item.target?.source || '';
+    const seg = item.target?.selector?.value || '';
+    const action = item.action || 'Study Note';
+    const created = new Date(item.created).toLocaleDateString();
+
+    md += `### Study Note ${idx + 1}: ${pTitle}${sTitle} {#study-note-${idx + 1}}\n\n`;
+    md += `- **Canonical Reference:** \`${ref}\`\n`;
+    md += `- **Segment Address:** \`${seg}\`\n`;
+    md += `- **Nature of Inquiry:** \`${action}\`\n`;
+    md += `- **Recorded On:** ${created}\n\n`;
+
+    if (item.target?.canonicalQuote) {
+      md += `#### Canonical Root (Pāli):\n> *${item.target.canonicalQuote}*\n\n`;
+    }
+    if (item.target?.translationQuote) {
+      md += `#### Target Translation:\n> "${item.target.translationQuote}"\n\n`;
+    }
+
+    md += `#### Research Observations:\n`;
+    (item.body || []).forEach(b => {
+      const cat = NOTE_CATEGORIES[b.category] || NOTE_CATEGORIES[b.purpose] || { label: b.purpose || 'Note' };
+      md += `##### ${b.title || cat.label}\n`;
+      md += `*Category: ${cat.label}*\n\n`;
+      md += `${b.content}\n\n`;
+    });
+
+    md += `*Provenance: Stand-off Layer 3 · ${item.provenance?.disclaimer || MANDATORY_DISCLAIMER}*\n\n---\n\n`;
+  });
+
+  md += `## Canonical Integrity Disclaimer\n\n${MANDATORY_DISCLAIMER}\n`;
+  return md;
+}
+
+/**
+ * Export study journey as BibTeX Bibliography (.bib)
+ */
+export function exportRoadmapAsBibTeX(items = null) {
+  const roadmap = items || getRoadmapItems();
+  const dateStr = new Date().toISOString().split('T')[0];
+  let bib = `% Kalyanamitta Lab BibTeX Concordance Export
+% Generated on: ${dateStr}
+% Architecture: W3C Stand-off Canonical Annotations
+
+`;
+
+  roadmap.forEach((item, idx) => {
+    const source = (item.target?.source || `sutta-${idx}`).toLowerCase().replace(/[^a-z0-9]/g, '');
+    const seg = (item.target?.selector?.value || `${source}-seg`).replace(/[^a-z0-9]/g, '_');
+    const key = `kalyanamitta_${seg}_${idx + 1}`;
+    const pTitle = item.target?.suttaTitlePali || 'Discourse';
+    const ref = item.target?.canonicalRef || item.target?.source || 'Tipitaka';
+
+    bib += `@misc{${key},
+  author       = {{SuttaCentral Bilara \\& Kalyanamitta Study Lab}},
+  title        = {{Study Annotation on ${pTitle} (${ref})}},
+  howpublished = {\\url{https://suttacentral.net/${item.target?.source || ''}}},
+  note         = {Segment: ${item.target?.selector?.value || 'N/A'}. Action: ${item.action || 'Study Note'}. Archival layer: Stand-off Layer 3.},
+  year         = {${new Date(item.created || Date.now()).getFullYear()}}
+}
+
+`;
+  });
+
+  return bib;
+}
