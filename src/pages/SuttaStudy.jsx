@@ -400,9 +400,9 @@ export default function SuttaStudy() {
       {/* Sticky Top Workspace Header */}
       <div style={{
         position: 'sticky',
-        top: '60px',
+        top: '52px',
         zIndex: 50,
-        background: 'var(--bg-card, #FFFFFF)',
+        background: 'var(--bg-card)',
         borderBottom: '1px solid var(--border-color, rgba(0,0,0,0.08))',
         boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
         padding: '10px clamp(16px, 4vw, 40px)'

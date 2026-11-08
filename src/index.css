@@ -6,6 +6,7 @@
   
   --bg-main: #FFFFFF;
   --bg-secondary: #F8F9FA;
+  --bg-card: #FFFFFF;
   
   --text-main: #1C1D1E;
   --text-muted: #6C757D;
@@ -25,6 +26,7 @@
 [data-theme='dark'] {
   --bg-main: #1C1917; /* Warm dark stone */
   --bg-secondary: #292524;
+  --bg-card: #24201D;
   
   --text-main: #F5F5F4;
   --text-muted: #A8A29E;

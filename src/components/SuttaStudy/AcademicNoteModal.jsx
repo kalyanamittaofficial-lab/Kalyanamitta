@@ -171,7 +171,7 @@ export default function AcademicNoteModal({
           maxHeight: '90vh',
           display: 'flex',
           flexDirection: 'column',
-          background: 'var(--bg-card, #FFFFFF)',
+          background: 'var(--bg-card)',
           color: 'var(--text-main, #1A1A1A)',
           borderRadius: '16px',
           boxShadow: '0 25px 60px -15px rgba(0,0,0,0.3)',
@@ -186,7 +186,7 @@ export default function AcademicNoteModal({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: 'var(--bg-main, #FAFAFA)'
+          background: 'var(--bg-main)'
         }}>
           <div>
             <div style={{
