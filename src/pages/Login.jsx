@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../utils/supabase';
+import { signInWithGoogle } from '../utils/auth';
 
 export default function Login() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState({ text: '', type: '' });
@@ -27,15 +29,15 @@ export default function Login() {
   };
 
   const handleGoogleLogin = async () => {
-    setIsLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${window.location.origin}/onboarding` }
-    });
-    
-    if (error) {
-      setMessage({ text: error.message, type: 'error' });
-      setIsLoading(false);
+    setIsGoogleLoading(true);
+    setMessage({ text: '', type: '' });
+
+    try {
+      const { error } = await signInWithGoogle();
+      if (error) throw error;
+    } catch (error) {
+      setMessage({ text: error.message || 'Google හරහා පිවිසීමේදී දෝෂයක් ඇති විය.', type: 'error' });
+      setIsGoogleLoading(false);
     }
   };
 
@@ -121,7 +123,6 @@ export default function Login() {
 
       {/* LEFT PANE (Branding) */}
       <div style={leftPaneStyle} className="left-pane">
-        {/* Subtle background overlay/pattern could go here */}
         <div style={{ zIndex: 2, position: 'relative' }}>
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', fontWeight: '700', marginBottom: '60px', letterSpacing: '-0.02em' }}>
             Kalyanamitta
@@ -147,7 +148,7 @@ export default function Login() {
           <p style={{ color: 'var(--text-muted)', fontSize: '1rem', fontFamily: 'var(--font-sinhala)', marginBottom: '40px' }}>
             කරුණාකර ඔබගේ ගිණුමට පිවිසෙන්න
           </p>
-          
+
           {message.text && (
             <div style={{
               marginBottom: '24px', padding: '16px', borderRadius: '8px', fontSize: '0.9rem', fontFamily: 'var(--font-sinhala)',
@@ -193,15 +194,15 @@ export default function Login() {
               />
             </div>
 
-            <button type="submit" disabled={isLoading}
+            <button type="submit" disabled={isLoading || isGoogleLoading}
               style={{
                 width: '100%', padding: '16px', marginTop: '12px', borderRadius: '8px', 
                 backgroundColor: 'var(--primary)', color: '#ffffff',
                 fontFamily: 'var(--font-sinhala), sans-serif', fontSize: '1.05rem', fontWeight: '600', border: 'none',
-                cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.8 : 1, transition: 'all 0.3s ease',
+                cursor: (isLoading || isGoogleLoading) ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.8 : 1, transition: 'all 0.3s ease',
               }}
-              onMouseEnter={(e) => { if(!isLoading) e.currentTarget.style.backgroundColor = 'var(--primary-hover)'; }}
-              onMouseLeave={(e) => { if(!isLoading) e.currentTarget.style.backgroundColor = 'var(--primary)'; }}
+              onMouseEnter={(e) => { if(!isLoading && !isGoogleLoading) e.currentTarget.style.backgroundColor = 'var(--primary-hover)'; }}
+              onMouseLeave={(e) => { if(!isLoading && !isGoogleLoading) e.currentTarget.style.backgroundColor = 'var(--primary)'; }}
             >
               {isLoading ? 'කරුණාකර රැඳී සිටින්න...' : 'ඇතුල් වන්න'}
             </button>
@@ -213,15 +214,15 @@ export default function Login() {
             <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--glass-border)' }}></div>
           </div>
 
-          <button onClick={handleGoogleLogin} disabled={isLoading} type="button"
+          <button onClick={handleGoogleLogin} disabled={isLoading || isGoogleLoading} type="button"
             style={{
               display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'center', gap: '12px',
               borderRadius: '8px', backgroundColor: 'transparent', padding: '14px', fontSize: '1rem', fontFamily: 'var(--font-sinhala), sans-serif',
-              fontWeight: '500', border: '1px solid var(--glass-border)', cursor: isLoading ? 'not-allowed' : 'pointer',
-              color: 'var(--text-main)', transition: 'background-color 0.2s ease'
+              fontWeight: '500', border: '1px solid var(--glass-border)', cursor: (isLoading || isGoogleLoading) ? 'not-allowed' : 'pointer',
+              color: 'var(--text-main)', transition: 'all 0.2s ease', opacity: isGoogleLoading ? 0.7 : 1
             }}
-            onMouseEnter={(e) => { if(!isLoading) e.currentTarget.style.backgroundColor = 'var(--glass-border)'; }}
-            onMouseLeave={(e) => { if(!isLoading) e.currentTarget.style.backgroundColor = 'transparent'; }}
+            onMouseEnter={(e) => { if(!isLoading && !isGoogleLoading) e.currentTarget.style.backgroundColor = 'var(--glass-border)'; }}
+            onMouseLeave={(e) => { if(!isLoading && !isGoogleLoading) e.currentTarget.style.backgroundColor = 'transparent'; }}
           >
             <svg viewBox="0 0 24 24" style={{ height: '20px', width: '20px' }}>
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -229,7 +230,7 @@ export default function Login() {
               <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
             </svg>
-            Google හරහා පිවිසෙන්න
+            {isGoogleLoading ? 'Google වෙත යොමු වෙමින් පවතී...' : 'Google හරහා පිවිසෙන්න'}
           </button>
 
           <p style={{ marginTop: '40px', textAlign: 'center', fontSize: '0.95rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)' }}>

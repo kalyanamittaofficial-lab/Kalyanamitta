@@ -32,7 +32,7 @@ export default function Dashboard() {
           .from('profiles')
           .select('*')
           .eq('id', currentUser.id)
-          .single();
+          .maybeSingle();
         
         if (profileData) {
           if (profileData.status === 'pending_onboarding') {
@@ -41,6 +41,10 @@ export default function Dashboard() {
           }
           setProfile(profileData);
           setEditForm(profileData);
+        } else {
+          // If no profile exists yet for this Google/Auth user, redirect to onboarding
+          navigate('/onboarding');
+          return;
         }
 
       } catch (error) {
@@ -121,6 +125,8 @@ export default function Dashboard() {
     </div>
   );
 
+  const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture || profile?.avatar_url;
+
   return (
     <div style={{ padding: '40px 24px', maxWidth: '1000px', margin: '0 auto', width: '100%', minHeight: 'calc(100vh - 100px)' }}>
       
@@ -140,9 +146,24 @@ export default function Dashboard() {
         <div className="glass-panel" style={{ padding: '40px', borderRadius: '24px', animation: 'fadeInUp 0.6s ease-out', borderTop: '4px solid var(--primary)', position: 'relative' }}>
           
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-            <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', fontFamily: 'var(--font-sinhala)', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <User size={24} color="var(--primary)" /> ඔබගේ ගිණුමේ තොරතුරු
-            </h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              {avatarUrl ? (
+                <img 
+                  src={avatarUrl} 
+                  alt="User Avatar" 
+                  referrerPolicy="no-referrer"
+                  style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--primary)' }} 
+                />
+              ) : (
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(140, 21, 21, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <User size={22} color="var(--primary)" />
+                </div>
+              )}
+              <h3 style={{ fontSize: '1.4rem', fontWeight: 'bold', fontFamily: 'var(--font-sinhala)', color: 'var(--text-main)', margin: 0 }}>
+                ඔබගේ ගිණුමේ තොරතුරු
+              </h3>
+            </div>
+
             {!isEditing ? (
               <button onClick={() => setIsEditing(true)} style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600' }}>
                 <Edit2 size={16} /> Edit
@@ -198,7 +219,7 @@ export default function Dashboard() {
               <div>
                 <span style={{ fontSize: '0.85rem', color: 'rgba(0,0,0,0.4)', fontFamily: 'var(--font-sinhala)', display: 'block', marginBottom: '8px' }}>නිවන් දකින්න ඇති උනන්දුව</span>
                 <div style={{ width: '100%', height: '8px', background: 'rgba(0,0,0,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
-                  <div style={{ width: `${profile?.spiritual_interest || 0}%`, height: '100%', background: 'rgba(140, 21, 21, 0.3)' }}></div>
+                  <div style={{ width: `${profile?.spiritual_interest ?? profile?.interest_level ?? 0}%`, height: '100%', background: 'rgba(140, 21, 21, 0.3)' }}></div>
                 </div>
               </div>
               

@@ -38,7 +38,7 @@ export default function Onboarding() {
         .from('profiles')
         .select('*')
         .eq('id', session.user.id)
-        .single();
+        .maybeSingle();
         
       if (profile) {
         // If they already completed onboarding, send them away
@@ -46,7 +46,15 @@ export default function Onboarding() {
           navigate('/dashboard');
           return;
         }
-        setFormData(prev => ({ ...prev, name: profile.name || '' }));
+        setFormData(prev => ({ 
+          ...prev, 
+          name: profile.name || session.user.user_metadata?.full_name || session.user.user_metadata?.name || '' 
+        }));
+      } else {
+        const googleName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || '';
+        if (googleName) {
+          setFormData(prev => ({ ...prev, name: googleName }));
+        }
       }
     }
     fetchProfile();
@@ -83,7 +91,7 @@ export default function Onboarding() {
       const finalCountry = formData.country === 'Other' ? formData.otherCountry : formData.country;
 
       // Call the complete_onboarding RPC
-      const { data, error: rpcError } = await supabase.rpc('complete_onboarding', {
+      const { error: rpcError } = await supabase.rpc('complete_onboarding', {
         p_name: formData.name,
         p_mobile: formData.mobile,
         p_country: finalCountry,
@@ -98,7 +106,32 @@ export default function Onboarding() {
         p_potential: parseInt(formData.potentialDedication)
       });
 
-      if (rpcError) throw rpcError;
+      if (rpcError) {
+        console.warn('RPC complete_onboarding failed, falling back to direct profile update:', rpcError);
+        // Fallback: direct upsert into profiles
+        const { error: upsertError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: session.user.id,
+            email: session.user.email,
+            name: formData.name,
+            mobile_number: formData.mobile,
+            country: finalCountry,
+            state_district: formData.state,
+            native_language: formData.language,
+            dob: formData.dob,
+            marital_status: formData.maritalStatus,
+            family_details: formData.familyDetails,
+            education_profession: formData.education,
+            spiritual_interest: parseInt(formData.interest),
+            interest_level: parseInt(formData.interest),
+            current_dedication: parseInt(formData.currentDedication),
+            potential_dedication: parseInt(formData.potentialDedication),
+            status: 'active',
+            updated_at: new Date().toISOString()
+          });
+        if (upsertError) throw upsertError;
+      }
       
       // Success, redirect to dashboard
       navigate('/dashboard');
@@ -161,8 +194,12 @@ export default function Onboarding() {
                     <select name="country" value={formData.country} onChange={handleChange} style={inputStyle}>
                       <option value="Sri Lanka">Sri Lanka</option>
                       <option value="Australia">Australia</option>
-                      <option value="UK">United Kingdom</option>
-                      <option value="USA">United States</option>
+                      <option value="United Kingdom">United Kingdom</option>
+                      <option value="United States">United States</option>
+                      <option value="Canada">Canada</option>
+                      <option value="New Zealand">New Zealand</option>
+                      <option value="Italy">Italy</option>
+                      <option value="Japan">Japan</option>
                       <option value="Other">Other</option>
                     </select>
                   </div>
@@ -215,7 +252,7 @@ export default function Onboarding() {
               </div>
 
               <button type="submit" style={{ marginTop: '16px', padding: '16px', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '1rem', fontWeight: '600', cursor: 'pointer' }}>
-                Continue to Final Step
+                Continue to Step 2
               </button>
             </form>
           ) : (

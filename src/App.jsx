@@ -21,6 +21,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ResourceLanding from './pages/ResourceLanding';
 import Onboarding from './pages/Onboarding';
+import AuthCallback from './pages/AuthCallback';
 import History from './pages/History';
 import HistoryChapter from './pages/HistoryChapter';
 import Sasanaya from './pages/Sasanaya';
@@ -60,7 +61,11 @@ function ProtectedRoute({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  if (isAuthenticated === null) return <div className="flex-center" style={{minHeight: '100vh'}}>Loading...</div>;
+  if (isAuthenticated === null) return (
+    <div className="flex-center" style={{ minHeight: '100vh', background: 'var(--bg-main)', color: 'var(--text-muted)' }}>
+      කරුණාකර රැඳී සිටින්න...
+    </div>
+  );
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 }
 
@@ -99,63 +104,67 @@ function App() {
 
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
-          <Route path="words" element={<Words />} />
-          <Route path="history" element={<History />} />
-          <Route path="history/:chapterId" element={<HistoryChapter />} />
-          <Route path="sermons" element={<Sermons />} />
-          <Route path="meditation" element={<Meditation />} />
-          <Route path="path" element={<Path />} />
-          <Route path="practice/:factorId/:stepId" element={<PracticeGuide />} />
-          <Route path="life" element={<BlogArchive />} />
-          <Route path="life/:slug" element={<SingleBlog />} />
-          <Route path="lifecycle" element={<LifeCycle />} />
-          <Route path="community" element={<Community />} />
-          <Route path="dharmadhana" element={<DharmaDhana />} />
-          <Route path="sasanaya" element={<Sasanaya />} />
-          <Route path="notices" element={<Notices />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="other-chantings" element={<OtherChantings />} />
-          <Route path="library/:id" element={<ResourceLanding />} />
-          <Route path="login" element={<ComingSoon defaultTitle="පරිශීලක පිවිසුම (Login)" defaultSubtitle="පරිශීලක ගිණුම් සහ පිවිසුම් පද්ධතිය (Login & Signup) දැනට සංවර්ධනය වෙමින් පවතී." defaultCategory="පරිශීලක සේවා" />} />
-          <Route path="register" element={<ComingSoon defaultTitle="නව ගිණුමක් ලියාපදිංචිය (Sign Up)" defaultSubtitle="පරිශීලක ලියාපදිංචි පද්ධතිය (Registration) දැනට සංවර්ධනය වෙමින් පවතී." defaultCategory="පරිශීලක සේවා" />} />
-          <Route 
-            path="onboarding" 
-            element={
-              <ProtectedRoute>
-                <Onboarding />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="dashboard" 
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } 
-          />
+            <Route path="words" element={<Words />} />
+            <Route path="history" element={<History />} />
+            <Route path="history/:chapterId" element={<HistoryChapter />} />
+            <Route path="sermons" element={<Sermons />} />
+            <Route path="meditation" element={<Meditation />} />
+            <Route path="path" element={<Path />} />
+            <Route path="practice/:factorId/:stepId" element={<PracticeGuide />} />
+            <Route path="life" element={<BlogArchive />} />
+            <Route path="life/:slug" element={<SingleBlog />} />
+            <Route path="lifecycle" element={<LifeCycle />} />
+            <Route path="community" element={<Community />} />
+            <Route path="dharmadhana" element={<DharmaDhana />} />
+            <Route path="sasanaya" element={<Sasanaya />} />
+            <Route path="notices" element={<Notices />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="other-chantings" element={<OtherChantings />} />
+            <Route path="library/:id" element={<ResourceLanding />} />
+            
+            {/* User Auth Routes */}
+            <Route path="login" element={<Login />} />
+            <Route path="register" element={<Register />} />
+            <Route path="auth/callback" element={<AuthCallback />} />
+            
+            <Route 
+              path="onboarding" 
+              element={
+                <ProtectedRoute>
+                  <Onboarding />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="dashboard" 
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
 
-          {/* Under Development / Coming Soon Pages */}
-          <Route path="layman" element={<ComingSoon />} />
-          <Route path="wellness" element={<ComingSoon />} />
-          <Route path="discussions" element={<ComingSoon />} />
-          <Route path="pali" element={<ComingSoon />} />
-          <Route path="sutta" element={<SuttaStudy />} />
-          <Route path="sutta/:suttaId" element={<SuttaStudy />} />
-          <Route path="roadmap" element={<PersonalRoadmap />} />
-          <Route path="pdf-books" element={<ComingSoon />} />
-          <Route path="magazines" element={<ComingSoon />} />
-          <Route path="temple-dev" element={<ComingSoon />} />
-          <Route path="kids" element={<ComingSoon />} />
-          <Route path="social" element={<ComingSoon />} />
-          <Route path="coming-soon" element={<ComingSoon />} />
+            {/* Under Development / Coming Soon Pages */}
+            <Route path="layman" element={<ComingSoon />} />
+            <Route path="wellness" element={<ComingSoon />} />
+            <Route path="discussions" element={<ComingSoon />} />
+            <Route path="pali" element={<ComingSoon />} />
+            <Route path="sutta" element={<SuttaStudy />} />
+            <Route path="sutta/:suttaId" element={<SuttaStudy />} />
+            <Route path="roadmap" element={<PersonalRoadmap />} />
+            <Route path="pdf-books" element={<ComingSoon />} />
+            <Route path="magazines" element={<ComingSoon />} />
+            <Route path="temple-dev" element={<ComingSoon />} />
+            <Route path="kids" element={<ComingSoon />} />
+            <Route path="social" element={<ComingSoon />} />
+            <Route path="coming-soon" element={<ComingSoon />} />
 
-          {/* Fallback */}
-          <Route path="*" element={<Home />} />
-        </Route>
-        {/* Standalone Fullscreen Routes */}
-        <Route path="/read/:bookId" element={<BookReader />} />
-      </Routes>
+            {/* Fallback */}
+            <Route path="*" element={<Home />} />
+          </Route>
+          {/* Standalone Fullscreen Routes */}
+          <Route path="/read/:bookId" element={<BookReader />} />
+        </Routes>
       </React.Suspense>
     </BrowserRouter>
   );

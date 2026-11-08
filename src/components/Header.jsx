@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Menu, X, Sun, Moon, Radio } from 'lucide-react';
+import { Menu, X, Sun, Moon, Radio, LogOut, User } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../utils/supabase';
@@ -380,39 +380,111 @@ export default function Header() {
               {isDark ? <Sun size={22} /> : <Moon size={22} />}
             </button>
 
-            {/* Desktop Auth - Temporary Coming Soon */}
-            <div 
-              className="premium-desktop-nav" 
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '6px', 
-                color: textMuted, 
-                fontWeight: 600, 
-                fontSize: '0.92rem',
-                cursor: 'default',
-                userSelect: 'none',
-                opacity: 0.85
-              }}
-              title="පරිශීලක පිවිසුම ඉදිරියේදී සක්‍රිය වනු ඇත (Login Coming Soon)"
-            >
-              <span>Login</span>
-              <span 
-                style={{
-                  fontSize: '0.65rem',
-                  fontWeight: '700',
-                  padding: '2px 6px',
-                  borderRadius: '8px',
-                  background: isDark ? 'rgba(212, 175, 55, 0.15)' : 'rgba(140, 21, 21, 0.08)',
-                  color: isDark ? '#d4af37' : 'var(--primary)',
-                  border: isDark ? '1px solid rgba(212, 175, 55, 0.3)' : '1px solid rgba(140, 21, 21, 0.2)',
-                  letterSpacing: '0.04em',
-                  textTransform: 'uppercase'
-                }}
-              >
-                Soon
-              </span>
-            </div>
+            {/* Desktop Auth */}
+            {session ? (
+              <div className="premium-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Link
+                  to="/dashboard"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    textDecoration: 'none',
+                    color: textColor,
+                    padding: '5px 12px',
+                    borderRadius: '20px',
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                    border: `1px solid ${borderColor}`,
+                    fontFamily: 'var(--font-sinhala)',
+                    fontSize: '0.9rem',
+                    fontWeight: 500,
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
+                  }}
+                  title="ඔබගේ ගිණුම (Dashboard)"
+                >
+                  {session.user?.user_metadata?.avatar_url || session.user?.user_metadata?.picture ? (
+                    <img
+                      src={session.user.user_metadata.avatar_url || session.user.user_metadata.picture}
+                      alt="Avatar"
+                      referrerPolicy="no-referrer"
+                      style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: '24px', height: '24px', borderRadius: '50%',
+                      background: 'var(--primary)', color: '#fff',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '0.75rem', fontWeight: 'bold'
+                    }}>
+                      {(session.user?.user_metadata?.full_name || session.user?.email || 'U')[0].toUpperCase()}
+                    </div>
+                  )}
+                  <span style={{ maxWidth: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {session.user?.user_metadata?.full_name?.split(' ')[0] || 'මගේ ගිණුම'}
+                  </span>
+                </Link>
+
+                <button
+                  onClick={async () => {
+                    await supabase.auth.signOut();
+                    setSession(null);
+                  }}
+                  title="ගිණුමෙන් ඉවත් වන්න (Sign Out)"
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: textMuted,
+                    cursor: 'pointer',
+                    padding: '6px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    borderRadius: '6px',
+                    transition: 'color 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = textMuted}
+                >
+                  <LogOut size={18} />
+                </button>
+              </div>
+            ) : (
+              <div className="premium-desktop-nav" style={{ display: 'flex', alignItems: 'center' }}>
+                <Link
+                  to="/login"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    textDecoration: 'none',
+                    color: '#ffffff',
+                    backgroundColor: 'var(--primary)',
+                    padding: '7px 18px',
+                    borderRadius: '20px',
+                    fontFamily: 'var(--font-sinhala)',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    boxShadow: '0 2px 8px rgba(140, 21, 21, 0.2)',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--primary-hover)';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--primary)';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  <span>පිවිසෙන්න</span>
+                </Link>
+              </div>
+            )}
 
             <button 
               className="premium-mobile-toggle"
@@ -693,39 +765,100 @@ export default function Header() {
               </div>
             ))}
             
-            {/* Mobile Auth Link - Temporarily Coming Soon */}
-            <div style={{ padding: '32px 0' }}>
-              <div 
-                style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'space-between',
-                  fontSize: '1.25rem', 
-                  fontWeight: 700, 
-                  color: textMuted, 
-                  fontFamily: 'var(--font-sinhala)',
-                  cursor: 'default',
-                  userSelect: 'none',
-                  opacity: 0.85
-                }}
-              >
-                <span>Login / පිවිසෙන්න</span>
-                <span 
+            {/* Mobile Auth Link */}
+            <div style={{ padding: '24px 0', borderTop: `1px solid ${borderColor}`, marginTop: '16px' }}>
+              {session ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    {session.user?.user_metadata?.avatar_url || session.user?.user_metadata?.picture ? (
+                      <img
+                        src={session.user.user_metadata.avatar_url || session.user.user_metadata.picture}
+                        alt="Avatar"
+                        referrerPolicy="no-referrer"
+                        style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <div style={{
+                        width: '40px', height: '40px', borderRadius: '50%',
+                        background: 'var(--primary)', color: '#fff',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '1.1rem', fontWeight: 'bold'
+                      }}>
+                        {(session.user?.user_metadata?.full_name || session.user?.email || 'U')[0].toUpperCase()}
+                      </div>
+                    )}
+                    <div style={{ overflow: 'hidden' }}>
+                      <div style={{ fontWeight: 600, color: textColor, fontFamily: 'var(--font-sinhala)', fontSize: '1rem', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                        {session.user?.user_metadata?.full_name || session.user?.email}
+                      </div>
+                      <div style={{ fontSize: '0.8rem', color: textMuted, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                        {session.user?.email}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+                    <Link
+                      to="/dashboard"
+                      onClick={() => setIsMenuOpen(false)}
+                      style={{
+                        flex: 1,
+                        padding: '10px 16px',
+                        background: 'var(--primary)',
+                        color: '#fff',
+                        borderRadius: '8px',
+                        textAlign: 'center',
+                        textDecoration: 'none',
+                        fontFamily: 'var(--font-sinhala)',
+                        fontWeight: 600,
+                        fontSize: '0.95rem'
+                      }}
+                    >
+                      මගේ ගිණුම (Dashboard)
+                    </Link>
+                    <button
+                      onClick={async () => {
+                        await supabase.auth.signOut();
+                        setSession(null);
+                        setIsMenuOpen(false);
+                      }}
+                      style={{
+                        padding: '10px 16px',
+                        background: 'transparent',
+                        border: `1px solid ${borderColor}`,
+                        color: textColor,
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontFamily: 'var(--font-sinhala)',
+                        fontSize: '0.95rem'
+                      }}
+                    >
+                      ඉවත් වන්න
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  onClick={() => setIsMenuOpen(false)}
                   style={{
-                    fontSize: '0.72rem',
-                    fontWeight: '700',
-                    padding: '3px 8px',
-                    borderRadius: '8px',
-                    background: isDark ? 'rgba(212, 175, 55, 0.15)' : 'rgba(140, 21, 21, 0.08)',
-                    color: isDark ? '#d4af37' : 'var(--primary)',
-                    border: isDark ? '1px solid rgba(212, 175, 55, 0.3)' : '1px solid rgba(140, 21, 21, 0.2)',
-                    letterSpacing: '0.04em',
-                    textTransform: 'uppercase'
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '14px',
+                    borderRadius: '10px',
+                    background: 'var(--primary)',
+                    color: '#ffffff',
+                    textDecoration: 'none',
+                    fontFamily: 'var(--font-sinhala)',
+                    fontWeight: 700,
+                    fontSize: '1.1rem',
+                    textAlign: 'center'
                   }}
                 >
-                  Coming Soon
-                </span>
-              </div>
+                  Login / පිවිසෙන්න
+                </Link>
+              )}
             </div>
           </motion.div>
         )}
