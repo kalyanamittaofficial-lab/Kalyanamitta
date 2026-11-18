@@ -82,7 +82,7 @@ export default function MemberIdCard({ user, profile, isPreview = false }) {
   // WhatsApp Share
   const handleWhatsAppShare = () => {
     const message = encodeURIComponent(
-      `✨ මම කල්‍යාණමිත්ත ධර්ම සාමාජිකයෙකු (Dhamma Seeker) ලෙස ලියාපදිංචි වුණා!\n🪪 මගේ සාමාජික අංකය: ${kmId}\n👤 නම: ${name}\n\nඔබත් ධර්ම ගවේෂක සාමාජිකත්වය ලබාගන්න: https://kalyanamitta.org/profile`
+      `මම කල්‍යාණමිත්ත ධර්ම සාමාජිකයෙකු ලෙස ලියාපදිංචි වුණා!\nමගේ සාමාජික අංකය: ${kmId}\nනම: ${name}\n\nඔබත් ධර්ම ගවේෂක සාමාජිකත්වය ලබා ගන්න: https://kalyanamitta.org/profile`
     );
     window.open(`https://api.whatsapp.com/send?text=${message}`, '_blank');
   };

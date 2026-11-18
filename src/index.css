@@ -43,6 +43,17 @@
   --accent-gold: #D4AF37; 
 }
 
+[data-theme='dark'] input,
+[data-theme='dark'] select,
+[data-theme='dark'] textarea {
+  color-scheme: dark;
+}
+
+[data-theme='dark'] select option {
+  background-color: var(--bg-card);
+  color: var(--text-main);
+}
+
 * {
   margin: 0;
   padding: 0;

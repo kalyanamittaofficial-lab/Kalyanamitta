@@ -109,16 +109,16 @@ export default function Dashboard() {
           name={name}
           value={value || ''}
           onChange={handleEditChange}
-          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--primary)', background: '#fff', fontSize: '1rem', fontFamily: 'var(--font-sinhala)' }}
+          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--primary)', background: 'var(--bg-secondary)', color: 'var(--text-main)', fontSize: '1rem', fontFamily: 'var(--font-sinhala)' }}
         />
       ) : (
         <div style={{ 
           fontSize: '1.05rem', 
-          color: isReadOnly ? 'rgba(0,0,0,0.4)' : 'var(--text-main)', 
+          color: isReadOnly ? 'var(--text-muted)' : 'var(--text-main)', 
           fontFamily: 'var(--font-sinhala)', 
           fontWeight: isReadOnly ? '400' : '500',
           padding: '10px 0',
-          borderBottom: '1px solid rgba(0,0,0,0.05)'
+          borderBottom: '1px solid var(--glass-border)'
         }}>
           {value || '-'}
         </div>
@@ -231,23 +231,23 @@ export default function Dashboard() {
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
-                <span style={{ fontSize: '0.85rem', color: 'rgba(0,0,0,0.4)', fontFamily: 'var(--font-sinhala)', display: 'block', marginBottom: '8px' }}>නිවන් දකින්න ඇති උනන්දුව</span>
-                <div style={{ width: '100%', height: '8px', background: 'rgba(0,0,0,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
-                  <div style={{ width: `${profile?.spiritual_interest ?? profile?.interest_level ?? 0}%`, height: '100%', background: 'rgba(140, 21, 21, 0.3)' }}></div>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', display: 'block', marginBottom: '8px' }}>නිවන් දකින්න ඇති උනන්දුව</span>
+                <div style={{ width: '100%', height: '8px', background: 'var(--glass-border)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div style={{ width: `${profile?.spiritual_interest ?? profile?.interest_level ?? 0}%`, height: '100%', background: 'var(--primary)' }}></div>
                 </div>
               </div>
               
               <div>
-                <span style={{ fontSize: '0.85rem', color: 'rgba(0,0,0,0.4)', fontFamily: 'var(--font-sinhala)', display: 'block', marginBottom: '8px' }}>දැනට කරන කැපකිරීම</span>
-                <div style={{ width: '100%', height: '8px', background: 'rgba(0,0,0,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
-                  <div style={{ width: `${profile?.current_dedication || 0}%`, height: '100%', background: 'rgba(140, 21, 21, 0.3)' }}></div>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', display: 'block', marginBottom: '8px' }}>දැනට කරන කැපකිරීම</span>
+                <div style={{ width: '100%', height: '8px', background: 'var(--glass-border)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div style={{ width: `${profile?.current_dedication || 0}%`, height: '100%', background: 'var(--primary)' }}></div>
                 </div>
               </div>
 
               <div>
-                <span style={{ fontSize: '0.85rem', color: 'rgba(0,0,0,0.4)', fontFamily: 'var(--font-sinhala)', display: 'block', marginBottom: '8px' }}>ඉදිරියට කිරීමට සූදානම් කැපකිරීම</span>
-                <div style={{ width: '100%', height: '8px', background: 'rgba(0,0,0,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
-                  <div style={{ width: `${profile?.potential_dedication || 0}%`, height: '100%', background: 'rgba(140, 21, 21, 0.3)' }}></div>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', display: 'block', marginBottom: '8px' }}>ඉදිරියට කිරීමට සූදානම් කැපකිරීම</span>
+                <div style={{ width: '100%', height: '8px', background: 'var(--glass-border)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div style={{ width: `${profile?.potential_dedication || 0}%`, height: '100%', background: 'var(--primary)' }}></div>
                 </div>
               </div>
             </div>
@@ -267,7 +267,7 @@ export default function Dashboard() {
                 key={idx}
                 onClick={() => navigate(item.path)}
                 style={{
-                  background: '#fff', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '20px',
+                  background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '20px',
                   display: 'flex', alignItems: 'center', gap: '20px', cursor: 'pointer', transition: 'all 0.3s ease',
                   boxShadow: '0 4px 15px rgba(0,0,0,0.02)'
                 }}
@@ -292,11 +292,11 @@ export default function Dashboard() {
         <button 
           onClick={async () => { await supabase.auth.signOut(); navigate('/login'); }}
           style={{ 
-            background: isHoveringLogout ? '#fff1f2' : 'transparent', 
-            border: `1px solid ${isHoveringLogout ? '#fecdd3' : 'var(--glass-border)'}`, 
+            background: isHoveringLogout ? 'rgba(220, 38, 38, 0.12)' : 'transparent', 
+            border: `1px solid ${isHoveringLogout ? 'rgba(220, 38, 38, 0.35)' : 'var(--glass-border)'}`, 
             padding: '12px 32px', 
             borderRadius: '12px', 
-            color: isHoveringLogout ? '#be123c' : 'var(--text-muted)', 
+            color: isHoveringLogout ? 'var(--primary)' : 'var(--text-muted)', 
             fontFamily: 'var(--font-sinhala)', fontWeight: '500', cursor: 'pointer', transition: 'all 0.3s ease'
           }}
           onMouseEnter={() => setIsHoveringLogout(true)}

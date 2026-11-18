@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../utils/supabase';
+import { resolvePostAuthRoute } from '../utils/auth';
 import { Loader2, AlertCircle } from 'lucide-react';
 
 export default function AuthCallback() {
@@ -70,28 +71,8 @@ export default function AuthCallback() {
     };
 
     const routeUser = async (user) => {
-      try {
-        // Check profile status
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('id, status')
-          .eq('id', user.id)
-          .maybeSingle();
-
-        if (profileError) {
-          console.warn('Profile fetch warning on callback:', profileError);
-        }
-
-        if (profile && profile.status === 'active') {
-          navigate('/dashboard', { replace: true });
-        } else {
-          // New Google user or onboarding not finished yet
-          navigate('/onboarding', { replace: true });
-        }
-      } catch (error) {
-        console.error('Routing error after OAuth:', error);
-        navigate('/onboarding', { replace: true });
-      }
+      const dest = await resolvePostAuthRoute(user.id);
+      navigate(dest, { replace: true });
     };
 
     handleCallback();

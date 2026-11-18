@@ -63,34 +63,116 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
+DECLARE
+    has_full_registration BOOLEAN;
+    new_km_id TEXT;
+    year_part TEXT;
+    seq_part TEXT;
 BEGIN
-    INSERT INTO public.profiles (
-        id,
-        email,
-        name,
-        avatar_url,
-        status
-    )
-    VALUES (
-        NEW.id,
-        NEW.email,
-        COALESCE(
-            NEW.raw_user_meta_data->>'full_name',
-            NEW.raw_user_meta_data->>'name',
-            split_part(NEW.email, '@', 1)
-        ),
-        COALESCE(NEW.raw_user_meta_data->>'avatar_url', NEW.raw_user_meta_data->>'picture'),
-        'pending_onboarding'
-    )
-    ON CONFLICT (id) DO UPDATE
-    SET 
-        avatar_url = COALESCE(EXCLUDED.avatar_url, public.profiles.avatar_url),
-        name = CASE 
-            WHEN public.profiles.name IS NULL OR public.profiles.name = '' 
-            THEN EXCLUDED.name 
-            ELSE public.profiles.name 
-        END,
-        updated_at = timezone('utc'::text, now());
+    has_full_registration :=
+        COALESCE(NEW.raw_user_meta_data->>'mobile', '') <> '' AND
+        COALESCE(NEW.raw_user_meta_data->>'state', '') <> '' AND
+        COALESCE(NEW.raw_user_meta_data->>'dob', '') <> '' AND
+        COALESCE(NEW.raw_user_meta_data->>'maritalStatus', '') <> '' AND
+        COALESCE(NEW.raw_user_meta_data->>'education', '') <> '';
+
+    IF has_full_registration THEN
+        year_part := to_char(CURRENT_DATE, 'YYYY');
+        seq_part := lpad(nextval('kalyanamitta_id_seq')::TEXT, 4, '0');
+        new_km_id := 'KM-KALYANAMIT-' || year_part || '-' || seq_part;
+
+        INSERT INTO public.profiles (
+            id,
+            email,
+            name,
+            avatar_url,
+            mobile_number,
+            country,
+            state_district,
+            native_language,
+            dob,
+            marital_status,
+            family_details,
+            education_profession,
+            spiritual_interest,
+            interest_level,
+            current_dedication,
+            potential_dedication,
+            status,
+            kalyanamitta_id
+        )
+        VALUES (
+            NEW.id,
+            NEW.email,
+            COALESCE(
+                NEW.raw_user_meta_data->>'full_name',
+                NEW.raw_user_meta_data->>'name',
+                split_part(NEW.email, '@', 1)
+            ),
+            COALESCE(NEW.raw_user_meta_data->>'avatar_url', NEW.raw_user_meta_data->>'picture'),
+            NEW.raw_user_meta_data->>'mobile',
+            COALESCE(NEW.raw_user_meta_data->>'country', 'Sri Lanka'),
+            NEW.raw_user_meta_data->>'state',
+            COALESCE(NEW.raw_user_meta_data->>'language', 'Sinhala'),
+            NULLIF(NEW.raw_user_meta_data->>'dob', '')::DATE,
+            NEW.raw_user_meta_data->>'maritalStatus',
+            NEW.raw_user_meta_data->>'familyDetails',
+            NEW.raw_user_meta_data->>'education',
+            COALESCE((NEW.raw_user_meta_data->>'interest')::INTEGER, 50),
+            COALESCE((NEW.raw_user_meta_data->>'interest')::INTEGER, 50),
+            COALESCE((NEW.raw_user_meta_data->>'currentDedication')::INTEGER, 50),
+            COALESCE((NEW.raw_user_meta_data->>'potentialDedication')::INTEGER, 50),
+            'active',
+            new_km_id
+        )
+        ON CONFLICT (id) DO UPDATE
+        SET
+            email = COALESCE(EXCLUDED.email, public.profiles.email),
+            name = COALESCE(NULLIF(public.profiles.name, ''), EXCLUDED.name),
+            mobile_number = COALESCE(EXCLUDED.mobile_number, public.profiles.mobile_number),
+            country = COALESCE(EXCLUDED.country, public.profiles.country),
+            state_district = COALESCE(EXCLUDED.state_district, public.profiles.state_district),
+            native_language = COALESCE(EXCLUDED.native_language, public.profiles.native_language),
+            dob = COALESCE(EXCLUDED.dob, public.profiles.dob),
+            marital_status = COALESCE(EXCLUDED.marital_status, public.profiles.marital_status),
+            family_details = COALESCE(EXCLUDED.family_details, public.profiles.family_details),
+            education_profession = COALESCE(EXCLUDED.education_profession, public.profiles.education_profession),
+            spiritual_interest = COALESCE(EXCLUDED.spiritual_interest, public.profiles.spiritual_interest),
+            interest_level = COALESCE(EXCLUDED.interest_level, public.profiles.interest_level),
+            current_dedication = COALESCE(EXCLUDED.current_dedication, public.profiles.current_dedication),
+            potential_dedication = COALESCE(EXCLUDED.potential_dedication, public.profiles.potential_dedication),
+            status = 'active',
+            kalyanamitta_id = COALESCE(public.profiles.kalyanamitta_id, new_km_id),
+            updated_at = timezone('utc'::text, now());
+    ELSE
+        INSERT INTO public.profiles (
+            id,
+            email,
+            name,
+            avatar_url,
+            status
+        )
+        VALUES (
+            NEW.id,
+            NEW.email,
+            COALESCE(
+                NEW.raw_user_meta_data->>'full_name',
+                NEW.raw_user_meta_data->>'name',
+                split_part(NEW.email, '@', 1)
+            ),
+            COALESCE(NEW.raw_user_meta_data->>'avatar_url', NEW.raw_user_meta_data->>'picture'),
+            'pending_onboarding'
+        )
+        ON CONFLICT (id) DO UPDATE
+        SET 
+            avatar_url = COALESCE(EXCLUDED.avatar_url, public.profiles.avatar_url),
+            name = CASE 
+                WHEN public.profiles.name IS NULL OR public.profiles.name = '' 
+                THEN EXCLUDED.name 
+                ELSE public.profiles.name 
+            END,
+            updated_at = timezone('utc'::text, now());
+    END IF;
 
     RETURN NEW;
 END;
@@ -190,3 +272,7 @@ BEGIN
         updated_at = timezone('utc'::text, now());
 END;
 $$;
+
+GRANT EXECUTE ON FUNCTION public.complete_onboarding(
+    TEXT, TEXT, TEXT, TEXT, TEXT, DATE, TEXT, TEXT, TEXT, INTEGER, INTEGER, INTEGER
+) TO authenticated;

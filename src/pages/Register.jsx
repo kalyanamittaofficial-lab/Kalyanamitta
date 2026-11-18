@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../utils/supabase';
-import { signInWithGoogle } from '../utils/auth';
+import { signInWithGoogle, resolvePostAuthRoute } from '../utils/auth';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -10,6 +10,17 @@ export default function Register() {
   const [step, setStep] = useState(1);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  useEffect(() => {
+    let isMounted = true;
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user && isMounted) {
+        const dest = await resolvePostAuthRoute(session.user.id);
+        if (isMounted) navigate(dest, { replace: true });
+      }
+    });
+    return () => { isMounted = false; };
+  }, [navigate]);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -68,14 +79,17 @@ export default function Register() {
     setError('');
 
     try {
+      const finalCountry = formData.country === 'Other' ? formData.otherCountry : formData.country;
+
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
             full_name: formData.name,
             mobile: formData.mobile,
-            country: formData.country === 'Other' ? formData.otherCountry : formData.country,
+            country: finalCountry,
             state: formData.state,
             language: formData.language,
             dob: formData.dob,
@@ -91,9 +105,32 @@ export default function Register() {
 
       if (signUpError) throw signUpError;
       
-      // If email confirmation is required, there won't be a session.
+      // If email confirmation is disabled, a session is returned immediately.
       if (data.session) {
-        navigate('/dashboard');
+        // Ensure profile is active with a Kalyanamitta ID even if the DB trigger is older
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('status')
+          .eq('id', data.session.user.id)
+          .maybeSingle();
+
+        if (!existingProfile || existingProfile.status !== 'active') {
+          await supabase.rpc('complete_onboarding', {
+            p_name: formData.name,
+            p_mobile: formData.mobile,
+            p_country: finalCountry,
+            p_state: formData.state,
+            p_language: formData.language,
+            p_dob: formData.dob,
+            p_marital: formData.maritalStatus,
+            p_family: formData.familyDetails,
+            p_education: formData.education,
+            p_interest: parseInt(formData.interest),
+            p_current: parseInt(formData.currentDedication),
+            p_potential: parseInt(formData.potentialDedication)
+          });
+        }
+        navigate('/dashboard', { replace: true });
       } else {
         setSuccess('ගිණුම සෑදීම සාර්ථකයි! කරුණාකර ඔබගේ විද්‍යුත් තැපෑල (Email) පරීක්ෂා කර ගිණුම සක්‍රිය කරන්න.');
       }
@@ -121,6 +158,7 @@ export default function Register() {
 
   const getSelectStyle = () => ({
     ...getInputStyle(false),
+    backgroundColor: 'var(--bg-main)',
     cursor: 'pointer'
   });
 
@@ -215,7 +253,7 @@ export default function Register() {
             height: 20px;
             width: 20px;
             border-radius: 50%;
-            background: #8b1818;
+            background: var(--primary);
             cursor: pointer;
             margin-top: -8px;
             box-shadow: 0 2px 6px rgba(139,24,24,0.4);
@@ -224,7 +262,7 @@ export default function Register() {
             width: 100%;
             height: 4px;
             cursor: pointer;
-            background: #e5e7eb;
+            background: var(--glass-border);
             border-radius: 2px;
           }
         `}
@@ -262,7 +300,7 @@ export default function Register() {
           </div>
 
           {error && (
-            <div style={{ padding: '16px', backgroundColor: '#fef2f2', color: '#991b1b', borderRadius: '8px', marginBottom: '32px', fontSize: '0.9rem', border: '1px solid #fecaca' }}>
+            <div style={{ padding: '16px', backgroundColor: 'rgba(220, 38, 38, 0.12)', color: 'var(--primary)', borderRadius: '8px', marginBottom: '32px', fontSize: '0.9rem', border: '1px solid rgba(220, 38, 38, 0.35)' }}>
               {error}
             </div>
           )}

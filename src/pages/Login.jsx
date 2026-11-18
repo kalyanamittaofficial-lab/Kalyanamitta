@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../utils/supabase';
-import { signInWithGoogle } from '../utils/auth';
+import { signInWithGoogle, resolvePostAuthRoute } from '../utils/auth';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -12,15 +12,27 @@ export default function Login() {
   const [message, setMessage] = useState({ text: '', type: '' });
   const [focusedInput, setFocusedInput] = useState(null);
 
+  useEffect(() => {
+    let isMounted = true;
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user && isMounted) {
+        const dest = await resolvePostAuthRoute(session.user.id);
+        if (isMounted) navigate(dest, { replace: true });
+      }
+    });
+    return () => { isMounted = false; };
+  }, [navigate]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setMessage({ text: '', type: '' });
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      navigate('/dashboard');
+      const dest = await resolvePostAuthRoute(data?.user?.id);
+      navigate(dest, { replace: true });
     } catch (error) {
       setMessage({ text: error.message, type: 'error' });
     } finally {

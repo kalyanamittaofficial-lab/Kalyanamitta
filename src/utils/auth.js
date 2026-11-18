@@ -56,3 +56,30 @@ export async function fetchUserProfile(userId) {
   }
   return data;
 }
+
+/**
+ * Resolves the post-authentication destination route based on profile status.
+ * Active members go to /dashboard; new or incomplete profiles go to /onboarding.
+ * @param {string} userId - User ID
+ * @returns {Promise<'/dashboard' | '/onboarding'>}
+ */
+export async function resolvePostAuthRoute(userId) {
+  if (!userId) return '/onboarding';
+  try {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('id, status')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (error) {
+      console.warn('Profile status lookup warning:', error);
+      return '/onboarding';
+    }
+
+    return profile?.status === 'active' ? '/dashboard' : '/onboarding';
+  } catch (err) {
+    console.error('Error resolving post-auth route:', err);
+    return '/onboarding';
+  }
+}

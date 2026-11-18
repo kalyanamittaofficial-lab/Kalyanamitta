@@ -145,7 +145,7 @@ export default function Onboarding() {
   // Common Input Style
   const inputStyle = {
     width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid var(--glass-border)',
-    fontSize: '0.95rem', outline: 'none', background: 'rgba(255,255,255,0.8)', color: 'var(--text-main)',
+    fontSize: '0.95rem', outline: 'none', background: 'var(--bg-secondary)', color: 'var(--text-main)',
     fontFamily: 'system-ui, -apple-system, sans-serif'
   };
 
@@ -163,16 +163,16 @@ export default function Onboarding() {
         </p>
 
         {error && (
-          <div style={{ padding: '12px', background: '#fff1f2', color: '#9f1239', borderRadius: '8px', marginBottom: '24px', fontSize: '0.9rem', border: '1px solid #fecdd3' }}>
+          <div style={{ padding: '12px', background: 'rgba(220, 38, 38, 0.12)', color: 'var(--primary)', borderRadius: '8px', marginBottom: '24px', fontSize: '0.9rem', border: '1px solid rgba(220, 38, 38, 0.35)' }}>
             {error}
           </div>
         )}
 
-        <div style={{ background: '#fff', borderRadius: '16px', padding: '40px', boxShadow: '0 10px 40px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.05)' }}>
+        <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '40px', boxShadow: '0 10px 40px rgba(0,0,0,0.12)', border: '1px solid var(--glass-border)' }}>
           
           {step === 1 ? (
             <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div style={{ borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '16px', marginBottom: '8px' }}>
+              <div style={{ borderBottom: '1px solid var(--glass-border)', paddingBottom: '16px', marginBottom: '8px' }}>
                 <h3 style={{ fontSize: '1.2rem', fontWeight: '700', color: 'var(--text-main)' }}>Step 1: Account Details</h3>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>This information is kept strictly confidential.</p>
               </div>
@@ -257,7 +257,7 @@ export default function Onboarding() {
             </form>
           ) : (
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-              <div style={{ borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '16px' }}>
+              <div style={{ borderBottom: '1px solid var(--glass-border)', paddingBottom: '16px' }}>
                 <h3 style={{ fontSize: '1.2rem', fontWeight: '700', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)' }}>පියවර 2: ආධ්‍යාත්මික පසුබිම</h3>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)' }}>කරුණාකර පහත ප්‍රශ්න සඳහා අවංකව පිළිතුරු සපයන්න.</p>
               </div>
@@ -266,7 +266,7 @@ export default function Onboarding() {
                 <label style={{ ...labelStyle, fontSize: '1rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', marginBottom: '12px' }}>
                   1. නිවන් දකින්න කොච්චර උනන්දුවක් තියෙනවද?
                 </label>
-                <input type="range" min="0" max="100" name="interest" value={formData.interest} onChange={handleChange} style={{ width: '100%', cursor: 'pointer' }} />
+                <input type="range" min="0" max="100" name="interest" value={formData.interest} onChange={handleChange} style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--primary)' }} />
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', marginTop: '4px' }}>
                   <span>අඩුයි</span><span>වැඩියි</span>
                 </div>
@@ -276,7 +276,7 @@ export default function Onboarding() {
                 <label style={{ ...labelStyle, fontSize: '1rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', marginBottom: '12px' }}>
                   2. ඒ වෙනුවෙන් තමන් කරන කැපකිරීම කොච්චරක් කියලා තමන්ට දැනෙනවද?
                 </label>
-                <input type="range" min="0" max="100" name="currentDedication" value={formData.currentDedication} onChange={handleChange} style={{ width: '100%', cursor: 'pointer' }} />
+                <input type="range" min="0" max="100" name="currentDedication" value={formData.currentDedication} onChange={handleChange} style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--primary)' }} />
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', marginTop: '4px' }}>
                   <span>අඩුයි</span><span>වැඩියි</span>
                 </div>
@@ -286,14 +286,14 @@ export default function Onboarding() {
                 <label style={{ ...labelStyle, fontSize: '1rem', color: 'var(--text-main)', fontFamily: 'var(--font-sinhala)', marginBottom: '12px' }}>
                   3. හරි මඟ පෙන්වීමක් ලැබුණොත් තමන්ට කොච්චර කැපකිරීමක් කරන්න සූදානම්ද?
                 </label>
-                <input type="range" min="0" max="100" name="potentialDedication" value={formData.potentialDedication} onChange={handleChange} style={{ width: '100%', cursor: 'pointer' }} />
+                <input type="range" min="0" max="100" name="potentialDedication" value={formData.potentialDedication} onChange={handleChange} style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--primary)' }} />
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sinhala)', marginTop: '4px' }}>
                   <span>අඩුයි</span><span>වැඩියි</span>
                 </div>
               </div>
 
               <div style={{ display: 'flex', gap: '16px', marginTop: '16px' }}>
-                <button type="button" onClick={() => setStep(1)} style={{ flex: 1, padding: '16px', background: 'transparent', color: 'var(--text-main)', border: '1px solid rgba(0,0,0,0.2)', borderRadius: '8px', fontSize: '1rem', fontWeight: '600', cursor: 'pointer' }}>
+                <button type="button" onClick={() => setStep(1)} style={{ flex: 1, padding: '16px', background: 'transparent', color: 'var(--text-main)', border: '1px solid var(--glass-border)', borderRadius: '8px', fontSize: '1rem', fontWeight: '600', cursor: 'pointer' }}>
                   ආපසු (Back)
                 </button>
                 <button type="submit" disabled={isLoading} style={{ flex: 2, padding: '16px', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '1rem', fontWeight: '600', cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.7 : 1 }}>
