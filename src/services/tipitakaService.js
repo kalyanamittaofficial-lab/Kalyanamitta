@@ -9,6 +9,15 @@ function cleanText(text) {
   return text.replace(/\{\d+\}/g, '').trim();
 }
 
+function normalizeSuttaTitle(name) {
+  return String(name || '')
+    .replace(/^\d+\.\s*/, '')
+    .replace(/\s+/g, '')
+    .replace(/^මහා/, '')
+    .replace(/ඞ්ග/g, 'ංග')
+    .trim();
+}
+
 export async function loadSuttaTree() {
   if (treeCache) return treeCache;
   const res = await fetch(`${TIPITAKA_BASE}/sutta-tree.json`);
@@ -26,7 +35,7 @@ export async function loadPopularSuttas() {
   if (!popRes.ok) return [];
   const raw = await popRes.json();
 
-  popularCache = raw
+  const mapped = raw
     .filter(item => tree[item.key])
     .map(item => {
       const node = tree[item.key];
@@ -40,6 +49,14 @@ export async function loadPopularSuttas() {
         textFile: node[5]
       };
     });
+
+  const seenTitles = new Set();
+  popularCache = mapped.filter(item => {
+    const norm = normalizeSuttaTitle(item.sinhalaName || item.paliName);
+    if (!norm || seenTitles.has(norm)) return false;
+    seenTitles.add(norm);
+    return true;
+  });
 
   return popularCache;
 }

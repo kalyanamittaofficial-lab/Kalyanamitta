@@ -11,6 +11,8 @@ import {
   getPathReflections
 } from '../../services/practiceEcosystemStore';
 import { getLabLang, t } from '../../services/labLangStore';
+import { EasyDurationSelector } from '../../components/Lab/TimeSelectors';
+import PaginationBar from '../../components/Lab/PaginationBar';
 
 export default function PinPotha() {
   const navigate = useNavigate();
@@ -22,8 +24,14 @@ export default function PinPotha() {
   const [dedications, setDedications] = useState(() => getDedications());
   const [pathReflections, setPathReflections] = useState(() => getPathReflections());
   const [filterType, setFilterType] = useState('all');
+  const [pinPage, setPinPage] = useState(1);
 
   const [entryType, setEntryType] = useState('dana');
+  const [cittaType, setCittaType] = useState('kusala'); // 'kusala' | 'akusala'
+  const [scheduleType, setScheduleType] = useState('once'); // 'once' | 'daily' | 'poya' | 'range'
+  const [durationDays, setDurationDays] = useState('7');
+  const [endDate, setEndDate] = useState('');
+  const [durationMinutes, setDurationMinutes] = useState('30');
   const [title, setTitle] = useState(() => searchParams.get('title') || '');
   const [reflection, setReflection] = useState('');
   const [entryDate, setEntryDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -50,6 +58,11 @@ export default function PinPotha() {
     if (!title.trim()) return;
     addPinPothaEntry({
       entryType,
+      cittaType,
+      scheduleType,
+      durationDays: scheduleType === 'range' ? Number(durationDays || 7) : null,
+      endDate: scheduleType === 'range' && endDate ? endDate : null,
+      durationMinutes: Number(durationMinutes || 30),
       title: title.trim(),
       reflection: reflection.trim(),
       entryDate,
@@ -69,6 +82,10 @@ export default function PinPotha() {
   });
 
   const filtered = tabScopedEntries;
+  const PIN_ITEMS_PER_PAGE = 5;
+  const pinTotalPages = Math.max(1, Math.ceil(filtered.length / PIN_ITEMS_PER_PAGE));
+  const safePinPage = Math.min(pinPage, pinTotalPages);
+  const pagedPinEntries = filtered.slice((safePinPage - 1) * PIN_ITEMS_PER_PAGE, safePinPage * PIN_ITEMS_PER_PAGE);
 
   const pinTabs = [
     { id: 'overview', label: t(lang, 'සමස්තය', 'Overview') },
@@ -166,7 +183,7 @@ export default function PinPotha() {
                 style={{ padding: '9px 12px', borderRadius: '10px', border: '1px solid var(--lab-border)', background: 'var(--lab-bg-subtle)', color: 'var(--lab-text)', fontSize: '0.85rem' }}
               >
                 {Object.values(PIN_POTHA_TYPES).map(t => (
-                  <option key={t.id} value={t.id}>{t.sinhala} · {t.label}</option>
+                  <option key={t.id} value={t.id}>{t.sinhala}</option>
                 ))}
               </select>
               <input
@@ -194,14 +211,74 @@ export default function PinPotha() {
               style={{ padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--lab-border)', background: 'var(--lab-bg-subtle)', color: 'var(--lab-text)', fontSize: '0.88rem', fontFamily: 'var(--font-sinhala)', resize: 'vertical' }}
             />
 
+            {/* Kusala / Akusala & Schedule (updates Dashboard Graph) */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <select
+                value={cittaType}
+                onChange={(e) => setCittaType(e.target.value)}
+                style={{ padding: '9px 10px', borderRadius: '10px', border: '1px solid var(--lab-border)', background: 'var(--lab-bg-subtle)', color: 'var(--lab-text)', fontSize: '0.84rem' }}
+              >
+                <option value="kusala">කුසල චිත්ත (දහම් කටයුතු)</option>
+                <option value="akusala">අකුසල චිත්ත (ප්‍රමාද)</option>
+              </select>
+
+              <select
+                value={scheduleType}
+                onChange={(e) => setScheduleType(e.target.value)}
+                style={{ padding: '9px 10px', borderRadius: '10px', border: '1px solid var(--lab-border)', background: 'var(--lab-bg-subtle)', color: 'var(--lab-text)', fontSize: '0.84rem' }}
+              >
+                <option value="once">එක් දිනක් පමණි</option>
+                <option value="daily">දිනපතා (Daily)</option>
+                <option value="poya">පෝය දිනවල පමණි</option>
+                <option value="range">කාල සීමාවක් / දින ගණනක්</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '0.8rem', color: 'var(--lab-text-muted)', whiteSpace: 'nowrap' }}>කාලය:</span>
+              <EasyDurationSelector
+                totalMinutes={Number(durationMinutes)}
+                onChange={(mins) => setDurationMinutes(String(mins))}
+              />
+            </div>
+
+            {scheduleType === 'range' && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <select
+                  value={durationDays}
+                  onChange={(e) => setDurationDays(e.target.value)}
+                  style={{ padding: '9px 10px', borderRadius: '10px', border: '1px solid var(--lab-border)', background: 'var(--lab-bg-subtle)', color: 'var(--lab-text)', fontSize: '0.84rem' }}
+                >
+                  {[
+                    { v: '3', label: 'දින 3' },
+                    { v: '7', label: 'දින 7 (සතියක්)' },
+                    { v: '14', label: 'දින 14 (සති 2)' },
+                    { v: '21', label: 'දින 21' },
+                    { v: '30', label: 'දින 30 (මාසයක්)' },
+                    { v: '60', label: 'දින 60 (මාස 2)' },
+                    { v: '90', label: 'දින 90 (මාස 3)' }
+                  ].map(opt => (
+                    <option key={opt.v} value={opt.v}>{opt.label}</option>
+                  ))}
+                </select>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  title="අවසන් දිනය (විකල්ප)"
+                  style={{ padding: '9px 10px', borderRadius: '10px', border: '1px solid var(--lab-border)', background: 'var(--lab-bg-subtle)', color: 'var(--lab-text)', fontSize: '0.84rem' }}
+                />
+              </div>
+            )}
+
             <select
               value={linkedPathFactor}
               onChange={(e) => setLinkedPathFactor(e.target.value)}
               style={{ padding: '9px 12px', borderRadius: '10px', border: '1px solid var(--lab-border)', background: 'var(--lab-bg-subtle)', color: 'var(--lab-text)', fontSize: '0.84rem' }}
             >
-              <option value="">— Link Path Factor (Optional) —</option>
+              <option value="">— මාර්ග අංගයක් සම්බන්ධ කරන්න (විකල්ප) —</option>
               {EIGHTFOLD_FACTORS.map(f => (
-                <option key={f.id} value={f.id}>{f.pali} ({f.sinhala})</option>
+                <option key={f.id} value={f.id}>{f.sinhala} ({f.pali})</option>
               ))}
             </select>
 
@@ -209,7 +286,7 @@ export default function PinPotha() {
               type="text"
               value={linkedSuttaKey}
               onChange={(e) => setLinkedSuttaKey(e.target.value)}
-              placeholder="Linked Sutta ID (Optional, e.g., kn-khp-9)"
+              placeholder="සම්බන්ධිත සූත්‍ර අංකය (විකල්ප)"
               style={{ padding: '9px 12px', borderRadius: '10px', border: '1px solid var(--lab-border)', background: 'var(--lab-bg-subtle)', color: 'var(--lab-text)', fontSize: '0.84rem' }}
             />
 
@@ -218,7 +295,7 @@ export default function PinPotha() {
               style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '10px 16px', borderRadius: '10px', border: 'none', background: '#059669', color: '#fff', fontWeight: '600', fontSize: '0.86rem', cursor: 'pointer' }}
             >
               <Plus size={15} />
-              <span>Save to Private Pin Potha</span>
+              <span>පෞද්ගලික පින් පොතට සුරකින්න</span>
             </button>
           </div>
         </form>
@@ -239,7 +316,7 @@ export default function PinPotha() {
                 cursor: 'pointer'
               }}
             >
-              All ({entries.length})
+              සියල්ල ({entries.length})
             </button>
             {Object.values(PIN_POTHA_TYPES).map(t => (
               <button
@@ -261,13 +338,14 @@ export default function PinPotha() {
             ))}
           </div>
 
-          {filtered.length === 0 ? (
+          {pagedPinEntries.length === 0 ? (
             <div className="km-lab-card" style={{ padding: '36px 20px', textAlign: 'center', color: 'var(--lab-text-muted)', fontFamily: 'var(--font-sinhala)' }}>
               <BookHeart size={28} style={{ opacity: 0.4, marginBottom: '8px' }} />
               <div>තවමත් පින් පොතේ සටහන් නොමැත.</div>
             </div>
           ) : (
-            filtered.map(item => {
+            <>
+              {pagedPinEntries.map(item => {
               const typeCfg = PIN_POTHA_TYPES[item.entryType] || PIN_POTHA_TYPES.sila;
               const factorCfg = EIGHTFOLD_FACTORS.find(f => f.id === item.linkedPathFactor);
               return (
@@ -275,8 +353,18 @@ export default function PinPotha() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                       <span style={{ fontSize: '0.72rem', fontWeight: '700', color: typeCfg.color, background: `${typeCfg.color}18`, padding: '2px 8px', borderRadius: '999px' }}>
-                        {typeCfg.sinhala} · {typeCfg.label}
+                        {typeCfg.sinhala}
                       </span>
+                      <span style={{ fontSize: '0.7rem', fontWeight: '700', color: item.cittaType === 'akusala' ? '#E11D48' : '#059669', background: item.cittaType === 'akusala' ? 'rgba(225,29,72,0.1)' : 'rgba(5,150,105,0.1)', padding: '2px 7px', borderRadius: '999px' }}>
+                        {item.cittaType === 'akusala' ? 'අකුසල' : 'කුසල'}
+                      </span>
+                      {item.scheduleType && item.scheduleType !== 'once' && (
+                        <span className="km-lab-tag">
+                          {item.scheduleType === 'daily' && 'දිනපතා'}
+                          {item.scheduleType === 'poya' && 'පෝය දින'}
+                          {item.scheduleType === 'range' && (item.endDate ? `${item.entryDate} → ${item.endDate}` : `දින ${item.durationDays || 7}`)}
+                        </span>
+                      )}
                       <span style={{ fontSize: '0.75rem', color: 'var(--lab-text-muted)', fontFamily: 'monospace' }}>
                         {item.entryDate}
                       </span>
@@ -321,7 +409,13 @@ export default function PinPotha() {
                   </div>
                 </div>
               );
-            })
+            })}
+              <PaginationBar
+                page={safePinPage}
+                totalPages={pinTotalPages}
+                onPageChange={setPinPage}
+              />
+            </>
           )}
         </div>
       </div>

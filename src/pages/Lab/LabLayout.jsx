@@ -34,7 +34,8 @@ import { hydratePracticeEcosystemFromCloud } from '../../services/practiceEcosys
 import { hydrateMyPublicProfileFromCloud } from '../../services/communityExploreStore';
 import { t } from '../../services/labLangStore';
 import { searchLabWorkspace } from '../../services/collectionsStore';
-import { searchSuttas, getNikayas, getTreeChildren } from '../../services/tipitakaService';
+import { getLifeClockConfig, computeLifeClock } from '../../services/lifeClockStore';
+import { searchSuttas, getNikayas, getTreeChildren, getBreadcrumbs } from '../../services/tipitakaService';
 import LabLoadingScreen from './LabLoadingScreen';
 import './labTheme.css';
 
@@ -53,12 +54,69 @@ export default function LabLayout() {
   const [globalQuery, setGlobalQuery] = useState('');
   const [globalSuttaHits, setGlobalSuttaHits] = useState([]);
   const [nikayas, setNikayas] = useState([]);
-  const [isSuttaTreeOpen, setIsSuttaTreeOpen] = useState(false);
+  const [isSuttaTreeOpen, setIsSuttaTreeOpen] = useState(() => location.pathname.startsWith('/lab/sutta'));
   const [expandedKeys, setExpandedKeys] = useState({});
   const [treeCache, setTreeCache] = useState({});
+  const [navClock, setNavClock] = useState(() => {
+    const cfg = getLifeClockConfig();
+    return computeLifeClock(cfg.dob, cfg.lifespan, cfg.mode);
+  });
 
   useEffect(() => {
     getNikayas().then(list => setNikayas(list));
+  }, []);
+
+  useEffect(() => {
+    if (!location.pathname.startsWith('/lab/sutta')) return undefined;
+
+    const suttaSlug = location.pathname.startsWith('/lab/sutta/')
+      ? decodeURIComponent(location.pathname.replace('/lab/sutta/', '').split('/')[0])
+      : null;
+    const branchParam = new URLSearchParams(location.search).get('branch');
+    const targetKey = suttaSlug || branchParam;
+    if (!targetKey) return undefined;
+
+    let cancelled = false;
+    getBreadcrumbs(targetKey)
+      .then(async (crumbs) => {
+        if (cancelled || !Array.isArray(crumbs)) return;
+        const branchCrumbs = crumbs.filter((c) => c.key && c.key !== 'sp' && (c.hasChildren !== false || c.key === branchParam));
+        const keysToExpand = {};
+        const childEntries = {};
+
+        await Promise.all(
+          branchCrumbs.map(async (c) => {
+            keysToExpand[c.key] = true;
+            const children = await getTreeChildren(c.key).catch(() => []);
+            if (Array.isArray(children) && children.length > 0) {
+              childEntries[c.key] = children;
+            }
+          })
+        );
+
+        if (cancelled) return;
+        setIsSuttaTreeOpen(true);
+        setExpandedKeys((prev) => ({ ...prev, ...keysToExpand }));
+        setTreeCache((prev) => ({ ...prev, ...childEntries }));
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
+    const update = () => {
+      const cfg = getLifeClockConfig();
+      setNavClock(computeLifeClock(cfg.dob, cfg.lifespan, cfg.mode));
+    };
+    const timer = setInterval(update, 1000);
+    window.addEventListener('labLifeClockUpdated', update);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('labLifeClockUpdated', update);
+    };
   }, []);
 
   useEffect(() => {
@@ -139,6 +197,7 @@ export default function LabLayout() {
       titleSi: 'මගේ ජීවිතය සහ ප්‍රතිපදාව',
       titleEn: 'My Life & Practice',
       items: [
+        { to: '/lab/daily-routine', label: 'Daily Routine', sinhalaLabel: 'දෛනික දහම් රටාව', icon: Sun },
         { to: '/lab/pin-potha', label: 'Pin Potha', sinhalaLabel: 'පින් පොත', icon: BookHeart },
         { to: '/lab/compass', label: 'Path Compass', sinhalaLabel: 'මාර්ග දිශානතිය', icon: Compass },
         { to: '/lab/dedication', label: 'Dedication', sinhalaLabel: 'පුණ්‍යානුමෝදනා', icon: Sparkles }
@@ -195,8 +254,8 @@ export default function LabLayout() {
               padding: `6px 10px 6px ${10 + depth * 12}px`,
               borderRadius: '8px',
               border: 'none',
-              background: isSelected ? 'var(--lab-accent-soft)' : 'transparent',
-              color: isSelected ? 'var(--lab-accent)' : 'var(--lab-text)',
+              background: isSelected ? 'var(--lab-sidebar-active-bg)' : 'transparent',
+              color: isSelected ? 'var(--lab-sidebar-active-text)' : 'var(--lab-sidebar-text)',
               fontWeight: isSelected ? '700' : '500',
               fontSize: depth === 0 ? '0.82rem' : '0.78rem',
               fontFamily: 'var(--font-sinhala)',
@@ -264,8 +323,9 @@ export default function LabLayout() {
           height: '100vh',
           position: 'sticky',
           top: 0,
-          background: 'var(--lab-bg-elevated)',
-          borderRight: '1px solid var(--lab-border)',
+          background: 'var(--lab-sidebar-bg)',
+          borderRight: '1px solid var(--lab-sidebar-border)',
+          color: 'var(--lab-sidebar-text)',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
@@ -278,7 +338,7 @@ export default function LabLayout() {
         {/* Brand Header */}
         <div style={{
           padding: isSidebarCollapsed ? '18px 12px' : '18px 18px',
-          borderBottom: '1px solid var(--lab-border)',
+          borderBottom: '1px solid var(--lab-sidebar-border)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: isSidebarCollapsed ? 'center' : 'space-between',
@@ -288,14 +348,14 @@ export default function LabLayout() {
             <Link
               to="/lab"
               onClick={() => setIsSidebarOpenMobile(false)}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'var(--lab-text)' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'var(--lab-sidebar-text)' }}
             >
               <div style={{
                 width: '34px',
                 height: '34px',
                 borderRadius: '10px',
-                background: 'var(--lab-accent)',
-                color: '#fff',
+                background: 'var(--lab-gold)',
+                color: '#FAF8F5',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -303,17 +363,17 @@ export default function LabLayout() {
               }}>
                 <FlaskConical size={17} />
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.15 }}>
-                <span style={{ fontWeight: '700', fontSize: '0.95rem', letterSpacing: '-0.01em' }}>
-                  Dhamma Studio
+              <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
+                <span style={{ fontWeight: '700', fontSize: '0.96rem', fontFamily: 'var(--font-sinhala)', color: 'var(--lab-sidebar-text)' }}>
+                  මගේ දහම් මඟ
                 </span>
-                <span style={{ fontSize: '0.68rem', color: 'var(--lab-text-muted)', fontWeight: 500 }}>
-                  Kalyanamitta Lab
+                <span style={{ fontSize: '0.69rem', color: 'var(--lab-sidebar-muted)', fontWeight: 500, fontFamily: 'var(--font-sinhala)' }}>
+                  අත්තදීප · මා දකින මඟ
                 </span>
               </div>
             </Link>
           ) : (
-            <Link to="/lab" title="Dhamma Studio" style={{ color: 'var(--lab-accent)', display: 'flex' }}>
+            <Link to="/lab" title="මගේ දහම් මඟ" style={{ color: 'var(--lab-gold)', display: 'flex' }}>
               <FlaskConical size={22} />
             </Link>
           )}
@@ -324,14 +384,14 @@ export default function LabLayout() {
             title={isSidebarCollapsed ? 'Expand' : 'Collapse'}
             style={{
               background: 'transparent',
-              border: '1px solid var(--lab-border)',
+              border: '1px solid var(--lab-sidebar-border)',
               borderRadius: '8px',
               width: '26px',
               height: '26px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: 'var(--lab-text-muted)',
+              color: 'var(--lab-sidebar-muted)',
               cursor: 'pointer'
             }}
           >
@@ -341,7 +401,7 @@ export default function LabLayout() {
           <button
             onClick={() => setIsSidebarOpenMobile(false)}
             className="mobile-only-btn"
-            style={{ background: 'none', border: 'none', color: 'var(--lab-text-muted)', cursor: 'pointer', padding: '4px' }}
+            style={{ background: 'none', border: 'none', color: 'var(--lab-sidebar-muted)', cursor: 'pointer', padding: '4px' }}
           >
             <X size={20} />
           </button>
@@ -358,7 +418,7 @@ export default function LabLayout() {
                     fontWeight: '700',
                     textTransform: 'uppercase',
                     letterSpacing: '0.06em',
-                    color: 'var(--lab-text-muted)',
+                    color: 'var(--lab-sidebar-muted)',
                     padding: '0 10px',
                     marginBottom: '3px'
                   }}>
@@ -389,14 +449,14 @@ export default function LabLayout() {
                             justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
                             borderRadius: '10px',
                             textDecoration: 'none',
-                            color: active ? 'var(--lab-accent)' : 'var(--lab-text)',
-                            background: active ? 'var(--lab-accent-soft)' : 'transparent',
+                            color: active ? 'var(--lab-sidebar-active-text)' : 'var(--lab-sidebar-text)',
+                            background: active ? 'var(--lab-sidebar-active-bg)' : 'transparent',
                             fontWeight: active ? 600 : 500,
                             fontSize: '0.87rem',
                             transition: 'all 0.15s ease'
                           }}
                         >
-                          <Icon size={17} color={active ? 'var(--lab-accent)' : 'var(--lab-text-muted)'} />
+                          <Icon size={17} color={active ? 'var(--lab-sidebar-active-text)' : 'var(--lab-sidebar-muted)'} />
                           {!isSidebarCollapsed && (
                             <span style={{ fontSize: '0.87rem', lineHeight: 1.25 }}>
                               {lang === 'en' ? item.label : item.sinhalaLabel}
@@ -411,7 +471,7 @@ export default function LabLayout() {
                             style={{
                               border: 'none',
                               background: 'transparent',
-                              color: 'var(--lab-text-muted)',
+                              color: 'var(--lab-sidebar-muted)',
                               cursor: 'pointer',
                               padding: '6px',
                               borderRadius: '6px',
@@ -440,7 +500,7 @@ export default function LabLayout() {
         {/* Footer */}
         <div style={{
           padding: isSidebarCollapsed ? '12px 8px' : '14px 14px',
-          borderTop: '1px solid var(--lab-border)',
+          borderTop: '1px solid var(--lab-sidebar-border)',
           display: 'flex',
           flexDirection: 'column',
           gap: '8px'
@@ -460,9 +520,9 @@ export default function LabLayout() {
                 gap: '6px',
                 padding: '7px 10px',
                 borderRadius: '9px',
-                border: '1px solid var(--lab-border)',
-                background: 'var(--lab-bg-subtle)',
-                color: 'var(--lab-text)',
+                border: '1px solid var(--lab-sidebar-border)',
+                background: 'var(--lab-sidebar-subtle)',
+                color: 'var(--lab-sidebar-text)',
                 fontSize: '0.78rem',
                 fontWeight: 600,
                 cursor: 'pointer'
@@ -480,7 +540,7 @@ export default function LabLayout() {
                   alignItems: 'center',
                   gap: '5px',
                   fontSize: '0.78rem',
-                  color: 'var(--lab-text-muted)',
+                  color: 'var(--lab-sidebar-muted)',
                   textDecoration: 'none',
                   padding: '6px 8px',
                   borderRadius: '8px'
@@ -501,19 +561,19 @@ export default function LabLayout() {
                 gap: '8px',
                 padding: '8px 10px',
                 borderRadius: '10px',
-                background: 'var(--lab-bg-subtle)',
-                border: '1px solid var(--lab-border)'
+                background: 'var(--lab-sidebar-subtle)',
+                border: '1px solid var(--lab-sidebar-border)'
               }}>
                 <Link
                   to="/profile"
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'var(--lab-text)', minWidth: 0 }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'var(--lab-sidebar-text)', minWidth: 0 }}
                 >
                   <div style={{
                     width: '26px',
                     height: '26px',
                     borderRadius: '50%',
-                    background: 'var(--lab-accent)',
-                    color: '#fff',
+                    background: 'var(--lab-gold)',
+                    color: '#142B21',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -533,7 +593,7 @@ export default function LabLayout() {
                     setSession(null);
                   }}
                   title="Sign Out"
-                  style={{ background: 'none', border: 'none', color: 'var(--lab-text-muted)', cursor: 'pointer', padding: '4px' }}
+                  style={{ background: 'none', border: 'none', color: 'var(--lab-sidebar-muted)', cursor: 'pointer', padding: '4px' }}
                 >
                   <LogOut size={14} />
                 </button>
@@ -547,8 +607,8 @@ export default function LabLayout() {
                   justifyContent: 'center',
                   padding: '9px',
                   borderRadius: '10px',
-                  background: 'var(--lab-accent)',
-                  color: '#fff',
+                  background: 'var(--lab-sidebar-active-bg)',
+                  color: 'var(--lab-sidebar-active-text)',
                   textDecoration: 'none',
                   fontSize: '0.82rem',
                   fontWeight: 600
@@ -608,6 +668,7 @@ export default function LabLayout() {
                 {location.pathname.startsWith('/lab/collections') && t(lang, 'අධ්‍යයන එකතු', 'Collections')}
                 {location.pathname.startsWith('/lab/compass') && t(lang, 'මාර්ග දිශානතිය', 'Path Compass')}
                 {location.pathname.startsWith('/lab/pin-potha') && t(lang, 'පින් පොත', 'Pin Potha')}
+                {location.pathname.startsWith('/lab/daily-routine') && 'දෛනික දහම් රටාව'}
                 {location.pathname.startsWith('/lab/dedication') && t(lang, 'පුණ්‍යානුමෝදනා', 'Dedication')}
                 {location.pathname.startsWith('/lab/explore') && t(lang, 'සිතියම් ගවේෂණය', 'Explore Maps')}
                 {location.pathname.startsWith('/lab/maps/') && t(lang, 'ප්‍රජා සිතියම', 'Public Map')}
@@ -617,25 +678,58 @@ export default function LabLayout() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
+            <Link
+              to="/lab"
+              title="දුල්ලභෝ මනුස්ස පටිලාභෝ · මිනිසත් බව ලැබීම දුර්ලභය"
+              className="km-lab-nav-clock"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '5px 11px',
+                borderRadius: '999px',
+                border: '1px solid var(--lab-border)',
+                background: 'var(--lab-bg-subtle)',
+                color: 'var(--lab-text)',
+                textDecoration: 'none',
+                fontSize: '0.76rem',
+                fontWeight: '700',
+                fontVariantNumeric: 'tabular-nums',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              <span>ව {String(navClock.years).padStart(2, '0')}</span>
+              <span>:</span>
+              <span>මා {String(navClock.months).padStart(2, '0')}</span>
+              <span>:</span>
+              <span>දි {String(navClock.days).padStart(2, '0')}</span>
+              <span>:</span>
+              <span>පැ {String(navClock.hours).padStart(2, '0')}</span>
+              <span>:</span>
+              <span>මි {String(navClock.minutes).padStart(2, '0')}</span>
+              <span>:</span>
+              <span>ත {String(navClock.seconds).padStart(2, '0')}</span>
+            </Link>
+
             <button
               onClick={() => setShowGlobalSearch(true)}
               className="km-lab-btn"
-              style={{ padding: '6px 12px', borderRadius: '999px', fontSize: '0.8rem' }}
+              style={{ width: '32px', height: '32px', padding: 0, borderRadius: '50%' }}
               title={t(lang, 'සමස්ත සෙවුම', 'Global Search')}
+              aria-label={t(lang, 'සමස්ත සෙවුම', 'Global Search')}
             >
               <Search size={14} />
-              <span>{t(lang, 'සොයන්න', 'Search')}</span>
             </button>
 
             <div style={{ position: 'relative' }}>
               <button
                 onClick={() => setShowQuickCreate(v => !v)}
                 className="km-lab-btn-primary"
-                style={{ padding: '6px 12px', borderRadius: '999px', fontSize: '0.8rem' }}
+                style={{ width: '32px', height: '32px', padding: 0, borderRadius: '50%' }}
                 title={t(lang, 'ඉක්මන් නිර්මාණය', 'Quick Create')}
+                aria-label={t(lang, 'ඉක්මන් නිර්මාණය', 'Quick Create')}
               >
-                <Plus size={14} />
-                <span>{t(lang, 'නව', 'Create')}</span>
+                <Plus size={15} />
               </button>
 
               {showQuickCreate && (

@@ -85,15 +85,40 @@ export function getPinPothaEntries() {
   }
 }
 
-export function addPinPothaEntry({ entryType, title, reflection, entryDate, linkedSuttaKey = null, linkedPathFactor = null }) {
+export function addPinPothaEntry({
+  entryType,
+  title,
+  reflection,
+  entryDate,
+  cittaType = 'kusala',
+  scheduleType = 'once',
+  durationDays = null,
+  endDate = null,
+  durationMinutes = 30,
+  linkedSuttaKey = null,
+  linkedPathFactor = null
+}) {
   const all = getPinPothaEntries();
   const now = new Date().toISOString();
+  const startStr = entryDate || now.slice(0, 10);
+  let computedEnd = endDate || null;
+  if (scheduleType === 'range' && !computedEnd && durationDays > 0) {
+    const d = new Date(`${startStr}T00:00:00`);
+    d.setDate(d.getDate() + Number(durationDays) - 1);
+    computedEnd = d.toISOString().slice(0, 10);
+  }
+
   const item = {
     id: `pin-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     entryType: entryType || 'sila',
     title: title.trim(),
     reflection: reflection?.trim() || '',
-    entryDate: entryDate || now.slice(0, 10),
+    entryDate: startStr,
+    cittaType: cittaType === 'akusala' ? 'akusala' : 'kusala',
+    scheduleType: ['once', 'daily', 'poya', 'range'].includes(scheduleType) ? scheduleType : 'once',
+    durationDays: durationDays ? Number(durationDays) : null,
+    endDate: computedEnd,
+    durationMinutes: durationMinutes ? Math.max(1, Number(durationMinutes)) : 30,
     linkedSuttaKey: linkedSuttaKey || null,
     linkedPathFactor: linkedPathFactor || null,
     visibility: 'private', // Always private
@@ -112,6 +137,7 @@ export function addPinPothaEntry({ entryType, title, reflection, entryDate, link
     created_at: item.createdAt
   });
   window.dispatchEvent(new CustomEvent('labPracticeUpdated'));
+  window.dispatchEvent(new CustomEvent('labCittaLogsUpdated'));
   return item;
 }
 
@@ -120,6 +146,7 @@ export function deletePinPothaEntry(id) {
   localStorage.setItem(PIN_POTHA_KEY, JSON.stringify(next));
   deleteLabRow('lab_pin_potha_entries', { id });
   window.dispatchEvent(new CustomEvent('labPracticeUpdated'));
+  window.dispatchEvent(new CustomEvent('labCittaLogsUpdated'));
 }
 
 // ---------------- DEDICATION & CONTRIBUTION ----------------

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import {
-  ArrowLeft,
   Search,
   Columns,
   AlignJustify,
@@ -12,10 +11,13 @@ import {
   Highlighter,
   Bookmark,
   BookMarked,
+  BookOpen,
+  FolderOpen,
   Lock,
   Languages,
   X
 } from 'lucide-react';
+import PaginationBar from '../components/Lab/PaginationBar';
 import {
   loadPopularSuttas,
   getTreeChildren,
@@ -44,14 +46,18 @@ export default function SuttaStudy() {
 
   // Catalog & Tree Browser State
   const [popularSuttas, setPopularSuttas] = useState([]);
+  const [nikayas, setNikayas] = useState([]);
   const browseParentKey = searchParams.get('branch') || null;
   const [browseChildren, setBrowseChildren] = useState([]);
   const [browseBreadcrumbs, setBrowseBreadcrumbs] = useState([]);
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('q') || '');
   const [searchResults, setSearchResults] = useState([]);
+  const [libraryPage, setLibraryPage] = useState(1);
+  const [bookmarkPage, setBookmarkPage] = useState(1);
 
   // Active Sutta State
   const [loadedSutta, setLoadedSutta] = useState(null);
+  const [suttaBreadcrumbs, setSuttaBreadcrumbs] = useState([]);
   const [errorState, setErrorState] = useState(null);
 
   const currentSutta = suttaId && loadedSutta?.key === suttaId ? loadedSutta : null;
@@ -82,6 +88,7 @@ export default function SuttaStudy() {
 
   useEffect(() => {
     loadPopularSuttas().then(list => setPopularSuttas(list.slice(0, 12)));
+    getTreeChildren('sp').then(list => setNikayas(list || [])).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -117,10 +124,11 @@ export default function SuttaStudy() {
     if (!suttaId) return;
     let cancelled = false;
 
-    getSuttaContent(suttaId)
-      .then(data => {
+    Promise.all([getSuttaContent(suttaId), getBreadcrumbs(suttaId).catch(() => [])])
+      .then(([data, crumbs]) => {
         if (cancelled) return;
         setLoadedSutta(data);
+        setSuttaBreadcrumbs(Array.isArray(crumbs) ? crumbs : []);
         setErrorState(null);
         setSuttaAnnotations(getAnnotationsBySutta(suttaId));
         setSuttaHighlights(getHighlightsBySutta(suttaId));
@@ -211,237 +219,419 @@ export default function SuttaStudy() {
     });
   };
 
+  const isSearching = searchQuery.trim().length > 0;
+  const LIB_PER_PAGE = 9;
+  const activeSearchOrBranchList = isSearching ? searchResults : browseChildren;
+  const libTotalPages = Math.max(1, Math.ceil(activeSearchOrBranchList.length / LIB_PER_PAGE));
+  const safeLibPage = Math.min(libraryPage, libTotalPages);
+  const pagedLibItems = activeSearchOrBranchList.slice((safeLibPage - 1) * LIB_PER_PAGE, safeLibPage * LIB_PER_PAGE);
+
+  const renderSearchBanner = () => (
+    <div
+      style={{
+        borderRadius: '14px',
+        padding: '16px 20px',
+        background: 'linear-gradient(135deg, #A35B3D 0%, #B86F4E 100%)',
+        color: '#FAF8F5',
+        boxShadow: '0 6px 20px rgba(163, 91, 61, 0.16)',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+        gap: '14px',
+        alignItems: 'center'
+      }}
+    >
+      <div>
+        <h1 style={{ fontSize: '1.25rem', fontWeight: '800', margin: '0 0 4px 0', fontFamily: 'var(--font-sinhala)' }}>
+          ත්‍රිපිටක සූත්‍ර පුස්තකාලය
+        </h1>
+        <div style={{ fontSize: '0.8rem', color: 'rgba(250, 248, 245, 0.88)', fontFamily: 'var(--font-sinhala)' }}>
+          පාලි හා සිංහල සමාන්තර කියවීම · සටහන් හා විශේෂාංග සමඟ
+        </div>
+      </div>
+
+      <div style={{ position: 'relative' }}>
+        <Search
+          size={16}
+          style={{
+            position: 'absolute',
+            left: '14px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: '#6E655D'
+          }}
+        />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={e => {
+            setSearchQuery(e.target.value);
+            setLibraryPage(1);
+          }}
+          placeholder="සූත්‍ර නාමයෙන් සොයන්න (උදා: කරණීය මෙත්ත, දම්සක්, satipatthana)..."
+          style={{
+            width: '100%',
+            padding: '10px 36px 10px 40px',
+            borderRadius: '10px',
+            border: 'none',
+            background: '#FAF8F5',
+            color: '#231F1B',
+            fontSize: '0.86rem',
+            fontFamily: 'var(--font-sinhala)',
+            outline: 'none'
+          }}
+        />
+        {isSearching && (
+          <button
+            type="button"
+            onClick={() => {
+              setSearchQuery('');
+              setLibraryPage(1);
+            }}
+            aria-label="සෙවුම හිස් කරන්න"
+            style={{
+              position: 'absolute',
+              right: '10px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              border: 'none',
+              background: 'transparent',
+              color: '#6E655D',
+              cursor: 'pointer',
+              padding: '2px'
+            }}
+          >
+            <X size={15} />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
+  const renderSearchResultsPanel = () => (
+    <div className="km-lab-card" style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+        <h2 style={{ fontSize: '0.98rem', fontWeight: '700', fontFamily: 'var(--font-sinhala)', color: 'var(--lab-text)', margin: 0 }}>
+          සෙවුම් ප්‍රතිඵල ({searchResults.length})
+        </h2>
+      </div>
+
+      {searchResults.length === 0 ? (
+        <div style={{ padding: '28px', textAlign: 'center', color: 'var(--lab-text-muted)', fontFamily: 'var(--font-sinhala)', background: 'var(--lab-bg-subtle)', borderRadius: '10px' }}>
+          ගැළපෙන සූත්‍ර හමු නොවීය.
+        </div>
+      ) : (
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '10px' }}>
+            {pagedLibItems.map(item => (
+              <div
+                key={item.key}
+                className="km-lab-card km-lab-card-interactive"
+                onClick={() => {
+                  setSearchQuery('');
+                  setLibraryPage(1);
+                  navigate(`/lab/sutta/${item.key}`);
+                }}
+                style={{
+                  padding: '12px 14px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '10px',
+                  background: 'var(--lab-bg-subtle)',
+                  borderLeft: '3px solid #5F6E43'
+                }}
+              >
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontFamily: 'var(--font-sinhala)', fontWeight: '700', color: 'var(--lab-text)', fontSize: '0.9rem', marginBottom: '2px' }}>
+                    {item.sinhalaName}
+                  </div>
+                  <div style={{ fontSize: '0.76rem', color: 'var(--lab-text-muted)' }}>
+                    {item.paliName}
+                  </div>
+                </div>
+                <ChevronRight size={15} color="var(--lab-text-muted)" style={{ flexShrink: 0 }} />
+              </div>
+            ))}
+          </div>
+          <PaginationBar page={safeLibPage} totalPages={libTotalPages} onPageChange={setLibraryPage} compact />
+        </>
+      )}
+    </div>
+  );
+
+  const renderBreadcrumbsBar = (crumbs, isSuttaLeaf = false) => {
+    if (!crumbs || crumbs.length === 0) return null;
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        flexWrap: 'wrap',
+        fontSize: '0.82rem',
+        fontFamily: 'var(--font-sinhala)',
+        color: 'var(--lab-text-muted)'
+      }}>
+        <button
+          type="button"
+          onClick={() => {
+            setLibraryPage(1);
+            navigate('/lab/sutta');
+          }}
+          style={{ background: 'none', border: 'none', padding: 0, color: 'var(--lab-gold)', fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit' }}
+        >
+          පුස්තකාලය
+        </button>
+        {crumbs.map((c, idx) => {
+          const isLast = idx === crumbs.length - 1;
+          const isClickable = c.key !== 'sp' && !(isLast && isSuttaLeaf);
+          return (
+            <span key={c.key} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <ChevronRight size={13} />
+              <button
+                type="button"
+                onClick={() => {
+                  if (isClickable) {
+                    setLibraryPage(1);
+                    navigate(`/lab/sutta?branch=${encodeURIComponent(c.key)}`);
+                  }
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  color: isLast ? 'var(--lab-text)' : 'var(--lab-text-muted)',
+                  fontWeight: isLast ? '700' : '500',
+                  cursor: isClickable ? 'pointer' : 'default',
+                  fontFamily: 'var(--font-sinhala)',
+                  fontSize: '0.82rem'
+                }}
+              >
+                {c.sinhalaName}
+              </button>
+            </span>
+          );
+        })}
+      </div>
+    );
+  };
+
   // ============================================================================
   // VIEW 1: SUTTA CATALOG & TREE BROWSER
   // ============================================================================
   if (!suttaId) {
-    const isSearching = searchQuery.trim().length > 0;
+    const BM_PER_PAGE = 4;
+    const bmTotalPages = Math.max(1, Math.ceil(bookmarkedList.length / BM_PER_PAGE));
+    const safeBmPage = Math.min(bookmarkPage, bmTotalPages);
+    const pagedBookmarks = bookmarkedList.slice((safeBmPage - 1) * BM_PER_PAGE, safeBmPage * BM_PER_PAGE);
+
+    const nikayaColors = ['#5F6E43', '#C06C47', '#98A27A', '#A35B3D', '#7A6855'];
 
     return (
-      <div className="km-lab-page">
-        {/* Search Input */}
-        <div style={{ position: 'relative', marginBottom: '28px' }}>
-          <Search
-            size={18}
-            style={{
-              position: 'absolute',
-              left: '16px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: 'var(--lab-text-muted)'
-            }}
-          />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder="සූත්‍ර නාමයෙන් සොයන්න (උදා: කරණීය මෙත්ත, දම්සක්, karaniya metta, satipatthana)..."
-            style={{
-              width: '100%',
-              padding: '14px 18px 14px 46px',
-              borderRadius: '14px',
-              border: '1px solid var(--lab-border)',
-              background: 'var(--lab-bg-elevated)',
-              color: 'var(--lab-text)',
-              fontSize: '0.95rem',
-              fontFamily: 'var(--font-sinhala)',
-              boxShadow: 'var(--lab-shadow)',
-              outline: 'none'
-            }}
-          />
-        </div>
+      <div className="km-lab-page" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        {renderSearchBanner()}
 
         {isSearching ? (
-          <div>
-            <h2 style={{
-              fontSize: '1.02rem',
-              fontWeight: '700',
-              fontFamily: 'var(--font-sinhala)',
-              color: 'var(--lab-text)',
-              marginBottom: '14px'
-            }}>
-              සෙවුම් ප්‍රතිඵල ({searchResults.length})
-            </h2>
-            {searchResults.length === 0 ? (
-              <div className="km-lab-card" style={{ padding: '32px', textAlign: 'center', color: 'var(--lab-text-muted)', fontFamily: 'var(--font-sinhala)' }}>
-                ගැළපෙන සූත්‍ර හමු නොවීය.
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
-                {searchResults.map(item => (
-                  <div
-                    key={item.key}
-                    className="km-lab-card km-lab-card-interactive"
-                    onClick={() => navigate(`/lab/sutta/${item.key}`)}
-                    style={{
-                      padding: '16px 18px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '12px'
-                    }}
-                  >
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ fontFamily: 'var(--font-sinhala)', fontWeight: '700', color: 'var(--lab-text)', fontSize: '0.98rem', marginBottom: '3px' }}>
-                        {item.sinhalaName}
-                      </div>
-                      <div style={{ fontSize: '0.82rem', color: 'var(--lab-text-muted)' }}>
-                        {item.paliName}
-                      </div>
-                    </div>
-                    <ChevronRight size={16} color="var(--lab-text-muted)" style={{ flexShrink: 0 }} />
-                  </div>
-                ))}
+          renderSearchResultsPanel()
+        ) : browseParentKey ? (
+          <div className="km-lab-card" style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {browseBreadcrumbs.length > 0 && (
+              <div style={{ paddingBottom: '10px', borderBottom: '1px solid var(--lab-border)' }}>
+                {renderBreadcrumbsBar(browseBreadcrumbs, false)}
               </div>
             )}
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '10px' }}>
+              {pagedLibItems.map(child => (
+                <div
+                  key={child.key}
+                  onClick={() => {
+                    setLibraryPage(1);
+                    if (child.hasChildren) navigate(`/lab/sutta?branch=${encodeURIComponent(child.key)}`);
+                    else navigate(`/lab/sutta/${child.key}`);
+                  }}
+                  style={{
+                    padding: '12px 14px',
+                    borderRadius: '10px',
+                    background: 'var(--lab-bg-subtle)',
+                    border: '1px solid var(--lab-border)',
+                    borderLeft: `3px solid ${child.hasChildren ? '#C06C47' : '#5F6E43'}`,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '10px'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                    {child.hasChildren
+                      ? <FolderOpen size={16} color="#C06C47" style={{ flexShrink: 0 }} />
+                      : <BookOpen size={16} color="#5F6E43" style={{ flexShrink: 0 }} />}
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontFamily: 'var(--font-sinhala)', fontWeight: '600', fontSize: '0.88rem', color: 'var(--lab-text)' }}>
+                        {child.sinhalaName}
+                      </div>
+                      <div style={{ fontSize: '0.76rem', color: 'var(--lab-text-muted)' }}>
+                        {child.paliName}
+                      </div>
+                    </div>
+                  </div>
+                  <ChevronRight size={15} color="var(--lab-text-muted)" style={{ flexShrink: 0 }} />
+                </div>
+              ))}
+            </div>
+            <PaginationBar page={safeLibPage} totalPages={libTotalPages} onPageChange={setLibraryPage} compact />
           </div>
         ) : (
           <>
-            {!browseParentKey ? (
-                  <>
-                    {/* Default: Popular Suttas (Top 3) */}
-                    <div style={{ marginBottom: '24px' }}>
-                      <h2 style={{
-                        fontSize: '1.02rem',
-                        fontWeight: '700',
-                        fontFamily: 'var(--font-sinhala)',
-                        color: 'var(--lab-text)',
-                        margin: '0 0 12px 0',
+            {/* 5 Nikāya Quick-Browse Strip */}
+            {nikayas.length > 0 && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(185px, 1fr))', gap: '10px' }}>
+                {nikayas.map((nik, idx) => {
+                  const accent = nikayaColors[idx % nikayaColors.length];
+                  return (
+                    <button
+                      key={nik.key}
+                      type="button"
+                      onClick={() => {
+                        setLibraryPage(1);
+                        navigate(`/lab/sutta?branch=${encodeURIComponent(nik.key)}`);
+                      }}
+                      className="km-lab-card km-lab-card-interactive"
+                      style={{
+                        padding: '12px 14px',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        borderTop: `3px solid ${accent}`,
                         display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                      }}>
-                        <Sparkles size={16} color="var(--lab-gold)" />
-                        <span>ජනප්‍රිය සූත්‍ර (Popular Suttas)</span>
-                      </h2>
+                        flexDirection: 'column',
+                        gap: '3px',
+                        fontFamily: 'var(--font-sinhala)'
+                      }}
+                    >
+                      <div style={{ fontSize: '0.88rem', fontWeight: '700', color: 'var(--lab-text)' }}>
+                        {nik.sinhalaName}
+                      </div>
+                      <div style={{ fontSize: '0.73rem', color: 'var(--lab-text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                        <span>{nik.paliName}</span>
+                        <ChevronRight size={13} color={accent} />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
-                        {popularSuttas.slice(0, 3).map(sutta => (
-                          <div
-                            key={sutta.key}
-                            className="km-lab-card km-lab-card-interactive"
-                            onClick={() => navigate(`/lab/sutta/${sutta.key}`)}
-                            style={{ padding: '16px 18px', cursor: 'pointer' }}
-                          >
-                            <div style={{ fontFamily: 'var(--font-sinhala)', fontWeight: '700', fontSize: '0.98rem', color: 'var(--lab-text)', marginBottom: '4px' }}>
-                              {sutta.sinhalaName}
-                            </div>
-                            <div style={{ fontSize: '0.82rem', color: 'var(--lab-text-muted)' }}>
-                              {sutta.paliName}
-                            </div>
-                          </div>
-                        ))}
+            {/* 2-Column Library Bottom Grid: Popular Suttas + Bookmarks */}
+            <div className="km-lab-bottom-grid">
+              {/* Popular Suttas */}
+              <div className="km-lab-card" style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <h2 style={{
+                  fontSize: '0.96rem',
+                  fontWeight: '700',
+                  fontFamily: 'var(--font-sinhala)',
+                  color: 'var(--lab-text)',
+                  margin: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '7px'
+                }}>
+                  <Sparkles size={15} color="var(--lab-gold)" />
+                  <span>ජනප්‍රිය සූත්‍ර</span>
+                </h2>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '8px' }}>
+                  {popularSuttas.slice(0, 6).map(sutta => (
+                    <div
+                      key={sutta.key}
+                      className="km-lab-card km-lab-card-interactive"
+                      onClick={() => navigate(`/lab/sutta/${sutta.key}`)}
+                      style={{
+                        padding: '10px 12px',
+                        cursor: 'pointer',
+                        background: 'var(--lab-bg-subtle)',
+                        borderLeft: '3px solid #5F6E43'
+                      }}
+                    >
+                      <div style={{ fontFamily: 'var(--font-sinhala)', fontWeight: '700', fontSize: '0.88rem', color: 'var(--lab-text)', marginBottom: '2px' }}>
+                        {sutta.sinhalaName}
+                      </div>
+                      <div style={{ fontSize: '0.74rem', color: 'var(--lab-text-muted)' }}>
+                        {sutta.paliName}
                       </div>
                     </div>
+                  ))}
+                </div>
+              </div>
 
-                    {bookmarkedList.length > 0 && (
-                      <div>
-                        <h2 style={{
-                          fontSize: '1rem',
-                          fontWeight: '700',
-                          fontFamily: 'var(--font-sinhala)',
-                          color: 'var(--lab-text)',
-                          margin: '0 0 12px 0',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px'
-                        }}>
-                          <BookMarked size={15} color="var(--lab-accent)" />
-                          <span>සුරැකි සූත්‍ර (Bookmarked)</span>
-                        </h2>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '10px' }}>
-                          {bookmarkedList.map(bm => (
-                            <div
-                              key={bm.suttaKey}
-                              className="km-lab-card km-lab-card-interactive"
-                              onClick={() => navigate(`/lab/sutta/${bm.suttaKey}`)}
-                              style={{ padding: '14px 16px', cursor: 'pointer', borderLeft: '3px solid var(--lab-accent)' }}
-                            >
-                              <div style={{ fontFamily: 'var(--font-sinhala)', fontWeight: '700', color: 'var(--lab-text)', fontSize: '0.94rem', marginBottom: '3px' }}>
-                                {bm.suttaTitleSinhala || bm.suttaKey}
-                              </div>
-                              <div style={{ fontSize: '0.78rem', color: 'var(--lab-text-muted)' }}>
-                                {bm.suttaTitlePali}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </>
+              {/* Bookmarked Suttas */}
+              <div className="km-lab-card" style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <h2 style={{
+                  fontSize: '0.96rem',
+                  fontWeight: '700',
+                  fontFamily: 'var(--font-sinhala)',
+                  color: 'var(--lab-text)',
+                  margin: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '7px'
+                }}>
+                  <BookMarked size={15} color="var(--lab-accent)" />
+                  <span>සුරැකි සූත්‍ර ({bookmarkedList.length})</span>
+                </h2>
+
+                {bookmarkedList.length === 0 ? (
+                  <div style={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                    padding: '20px 12px',
+                    borderRadius: '10px',
+                    background: 'var(--lab-bg-subtle)',
+                    fontSize: '0.8rem',
+                    color: 'var(--lab-text-muted)',
+                    fontFamily: 'var(--font-sinhala)'
+                  }}>
+                    ඔබ කියවන සූත්‍ර සුරැකීමෙන් (Bookmark) මෙහි ඉක්මනින් ප්‍රවේශ විය හැක.
+                  </div>
                 ) : (
-                  <div className="km-lab-card" style={{ padding: '18px 20px' }}>
-                    {browseBreadcrumbs.length > 0 && (
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        flexWrap: 'wrap',
-                        marginBottom: '14px',
-                        paddingBottom: '10px',
-                        borderBottom: '1px solid var(--lab-border)',
-                        fontSize: '0.84rem',
-                        fontFamily: 'var(--font-sinhala)',
-                        color: 'var(--lab-text-muted)'
-                      }}>
-                        {browseBreadcrumbs.map((c, idx) => (
-                          <span key={c.key} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                            {idx > 0 && <ChevronRight size={13} />}
-                            <button
-                              onClick={() => c.key !== 'sp' && navigate(`/lab/sutta?branch=${encodeURIComponent(c.key)}`)}
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                padding: 0,
-                                color: idx === browseBreadcrumbs.length - 1 ? 'var(--lab-text)' : 'var(--lab-text-muted)',
-                                fontWeight: idx === browseBreadcrumbs.length - 1 ? '700' : '500',
-                                cursor: c.key === 'sp' ? 'default' : 'pointer',
-                                fontFamily: 'var(--font-sinhala)',
-                                fontSize: '0.86rem'
-                              }}
-                            >
-                              {c.sinhalaName}
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '10px' }}>
-                      {browseChildren.map(child => (
+                  <>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+                      {pagedBookmarks.map(bm => (
                         <div
-                          key={child.key}
-                          onClick={() => {
-                            if (child.hasChildren) navigate(`/lab/sutta?branch=${encodeURIComponent(child.key)}`);
-                            else navigate(`/lab/sutta/${child.key}`);
-                          }}
+                          key={bm.suttaKey}
+                          className="km-lab-card km-lab-card-interactive"
+                          onClick={() => navigate(`/lab/sutta/${bm.suttaKey}`)}
                           style={{
-                            padding: '13px 15px',
-                            borderRadius: '10px',
-                            background: 'var(--lab-bg-subtle)',
-                            border: '1px solid var(--lab-border)',
+                            padding: '9px 12px',
                             cursor: 'pointer',
+                            background: 'var(--lab-bg-subtle)',
+                            borderLeft: '3px solid var(--lab-gold)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
-                            gap: '10px'
+                            gap: '8px'
                           }}
                         >
                           <div style={{ minWidth: 0 }}>
-                            <div style={{ fontFamily: 'var(--font-sinhala)', fontWeight: '600', fontSize: '0.94rem', color: 'var(--lab-text)' }}>
-                              {child.sinhalaName}
+                            <div style={{ fontFamily: 'var(--font-sinhala)', fontWeight: '700', color: 'var(--lab-text)', fontSize: '0.86rem' }}>
+                              {bm.suttaTitleSinhala || bm.suttaKey}
                             </div>
-                            <div style={{ fontSize: '0.8rem', color: 'var(--lab-text-muted)' }}>
-                              {child.paliName}
+                            <div style={{ fontSize: '0.73rem', color: 'var(--lab-text-muted)' }}>
+                              {bm.suttaTitlePali}
                             </div>
                           </div>
-                          <ChevronRight size={15} color="var(--lab-text-muted)" style={{ flexShrink: 0 }} />
+                          <ChevronRight size={14} color="var(--lab-text-muted)" style={{ flexShrink: 0 }} />
                         </div>
                       ))}
                     </div>
-                  </div>
+                    <PaginationBar page={safeBmPage} totalPages={bmTotalPages} onPageChange={setBookmarkPage} compact />
+                  </>
                 )}
+              </div>
+            </div>
           </>
         )}
       </div>
@@ -475,6 +665,17 @@ export default function SuttaStudy() {
 
   return (
     <div style={{ paddingBottom: '72px' }}>
+      {/* Library Search & Breadcrumbs Header */}
+      <div className="km-lab-page" style={{ paddingBottom: '10px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {renderSearchBanner()}
+        {isSearching && renderSearchResultsPanel()}
+        {suttaBreadcrumbs.length > 0 && (
+          <div className="km-lab-card" style={{ padding: '10px 14px' }}>
+            {renderBreadcrumbsBar(suttaBreadcrumbs, true)}
+          </div>
+        )}
+      </div>
+
       {/* Frosted Sticky Toolbar */}
       <div style={{
         position: 'sticky',
@@ -496,27 +697,6 @@ export default function SuttaStudy() {
           gap: '10px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-            <button
-              onClick={() => navigate('/lab/sutta')}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                borderRadius: '999px',
-                border: '1px solid var(--lab-border)',
-                background: 'var(--lab-bg-elevated)',
-                color: 'var(--lab-text)',
-                fontSize: '0.82rem',
-                fontWeight: '600',
-                fontFamily: 'var(--font-sinhala)',
-                cursor: 'pointer'
-              }}
-            >
-              <ArrowLeft size={14} />
-              <span>සූත්‍ර</span>
-            </button>
-
             <div style={{ minWidth: 0 }}>
               <div style={{ fontFamily: 'var(--font-sinhala)', fontWeight: '700', fontSize: '0.98rem', color: 'var(--lab-text)' }}>
                 {currentSutta?.sinhalaTitle || suttaId}
@@ -615,7 +795,7 @@ export default function SuttaStudy() {
               }}
             >
               <Highlighter size={13} />
-              <span>All Notes</span>
+              <span>සියලු සටහන්</span>
             </Link>
           </div>
         </div>
@@ -689,8 +869,8 @@ export default function SuttaStudy() {
                 color: 'var(--lab-text-muted)',
                 fontFamily: 'var(--font-sinhala)'
               }}>
-                <div>පාලි මුල් පෙළ (Pāli)</div>
-                <div>සිංහල පරිවර්තනය (Sinhala)</div>
+                <div>පාලි මුල් පෙළ</div>
+                <div>සිංහල පරිවර්තනය</div>
               </div>
             )}
 
@@ -892,7 +1072,7 @@ export default function SuttaStudy() {
                                   color: 'var(--lab-text-muted)'
                                 }}>
                                   <Lock size={10} />
-                                  {summary?.visibility === 'private' ? 'Private Study Note' : summary?.visibility}
+                                  {summary?.visibility === 'private' ? 'පෞද්ගලික සටහන' : summary?.visibility}
                                 </span>
                               </div>
                               <button
@@ -907,7 +1087,7 @@ export default function SuttaStudy() {
                                   padding: 0
                                 }}
                               >
-                                Edit Note
+                                සංස්කරණය
                               </button>
                             </div>
                             {summary?.title && (

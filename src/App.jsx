@@ -41,6 +41,7 @@ import ExploreCommunity from './pages/Lab/ExploreCommunity';
 import PublicMapView from './pages/Lab/PublicMapView';
 import Collections from './pages/Lab/Collections';
 import LabOnboarding from './pages/Lab/LabOnboarding';
+import DailyRoutine from './pages/Lab/DailyRoutine';
 
 const AdminLayout = React.lazy(() => import('./pages/Admin/AdminLayout'));
 const AdminDashboard = React.lazy(() => import('./pages/Admin/AdminDashboard'));
@@ -126,6 +127,7 @@ function App() {
             <Route path="maps/:mapId" element={<PublicMapView />} />
             <Route path="collections" element={<Collections />} />
             <Route path="onboarding" element={<LabOnboarding />} />
+            <Route path="daily-routine" element={<DailyRoutine />} />
           </Route>
 
           {/* MAIN PUBLIC WEBSITE */}

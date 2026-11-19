@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { FlaskConical } from 'lucide-react';
 import './labTheme.css';
 
-export default function LabLoadingScreen({ message = 'Loading Tipiṭaka Sutta Workspace...' }) {
+export default function LabLoadingScreen({ message = 'ත්‍රිපිටක අධ්‍යයන අවකාශය පූරණය වෙමින් පවතී...' }) {
   const savedTheme = typeof window !== 'undefined' ? (localStorage.getItem('theme') || 'light') : 'light';
 
   return (
@@ -67,23 +67,22 @@ export default function LabLoadingScreen({ message = 'Loading Tipiṭaka Sutta W
         </div>
 
         <div style={{
-          fontSize: '0.7rem',
+          fontSize: '0.74rem',
           fontWeight: '700',
-          letterSpacing: '0.12em',
-          textTransform: 'uppercase',
+          fontFamily: 'var(--font-sinhala)',
           color: 'var(--lab-accent)',
           marginBottom: '6px'
         }}>
-          Dhamma Study Studio
+          අත්තදීප · මා දකින මඟ
         </div>
         <h1 style={{
           fontSize: '1.65rem',
           fontWeight: '700',
-          letterSpacing: '-0.02em',
+          fontFamily: 'var(--font-sinhala)',
           color: 'var(--lab-text)',
           margin: '0 0 6px 0'
         }}>
-          Kalyanamitta Lab
+          මගේ දහම් මඟ
         </h1>
         <p style={{
           fontFamily: 'var(--font-sinhala)',
@@ -91,7 +90,7 @@ export default function LabLoadingScreen({ message = 'Loading Tipiṭaka Sutta W
           color: 'var(--lab-text-muted)',
           margin: '0 0 24px 0'
         }}>
-          කල්‍යාණමිත්ත ධර්ම අධ්‍යයනාගාරය
+          සූත්‍ර අවබෝධයෙන් ප්‍රතිපදාවට
         </p>
 
         <div style={{

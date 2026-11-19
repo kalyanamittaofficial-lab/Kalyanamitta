@@ -117,7 +117,7 @@ export default function PersonalRoadmap() {
             }}
           >
             <Download size={14} />
-            <span>Export Notes</span>
+            <span>සටහන් බාගත කරන්න</span>
           </button>
 
           <Link
@@ -136,7 +136,7 @@ export default function PersonalRoadmap() {
             }}
           >
             <BookOpen size={14} />
-            <span>Open Reader</span>
+            <span>සූත්‍ර කියවනය</span>
           </Link>
         </div>
       </div>
@@ -146,11 +146,11 @@ export default function PersonalRoadmap() {
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           <button onClick={() => setActiveTab('highlights')} style={tabStyle(activeTab === 'highlights')}>
             <Highlighter size={15} />
-            <span>Highlights ({highlights.length})</span>
+            <span>සලකුණු ({highlights.length})</span>
           </button>
           <button onClick={() => setActiveTab('notes')} style={tabStyle(activeTab === 'notes')}>
             <FileText size={15} />
-            <span>Study Notes ({notes.length})</span>
+            <span>අධ්‍යයන සටහන් ({notes.length})</span>
           </button>
         </div>
 
@@ -191,7 +191,7 @@ export default function PersonalRoadmap() {
               cursor: 'pointer'
             }}
           >
-            All Colors
+            සියලු වර්ණ
           </button>
           {Object.values(HIGHLIGHT_COLORS).map(c => (
             <button

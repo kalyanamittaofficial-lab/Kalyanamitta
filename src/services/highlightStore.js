@@ -3,10 +3,10 @@ import { upsertLabRow, deleteLabRow, fetchUserLabRows } from './labSyncService';
 const STORAGE_KEY = 'km_lab_highlights_v1';
 
 export const HIGHLIGHT_COLORS = {
-  amber: { id: 'amber', label: 'රන් (Amber)', dot: '#F59E0B', bgVar: 'var(--lab-hl-amber)' },
-  mint: { id: 'mint', label: 'කොළ (Mint)', dot: '#10B981', bgVar: 'var(--lab-hl-mint)' },
-  sky: { id: 'sky', label: 'නිල් (Sky)', dot: '#0EA5E9', bgVar: 'var(--lab-hl-sky)' },
-  rose: { id: 'rose', label: 'රෝස (Rose)', dot: '#F43F5E', bgVar: 'var(--lab-hl-rose)' }
+  amber: { id: 'amber', label: 'රන් පැහැය', dot: '#F59E0B', bgVar: 'var(--lab-hl-amber)' },
+  mint: { id: 'mint', label: 'කොළ පැහැය', dot: '#10B981', bgVar: 'var(--lab-hl-mint)' },
+  sky: { id: 'sky', label: 'නිල් පැහැය', dot: '#0EA5E9', bgVar: 'var(--lab-hl-sky)' },
+  rose: { id: 'rose', label: 'රෝස පැහැය', dot: '#F43F5E', bgVar: 'var(--lab-hl-rose)' }
 };
 
 export function getAllHighlights() {

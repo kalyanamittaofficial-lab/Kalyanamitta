@@ -1,41 +1,55 @@
 .km-lab-root {
-  --lab-bg: #F8F8FA;
-  --lab-bg-elevated: #FFFFFF;
-  --lab-bg-subtle: #F3F4F6;
-  --lab-bg-glass: rgba(255, 255, 255, 0.92);
-  --lab-text: #18181B;
-  --lab-text-muted: #6B7280;
-  --lab-border: rgba(24, 24, 27, 0.11);
-  --lab-accent: #18181B;
-  --lab-accent-fg: #FFFFFF;
-  --lab-accent-soft: #F3F4F6;
-  --lab-gold: #B45309;
-  --lab-gold-soft: rgba(217, 119, 6, 0.1);
-  --lab-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  --lab-hl-amber: rgba(251, 191, 36, 0.22);
-  --lab-hl-mint: rgba(52, 211, 153, 0.2);
-  --lab-hl-sky: rgba(56, 189, 248, 0.2);
-  --lab-hl-rose: rgba(251, 113, 133, 0.2);
+  --lab-bg: #F4EFEA;
+  --lab-bg-elevated: #FAF8F5;
+  --lab-bg-subtle: #EFEAE3;
+  --lab-bg-glass: rgba(244, 239, 234, 0.90);
+  --lab-text: #231F1B;
+  --lab-text-muted: #6E655D;
+  --lab-border: rgba(35, 31, 27, 0.11);
+  --lab-accent: #5F6E43;
+  --lab-accent-fg: #FAF8F5;
+  --lab-accent-soft: rgba(95, 110, 67, 0.12);
+  --lab-gold: #A35B3D;
+  --lab-gold-soft: rgba(163, 91, 61, 0.13);
+  --lab-shadow: 0 4px 16px rgba(35, 31, 27, 0.05);
+  --lab-sidebar-bg: #EFEAE4;
+  --lab-sidebar-text: #2B251F;
+  --lab-sidebar-muted: #726960;
+  --lab-sidebar-border: rgba(35, 31, 27, 0.09);
+  --lab-sidebar-active-bg: #E5CFC3;
+  --lab-sidebar-active-text: #231F1B;
+  --lab-sidebar-subtle: rgba(35, 31, 27, 0.05);
+  --lab-hl-amber: rgba(192, 108, 71, 0.20);
+  --lab-hl-mint: rgba(95, 110, 67, 0.18);
+  --lab-hl-sky: rgba(152, 162, 122, 0.22);
+  --lab-hl-rose: rgba(163, 91, 61, 0.18);
   font-family: var(--font-sinhala), -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
   color: var(--lab-text);
   background: var(--lab-bg);
 }
 
 .km-lab-root[data-lab-theme='dark'] {
-  --lab-bg: #0D0E11;
-  --lab-bg-elevated: #15171C;
-  --lab-bg-subtle: #1E2028;
-  --lab-bg-glass: rgba(21, 23, 28, 0.9);
-  --lab-text: #F4F4F5;
-  --lab-text-muted: #A1A1AA;
-  --lab-border: rgba(255, 255, 255, 0.11);
-  --lab-accent: #F4F4F5;
-  --lab-accent-fg: #18181B;
-  --lab-accent-soft: #27272A;
-  --lab-gold: #FBBF24;
-  --lab-gold-soft: rgba(251, 191, 36, 0.14);
-  --lab-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-  --lab-hl-amber: rgba(251, 191, 36, 0.16);
+  --lab-bg: #0E1713;
+  --lab-bg-elevated: #15231C;
+  --lab-bg-subtle: #1C2E25;
+  --lab-bg-glass: rgba(21, 35, 28, 0.90);
+  --lab-text: #F2ECE0;
+  --lab-text-muted: #A1B5A9;
+  --lab-border: rgba(235, 224, 200, 0.12);
+  --lab-accent: #C89B48;
+  --lab-accent-fg: #14231C;
+  --lab-accent-soft: rgba(200, 155, 72, 0.16);
+  --lab-gold: #D8AD5C;
+  --lab-gold-soft: rgba(216, 173, 92, 0.16);
+  --lab-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  --lab-sidebar-bg: linear-gradient(180deg, #0C1812 0%, #12241B 100%);
+  --lab-sidebar-text: #F2ECE0;
+  --lab-sidebar-muted: #98ABA0;
+  --lab-sidebar-border: rgba(235, 224, 200, 0.1);
+  --lab-sidebar-active-bg: linear-gradient(135deg, rgba(200, 155, 72, 0.35) 0%, rgba(45, 84, 65, 0.55) 100%);
+  --lab-sidebar-active-text: #F7EFE0;
+  --lab-sidebar-subtle: rgba(255, 255, 255, 0.06);
+  --lab-hl-amber: rgba(216, 173, 92, 0.18);
   --lab-hl-mint: rgba(52, 211, 153, 0.15);
   --lab-hl-sky: rgba(56, 189, 248, 0.16);
   --lab-hl-rose: rgba(251, 113, 133, 0.16);
@@ -48,7 +62,7 @@
 .km-lab-page {
   max-width: 1180px;
   margin: 0 auto;
-  padding: clamp(20px, 3vw, 32px) clamp(14px, 3vw, 28px) 72px;
+  padding: 14px clamp(14px, 2.5vw, 24px) 24px;
 }
 
 .km-lab-badge {
@@ -82,7 +96,7 @@
 .km-lab-card {
   background: var(--lab-bg-elevated);
   border: 1px solid var(--lab-border);
-  border-radius: 10px;
+  border-radius: 14px;
   box-shadow: var(--lab-shadow);
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
@@ -181,4 +195,42 @@
 
 .km-lab-entry-row:hover .km-lab-entry-actions {
   opacity: 1;
+}
+
+.km-lab-bottom-grid {
+  display: grid;
+  grid-template-columns: 1.55fr 1fr;
+  gap: 18px;
+  align-items: stretch;
+}
+
+.km-lab-clock-units {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(60px, 1fr));
+  gap: 8px;
+}
+
+@media (max-width: 900px) {
+  .km-lab-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.km-lab-routine-grid {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .km-lab-routine-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .km-lab-clock-units {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
