@@ -34,7 +34,8 @@ import { hydratePracticeEcosystemFromCloud } from '../../services/practiceEcosys
 import { hydrateMyPublicProfileFromCloud } from '../../services/communityExploreStore';
 import { t } from '../../services/labLangStore';
 import { searchLabWorkspace } from '../../services/collectionsStore';
-import { getLifeClockConfig, computeLifeClock } from '../../services/lifeClockStore';
+import { getLifeClockConfig, computeLifeClock, hydrateLifeClockFromCloud } from '../../services/lifeClockStore';
+import { hydrateRoutineFromCloud } from '../../services/dailyRoutineStore';
 import { searchSuttas, getNikayas, getTreeChildren, getBreadcrumbs } from '../../services/tipitakaService';
 import LabLoadingScreen from './LabLoadingScreen';
 import './labTheme.css';
@@ -129,6 +130,8 @@ export default function LabLayout() {
       hydrateKnowledgeMapsFromCloud();
       hydratePracticeEcosystemFromCloud();
       hydrateMyPublicProfileFromCloud();
+      hydrateRoutineFromCloud();
+      hydrateLifeClockFromCloud();
     };
 
     const authCheck = supabase.auth.getSession().then(({ data: { session } }) => {

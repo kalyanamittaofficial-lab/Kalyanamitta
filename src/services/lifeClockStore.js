@@ -1,3 +1,5 @@
+import { upsertLabRow, fetchUserLabRows } from './labSyncService';
+
 export const LIFE_DOB_KEY = 'km_lab_life_dob_v1';
 export const LIFE_SPAN_KEY = 'km_lab_life_span_v1';
 export const LIFE_MODE_KEY = 'km_lab_life_mode_v1';
@@ -14,6 +16,28 @@ export function saveLifeClockConfig({ dob, lifespan, mode }) {
   if (dob !== undefined) localStorage.setItem(LIFE_DOB_KEY, dob);
   if (lifespan !== undefined) localStorage.setItem(LIFE_SPAN_KEY, String(lifespan));
   if (mode !== undefined) localStorage.setItem(LIFE_MODE_KEY, mode);
+
+  const current = getLifeClockConfig();
+  upsertLabRow(
+    'lab_life_clock_config',
+    {
+      dob: current.dob,
+      lifespan_years: current.lifespan,
+      clock_mode: current.mode,
+      updated_at: new Date().toISOString()
+    },
+    'user_id'
+  );
+  window.dispatchEvent(new CustomEvent('labLifeClockUpdated'));
+}
+
+export async function hydrateLifeClockFromCloud() {
+  const rows = await fetchUserLabRows('lab_life_clock_config', 'updated_at', false);
+  if (!rows || rows.length === 0) return;
+  const row = rows[0];
+  if (row.dob) localStorage.setItem(LIFE_DOB_KEY, row.dob);
+  if (row.lifespan_years) localStorage.setItem(LIFE_SPAN_KEY, String(row.lifespan_years));
+  if (row.clock_mode) localStorage.setItem(LIFE_MODE_KEY, row.clock_mode);
   window.dispatchEvent(new CustomEvent('labLifeClockUpdated'));
 }
 

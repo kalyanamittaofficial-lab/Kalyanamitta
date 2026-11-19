@@ -204,6 +204,11 @@
   align-items: stretch;
 }
 
+.km-lab-bottom-grid > *,
+.km-lab-routine-grid > * {
+  min-width: 0;
+}
+
 .km-lab-clock-units {
   display: grid;
   grid-template-columns: repeat(6, minmax(60px, 1fr));

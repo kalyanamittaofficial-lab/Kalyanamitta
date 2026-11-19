@@ -16,12 +16,13 @@ export const EIGHTFOLD_FACTORS = [
 ];
 
 export const PIN_POTHA_TYPES = {
-  dana: { id: 'dana', label: 'Dāna (Generosity)', sinhala: 'දාන', color: '#D97706' },
-  sila: { id: 'sila', label: 'Sīla (Virtue & Restraint)', sinhala: 'සීල', color: '#059669' },
-  bhavana: { id: 'bhavana', label: 'Bhāvanā (Meditation)', sinhala: 'භාවනා', color: '#4F46E5' },
-  habit_shift: { id: 'habit_shift', label: 'Habit Shift', sinhala: 'පුරුදු වෙනස්කම', color: '#0EA5E9' },
-  veyyavacca: { id: 'veyyavacca', label: 'Veyyāvacca (Service)', sinhala: 'වෙය්‍යාවච්ච', color: '#9333EA' },
-  dhamma_study: { id: 'dhamma_study', label: 'Dhamma Study', sinhala: 'ධර්ම අධ්‍යයනය', color: '#E11D48' }
+  dana: { id: 'dana', label: 'Dāna (Generosity)', sinhala: 'දාන', color: '#C89B48' },
+  sila: { id: 'sila', label: 'Sīla (Virtue & Restraint)', sinhala: 'සීල', color: '#5F6E43' },
+  bhavana: { id: 'bhavana', label: 'Bhāvanā (Meditation)', sinhala: 'භාවනා', color: '#4F6D7A' },
+  habit_shift: { id: 'habit_shift', label: 'Habit Shift', sinhala: 'පුරුදු වෙනස්කම', color: '#98A27A' },
+  buddha_vandana: { id: 'buddha_vandana', label: 'Buddha Vandanā', sinhala: 'බුද්ධ වන්දනාව', color: '#A35B3D' },
+  sambuddha_puja: { id: 'sambuddha_puja', label: 'Sambuddha Pūjā', sinhala: 'සම්බුද්ධ පූජාව', color: '#C06C47' },
+  dhamma_study: { id: 'dhamma_study', label: 'Dhamma Study', sinhala: 'ධර්ම අධ්‍යයනය', color: '#7A6855' }
 };
 
 export const DEDICATION_TYPES = {
@@ -73,6 +74,7 @@ export function deletePathReflection(id) {
   localStorage.setItem(COMPASS_KEY, JSON.stringify(next));
   deleteLabRow('lab_path_reflections', { id });
   window.dispatchEvent(new CustomEvent('labPracticeUpdated'));
+  window.dispatchEvent(new CustomEvent('labCittaLogsUpdated'));
 }
 
 // ---------------- PIN POTHA (STRICTLY PRIVATE) ----------------
@@ -129,16 +131,71 @@ export function addPinPothaEntry({
   upsertLabRow('lab_pin_potha_entries', {
     id: item.id,
     entry_type: item.entryType,
+    schedule_type: item.scheduleType,
+    duration_days: item.durationDays,
+    end_date: item.endDate,
+    duration_minutes: item.durationMinutes,
     title: item.title,
     reflection: item.reflection,
     entry_date: item.entryDate,
     linked_sutta_key: item.linkedSuttaKey,
-    linked_path_factor: item.linkedPathFactor,
     created_at: item.createdAt
   });
   window.dispatchEvent(new CustomEvent('labPracticeUpdated'));
   window.dispatchEvent(new CustomEvent('labCittaLogsUpdated'));
   return item;
+}
+
+export function updatePinPothaEntry(id, updates) {
+  const all = getPinPothaEntries();
+  let updatedItem = null;
+  const next = all.map(p => {
+    if (p.id !== id) return p;
+    const nextSchedule = updates.scheduleType ?? p.scheduleType;
+    const nextEntryDate = updates.entryDate || p.entryDate;
+    const nextDurationDays = updates.durationDays !== undefined ? updates.durationDays : p.durationDays;
+    let nextEndDate = updates.endDate !== undefined ? updates.endDate : p.endDate;
+    if (nextSchedule === 'range' && !nextEndDate && nextDurationDays > 0) {
+      const d = new Date(`${nextEntryDate}T00:00:00`);
+      d.setDate(d.getDate() + Number(nextDurationDays) - 1);
+      nextEndDate = d.toISOString().slice(0, 10);
+    } else if (nextSchedule !== 'range') {
+      nextEndDate = null;
+    }
+
+    updatedItem = {
+      ...p,
+      entryType: updates.entryType ?? p.entryType,
+      title: updates.title !== undefined ? String(updates.title).trim() || p.title : p.title,
+      reflection: updates.reflection !== undefined ? String(updates.reflection).trim() : p.reflection,
+      entryDate: nextEntryDate,
+      scheduleType: nextSchedule,
+      durationDays: nextSchedule === 'range' ? (nextDurationDays ? Number(nextDurationDays) : null) : null,
+      endDate: nextEndDate,
+      durationMinutes: updates.durationMinutes !== undefined ? Math.max(1, Number(updates.durationMinutes || 30)) : p.durationMinutes,
+      linkedSuttaKey: updates.linkedSuttaKey !== undefined ? (updates.linkedSuttaKey || null) : p.linkedSuttaKey
+    };
+    return updatedItem;
+  });
+  localStorage.setItem(PIN_POTHA_KEY, JSON.stringify(next));
+  if (updatedItem) {
+    upsertLabRow('lab_pin_potha_entries', {
+      id: updatedItem.id,
+      entry_type: updatedItem.entryType,
+      schedule_type: updatedItem.scheduleType || 'once',
+      duration_days: updatedItem.durationDays || null,
+      end_date: updatedItem.endDate || null,
+      duration_minutes: updatedItem.durationMinutes || 30,
+      title: updatedItem.title,
+      reflection: updatedItem.reflection,
+      entry_date: updatedItem.entryDate,
+      linked_sutta_key: updatedItem.linkedSuttaKey,
+      created_at: updatedItem.createdAt
+    }, 'id');
+  }
+  window.dispatchEvent(new CustomEvent('labPracticeUpdated'));
+  window.dispatchEvent(new CustomEvent('labCittaLogsUpdated'));
+  return updatedItem;
 }
 
 export function deletePinPothaEntry(id) {
@@ -193,6 +250,7 @@ export function deleteDedication(id) {
   localStorage.setItem(DEDICATION_KEY, JSON.stringify(next));
   deleteLabRow('lab_dedications', { id });
   window.dispatchEvent(new CustomEvent('labPracticeUpdated'));
+  window.dispatchEvent(new CustomEvent('labCittaLogsUpdated'));
 }
 
 export async function hydratePracticeEcosystemFromCloud() {
@@ -217,11 +275,15 @@ export async function hydratePracticeEcosystemFromCloud() {
     localStorage.setItem(PIN_POTHA_KEY, JSON.stringify(pinRows.map(r => ({
       id: r.id,
       entryType: r.entry_type,
+      cittaType: 'kusala',
+      scheduleType: r.schedule_type || 'once',
+      durationDays: r.duration_days || null,
+      endDate: r.end_date || null,
+      durationMinutes: r.duration_minutes || 30,
       title: r.title,
       reflection: r.reflection || '',
       entryDate: r.entry_date,
       linkedSuttaKey: r.linked_sutta_key,
-      linkedPathFactor: r.linked_path_factor,
       visibility: 'private',
       createdAt: r.created_at
     }))));
@@ -239,4 +301,5 @@ export async function hydratePracticeEcosystemFromCloud() {
     }))));
   }
   window.dispatchEvent(new CustomEvent('labPracticeUpdated'));
+  window.dispatchEvent(new CustomEvent('labCittaLogsUpdated'));
 }

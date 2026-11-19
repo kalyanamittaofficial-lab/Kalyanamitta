@@ -6,27 +6,113 @@ const NODES_KEY = 'km_lab_map_nodes_v1';
 const EDGES_KEY = 'km_lab_map_edges_v1';
 
 export const NODE_TYPES = {
-  concept: { id: 'concept', label: 'ධර්ම සංකල්පය', enLabel: 'Dhamma Concept', color: '#4F46E5' },
-  sutta: { id: 'sutta', label: 'සූත්‍ර මූලාශ්‍රය', enLabel: 'Tipiṭaka Sutta', color: '#059669' },
-  annotation: { id: 'annotation', label: 'අධ්‍යයන සටහන', enLabel: 'Study Note', color: '#D97706' },
-  practice: { id: 'practice', label: 'ප්‍රතිපදා අංගය', enLabel: 'Path Practice', color: '#0EA5E9' },
-  insight: { id: 'insight', label: 'පෞද්ගලික අවබෝධය', enLabel: 'Personal Reflection', color: '#9333EA' }
+  concept: { id: 'concept', label: 'ධර්ම සංකල්පය', enLabel: 'Dhamma Concept', color: '#5F6E43' },
+  sutta: { id: 'sutta', label: 'සූත්‍ර මූලාශ්‍රය', enLabel: 'Tipiṭaka Sutta', color: '#C06C47' },
+  annotation: { id: 'annotation', label: 'අධ්‍යයන සටහන', enLabel: 'Study Note', color: '#A35B3D' },
+  practice: { id: 'practice', label: 'ප්‍රතිපදා අංගය', enLabel: 'Path Practice', color: '#98A27A' },
+  insight: { id: 'insight', label: 'පෞද්ගලික අවබෝධය', enLabel: 'Personal Reflection', color: '#7A6855' }
 };
 
 export const EDGE_RELATIONS = [
-  'grounded in',
-  'relates to',
-  'supports',
-  'leads to practice',
-  'contrasts with',
-  'elaborates'
+  'මූලික වේ',
+  'සම්බන්ධ වේ',
+  'උපකාරී වේ',
+  'ප්‍රතිපදාවට යොමු කරයි',
+  'වෙනස් වේ',
+  'විස්තර කරයි'
 ];
+
+const LEGACY_RELATION_MAP = {
+  'grounded in': 'මූලික වේ',
+  'relates to': 'සම්බන්ධ වේ',
+  'supports': 'උපකාරී වේ',
+  'leads to practice': 'ප්‍රතිපදාවට යොමු කරයි',
+  'contrasts with': 'වෙනස් වේ',
+  'elaborates': 'විස්තර කරයි'
+};
+
+function migrateLegacyEnglishSeedData(maps) {
+  let mapsChanged = false;
+  const nextMaps = maps.map(m => {
+    if (m.id === 'map-default-personal' && m.title === 'My Dhamma Knowledge Map') {
+      mapsChanged = true;
+      return {
+        ...m,
+        title: 'මගේ ධර්ම සිතියම',
+        description: 'ත්‍රිපිටක සූත්‍ර, අධ්‍යයන සටහන් සහ දෛනික ප්‍රතිපදාව එකට ගැළපීම.',
+        authorName: m.authorName === 'Kalyanamitta Seeker' ? 'කල්‍යාණමිත්ත' : m.authorName
+      };
+    }
+    return m;
+  });
+  if (mapsChanged) {
+    localStorage.setItem(MAPS_KEY, JSON.stringify(nextMaps));
+  }
+
+  try {
+    const rawNodes = localStorage.getItem(NODES_KEY);
+    if (rawNodes) {
+      const nodes = JSON.parse(rawNodes);
+      let nodesChanged = false;
+      const nextNodes = nodes.map(n => {
+        if (n.id === 'node-seed-metta' && n.label === 'Karaṇīya Mettā Sutta') {
+          nodesChanged = true;
+          return {
+            ...n,
+            label: 'කරණීය මෙත්ත සූත්‍රය',
+            summary: 'සියලු සත්වයන් කෙරෙහි අප්‍රමාණ මෛත්‍රිය හා සෘජු බව (උජූ ච සුහුජූ ච) වැඩීම.',
+            sourceRef: 'සුත්ත නිපාතය 1.8 / ඛුද්දකපාඨ 9',
+            color: NODE_TYPES.sutta.color
+          };
+        }
+        if (n.id === 'node-seed-compass' && n.label === 'Sammā Saṅkappa (Right Intention)') {
+          nodesChanged = true;
+          return {
+            ...n,
+            label: 'සම්මා සංකප්ප (යහපත් සංකල්පනා)',
+            summary: 'අව්‍යාපාදය හා අවිහිංසාව දෛනික මානසික දිශානතිය ලෙස පවත්වා ගැනීම.',
+            sourceRef: 'මජ්ඣිම නිකාය 117 / ආර්ය අෂ්ටාංගික මාර්ගය',
+            color: NODE_TYPES.concept.color
+          };
+        }
+        return n;
+      });
+      if (nodesChanged) {
+        localStorage.setItem(NODES_KEY, JSON.stringify(nextNodes));
+      }
+    }
+  } catch {
+    // ignore node migration error
+  }
+
+  try {
+    const rawEdges = localStorage.getItem(EDGES_KEY);
+    if (rawEdges) {
+      const edges = JSON.parse(rawEdges);
+      let edgesChanged = false;
+      const nextEdges = edges.map(e => {
+        if (LEGACY_RELATION_MAP[e.relationLabel]) {
+          edgesChanged = true;
+          return { ...e, relationLabel: LEGACY_RELATION_MAP[e.relationLabel] };
+        }
+        return e;
+      });
+      if (edgesChanged) {
+        localStorage.setItem(EDGES_KEY, JSON.stringify(nextEdges));
+      }
+    }
+  } catch {
+    // ignore edge migration error
+  }
+
+  return nextMaps;
+}
 
 function ensureDefaultMap() {
   try {
     const raw = localStorage.getItem(MAPS_KEY);
     const maps = raw ? JSON.parse(raw) : [];
-    if (maps.length > 0) return maps;
+    if (maps.length > 0) return migrateLegacyEnglishSeedData(maps);
   } catch {
     // ignore parse error
   }
@@ -34,9 +120,9 @@ function ensureDefaultMap() {
   const now = new Date().toISOString();
   const defaultMap = {
     id: 'map-default-personal',
-    title: 'My Dhamma Knowledge Map',
-    description: 'Connecting canonical suttas, personal study annotations, and daily practice.',
-    authorName: 'Kalyanamitta Seeker',
+    title: 'මගේ ධර්ම සිතියම',
+    description: 'ත්‍රිපිටක සූත්‍ර, අධ්‍යයන සටහන් සහ දෛනික ප්‍රතිපදාව එකට ගැළපීම.',
+    authorName: 'කල්‍යාණමිත්ත',
     visibility: 'private',
     createdAt: now,
     updatedAt: now
@@ -48,9 +134,9 @@ function ensureDefaultMap() {
       id: 'node-seed-metta',
       mapId: defaultMap.id,
       nodeType: 'sutta',
-      label: 'Karaṇīya Mettā Sutta',
-      summary: 'Cultivating boundless goodwill and uprightness (ujū ca suhujū ca).',
-      sourceRef: 'Snp 1.8 / Khp 9',
+      label: 'කරණීය මෙත්ත සූත්‍රය',
+      summary: 'සියලු සත්වයන් කෙරෙහි අප්‍රමාණ මෛත්‍රිය හා සෘජු බව (උජූ ච සුහුජූ ච) වැඩීම.',
+      sourceRef: 'සුත්ත නිපාතය 1.8 / ඛුද්දකපාඨ 9',
       suttaKey: 'kn-khp-9',
       posX: 140,
       posY: 130,
@@ -61,9 +147,9 @@ function ensureDefaultMap() {
       id: 'node-seed-compass',
       mapId: defaultMap.id,
       nodeType: 'concept',
-      label: 'Sammā Saṅkappa (Right Intention)',
-      summary: 'Non-ill-will (avyāpāda) and harmlessness (avihiṁsā) as active mental orientation.',
-      sourceRef: 'MN 117 / Noble Eightfold Path',
+      label: 'සම්මා සංකප්ප (යහපත් සංකල්පනා)',
+      summary: 'අව්‍යාපාදය හා අවිහිංසාව දෛනික මානසික දිශානතිය ලෙස පවත්වා ගැනීම.',
+      sourceRef: 'මජ්ඣිම නිකාය 117 / ආර්ය අෂ්ටාංගික මාර්ගය',
       suttaKey: 'sn-5-12-2-1',
       posX: 460,
       posY: 130,
@@ -77,7 +163,7 @@ function ensureDefaultMap() {
       mapId: defaultMap.id,
       sourceNodeId: 'node-seed-metta',
       targetNodeId: 'node-seed-compass',
-      relationLabel: 'leads to practice',
+      relationLabel: 'ප්‍රතිපදාවට යොමු කරයි',
       createdAt: now
     }
   ];
@@ -122,9 +208,9 @@ export function saveKnowledgeMap(mapData) {
 
   const record = {
     id,
-    title: mapData.title?.trim() || existing.title || 'Untitled Knowledge Map',
+    title: mapData.title?.trim() || existing.title || 'මගේ ධර්ම සිතියම',
     description: mapData.description ?? existing.description ?? '',
-    authorName: mapData.authorName?.trim() || existing.authorName || 'Kalyanamitta Seeker',
+    authorName: mapData.authorName?.trim() || existing.authorName || 'කල්‍යාණමිත්ත',
     visibility: mapData.visibility === 'public' ? 'public' : 'private',
     createdAt: existing.createdAt || now,
     updatedAt: now

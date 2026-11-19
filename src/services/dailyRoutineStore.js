@@ -1,3 +1,5 @@
+import { upsertLabRow, deleteLabRow, fetchUserLabRows } from './labSyncService';
+
 const HABITS_KEY = 'km_lab_routine_habits_v1';
 const LOGS_KEY = 'km_lab_routine_logs_v1';
 const CATEGORIES_KEY = 'km_lab_routine_categories_v1';
@@ -30,27 +32,34 @@ export function addRoutineCategory({ label, color = '#5F6E43' }) {
   const cleanLabel = String(label || '').trim();
   if (!cleanLabel) return getRoutineCategories();
   const all = getRoutineCategories();
-  const next = [
-    ...all,
-    {
-      id: `cat-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
-      label: cleanLabel,
-      color
-    }
-  ];
+  const item = {
+    id: `cat-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
+    label: cleanLabel,
+    color
+  };
+  const next = [...all, item];
   localStorage.setItem(CATEGORIES_KEY, JSON.stringify(next));
+  upsertLabRow('lab_routine_categories', { id: item.id, label: item.label, color: item.color });
   window.dispatchEvent(new CustomEvent('labRoutineUpdated'));
   return next;
 }
 
 export function updateRoutineCategory(id, { label, color }) {
   const all = getRoutineCategories();
-  const next = all.map(c => (c.id === id ? {
-    ...c,
-    label: label !== undefined ? String(label).trim() || c.label : c.label,
-    color: color !== undefined ? color : c.color
-  } : c));
+  let updatedItem = null;
+  const next = all.map(c => {
+    if (c.id !== id) return c;
+    updatedItem = {
+      ...c,
+      label: label !== undefined ? String(label).trim() || c.label : c.label,
+      color: color !== undefined ? color : c.color
+    };
+    return updatedItem;
+  });
   localStorage.setItem(CATEGORIES_KEY, JSON.stringify(next));
+  if (updatedItem) {
+    upsertLabRow('lab_routine_categories', { id: updatedItem.id, label: updatedItem.label, color: updatedItem.color }, 'id');
+  }
   window.dispatchEvent(new CustomEvent('labRoutineUpdated'));
   return next;
 }
@@ -61,10 +70,23 @@ export function deleteRoutineCategory(id) {
   const next = all.filter(c => c.id !== id);
   const fallbackId = next[0].id;
   localStorage.setItem(CATEGORIES_KEY, JSON.stringify(next));
+  deleteLabRow('lab_routine_categories', { id });
 
   // Reassign any habits pointing to the deleted category
   const habits = getRoutineHabits();
-  const updatedHabits = habits.map(h => (h.category === id ? { ...h, category: fallbackId } : h));
+  const updatedHabits = habits.map(h => {
+    if (h.category !== id) return h;
+    const reassigned = { ...h, category: fallbackId };
+    upsertLabRow('lab_routine_habits', {
+      id: reassigned.id,
+      category_id: reassigned.category,
+      title: reassigned.title,
+      description: reassigned.description || '',
+      minutes: reassigned.minutes,
+      citta_type: reassigned.cittaType || 'kusala'
+    }, 'id');
+    return reassigned;
+  });
   localStorage.setItem(HABITS_KEY, JSON.stringify(updatedHabits));
   window.dispatchEvent(new CustomEvent('labRoutineUpdated'));
   return next;
@@ -96,18 +118,24 @@ export function addRoutineHabit({ title, description = '', category = 'dhamma', 
   const all = getRoutineHabits();
   const categories = getRoutineCategories();
   const validCategory = categories.some(c => c.id === category) ? category : categories[0].id;
-  const next = [
-    ...all,
-    {
-      id: `hab-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
-      title: title.trim(),
-      description: String(description || '').trim(),
-      category: validCategory,
-      minutes: Math.max(1, Number(minutes || 15)),
-      cittaType: cittaType === 'akusala' ? 'akusala' : 'kusala'
-    }
-  ];
+  const item = {
+    id: `hab-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
+    title: title.trim(),
+    description: String(description || '').trim(),
+    category: validCategory,
+    minutes: Math.max(1, Number(minutes || 15)),
+    cittaType: cittaType === 'akusala' ? 'akusala' : 'kusala'
+  };
+  const next = [...all, item];
   localStorage.setItem(HABITS_KEY, JSON.stringify(next));
+  upsertLabRow('lab_routine_habits', {
+    id: item.id,
+    category_id: item.category,
+    title: item.title,
+    description: item.description,
+    minutes: item.minutes,
+    citta_type: item.cittaType
+  });
   window.dispatchEvent(new CustomEvent('labRoutineUpdated'));
   return next;
 }
@@ -115,18 +143,30 @@ export function addRoutineHabit({ title, description = '', category = 'dhamma', 
 export function updateRoutineHabit(id, { title, description, category, minutes }) {
   const all = getRoutineHabits();
   const categories = getRoutineCategories();
+  let updatedItem = null;
   const next = all.map(h => {
     if (h.id !== id) return h;
     const validCat = category && categories.some(c => c.id === category) ? category : h.category;
-    return {
+    updatedItem = {
       ...h,
       title: title !== undefined ? String(title).trim() || h.title : h.title,
       description: description !== undefined ? String(description).trim() : h.description,
       category: validCat,
       minutes: minutes !== undefined ? Math.max(1, Number(minutes || 15)) : h.minutes
     };
+    return updatedItem;
   });
   localStorage.setItem(HABITS_KEY, JSON.stringify(next));
+  if (updatedItem) {
+    upsertLabRow('lab_routine_habits', {
+      id: updatedItem.id,
+      category_id: updatedItem.category,
+      title: updatedItem.title,
+      description: updatedItem.description || '',
+      minutes: updatedItem.minutes,
+      citta_type: updatedItem.cittaType || 'kusala'
+    }, 'id');
+  }
   window.dispatchEvent(new CustomEvent('labRoutineUpdated'));
   return next;
 }
@@ -134,6 +174,7 @@ export function updateRoutineHabit(id, { title, description, category, minutes }
 export function deleteRoutineHabit(id) {
   const next = getRoutineHabits().filter(h => h.id !== id);
   localStorage.setItem(HABITS_KEY, JSON.stringify(next));
+  deleteLabRow('lab_routine_habits', { id });
   window.dispatchEvent(new CustomEvent('labRoutineUpdated'));
   return next;
 }
@@ -162,6 +203,17 @@ export function saveRoutineWakeSleep(dateStr, { wakeTime, sleepTime }) {
     updatedAt: new Date().toISOString()
   };
   localStorage.setItem(LOGS_KEY, JSON.stringify(all));
+  upsertLabRow(
+    'lab_routine_logs',
+    {
+      log_date: dateStr,
+      wake_time: all[dateStr].wakeTime || '',
+      sleep_time: all[dateStr].sleepTime || '',
+      checked_ids: all[dateStr].checkedIds || [],
+      updated_at: all[dateStr].updatedAt
+    },
+    'user_id,log_date'
+  );
   window.dispatchEvent(new CustomEvent('labRoutineUpdated'));
   return all[dateStr];
 }
@@ -180,9 +232,64 @@ export function toggleRoutineHabit(dateStr, habitId) {
     updatedAt: new Date().toISOString()
   };
   localStorage.setItem(LOGS_KEY, JSON.stringify(all));
+  upsertLabRow(
+    'lab_routine_logs',
+    {
+      log_date: dateStr,
+      wake_time: all[dateStr].wakeTime || '',
+      sleep_time: all[dateStr].sleepTime || '',
+      checked_ids: all[dateStr].checkedIds,
+      updated_at: all[dateStr].updatedAt
+    },
+    'user_id,log_date'
+  );
   window.dispatchEvent(new CustomEvent('labRoutineUpdated'));
   window.dispatchEvent(new CustomEvent('labCittaLogsUpdated'));
   return all[dateStr];
+}
+
+export async function hydrateRoutineFromCloud() {
+  const [catRows, habitRows, logRows] = await Promise.all([
+    fetchUserLabRows('lab_routine_categories', 'created_at', true),
+    fetchUserLabRows('lab_routine_habits', 'created_at', true),
+    fetchUserLabRows('lab_routine_logs', 'log_date', false)
+  ]);
+
+  if (catRows && catRows.length > 0) {
+    localStorage.setItem(CATEGORIES_KEY, JSON.stringify(catRows.map(r => ({
+      id: r.id,
+      label: r.label,
+      color: r.color || '#5F6E43'
+    }))));
+  }
+
+  if (habitRows && habitRows.length > 0) {
+    localStorage.setItem(HABITS_KEY, JSON.stringify(habitRows.map(r => ({
+      id: r.id,
+      category: r.category_id || 'dhamma',
+      title: r.title,
+      description: r.description || '',
+      minutes: r.minutes || 15,
+      cittaType: r.citta_type || 'kusala'
+    }))));
+  }
+
+  if (logRows && logRows.length > 0) {
+    const map = {};
+    for (const r of logRows) {
+      map[r.log_date] = {
+        date: r.log_date,
+        wakeTime: r.wake_time || '',
+        sleepTime: r.sleep_time || '',
+        checkedIds: Array.isArray(r.checked_ids) ? r.checked_ids : [],
+        updatedAt: r.updated_at
+      };
+    }
+    localStorage.setItem(LOGS_KEY, JSON.stringify(map));
+  }
+
+  window.dispatchEvent(new CustomEvent('labRoutineUpdated'));
+  window.dispatchEvent(new CustomEvent('labCittaLogsUpdated'));
 }
 
 export function getRoutineCategoryBreakdown(dateStr, mode = 'auto') {
