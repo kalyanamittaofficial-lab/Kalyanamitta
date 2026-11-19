@@ -29,7 +29,6 @@ import {
   EDGE_RELATIONS
 } from '../../services/knowledgeMapStore';
 import { getRoadmapItems, getAnnotationSummary } from '../../services/studyRoadmapStore';
-import { getPathReflections, addPathReflection, EIGHTFOLD_FACTORS } from '../../services/practiceEcosystemStore';
 import PaginationBar from '../../components/Lab/PaginationBar';
 
 export default function KnowledgeMap() {
@@ -41,7 +40,6 @@ export default function KnowledgeMap() {
   const [nodes, setNodes] = useState(() => getMapNodes(getKnowledgeMaps()[0]?.id));
   const [edges, setEdges] = useState(() => getMapEdges(getKnowledgeMaps()[0]?.id));
   const [annotations, setAnnotations] = useState(() => getRoadmapItems());
-  const [reflections, setReflections] = useState(() => getPathReflections());
 
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [connectSourceId, setConnectSourceId] = useState(null);
@@ -49,9 +47,6 @@ export default function KnowledgeMap() {
   const [showAddNode, setShowAddNode] = useState(false);
   const [showImportNotes, setShowImportNotes] = useState(false);
   const [showPubPreview, setShowPubPreview] = useState(false);
-  const [showNewReflection, setShowNewReflection] = useState(false);
-  const [reflectionIntention, setReflectionIntention] = useState('');
-  const [reflectionFactor, setReflectionFactor] = useState(EIGHTFOLD_FACTORS[0].id);
   const [outlinePage, setOutlinePage] = useState(1);
 
   // Dragging state
@@ -75,15 +70,12 @@ export default function KnowledgeMap() {
       setEdges(getMapEdges(targetId));
     };
     const refreshNotes = () => setAnnotations(getRoadmapItems());
-    const refreshPractice = () => setReflections(getPathReflections());
 
     window.addEventListener('labKnowledgeMapUpdated', refresh);
     window.addEventListener('studyRoadmapUpdated', refreshNotes);
-    window.addEventListener('labPracticeUpdated', refreshPractice);
     return () => {
       window.removeEventListener('labKnowledgeMapUpdated', refresh);
       window.removeEventListener('studyRoadmapUpdated', refreshNotes);
-      window.removeEventListener('labPracticeUpdated', refreshPractice);
     };
   }, [activeMapId]);
 
@@ -166,7 +158,6 @@ export default function KnowledgeMap() {
   const connectedEdges = selectedNode
     ? edges.filter(e => e.sourceNodeId === selectedNode.id || e.targetNodeId === selectedNode.id)
     : [];
-  const latestReflection = reflections[0];
 
   const OUTLINE_PER_PAGE = 5;
   const outlineTotalPages = Math.max(1, Math.ceil(nodes.length / OUTLINE_PER_PAGE));
@@ -282,111 +273,147 @@ export default function KnowledgeMap() {
 
       {/* TAB 1: MY PATH */}
       {activeTab === 'path' && (
-        <div className="km-lab-card" style={{ padding: '14px 16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
-            <div style={{ fontWeight: '700', fontSize: '0.96rem' }}>
+        <div className="km-lab-card" style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ fontWeight: '700', fontSize: '0.96rem', color: 'var(--lab-text)' }}>
               පෞද්ගලික මාර්ග දිශානතිය
             </div>
-            <button onClick={() => setShowNewReflection(v => !v)} className="km-lab-btn" style={{ fontSize: '0.78rem' }}>
-              <Plus size={13} />
-              <span>නව විමසුමක් එක් කරන්න</span>
-            </button>
+            <span style={{ fontSize: '0.72rem', color: 'var(--lab-text-muted)' }}>
+              අධ්‍යයනය, ප්‍රතිපත්තිය සහ අභ්‍යන්තර ආවර්ජනය අතර සම්බන්ධතාව
+            </span>
           </div>
 
-          {showNewReflection && (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (!reflectionIntention.trim()) return;
-                addPathReflection({ pathFactor: reflectionFactor, intention: reflectionIntention.trim(), observation: '' });
-                setReflectionIntention('');
-                setShowNewReflection(false);
-              }}
-              style={{ padding: '12px', borderRadius: '10px', background: 'var(--lab-bg-subtle)', border: '1px solid var(--lab-border)', marginBottom: '14px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}
-            >
-              <select className="km-lab-input" style={{ width: 'auto' }} value={reflectionFactor} onChange={(e) => setReflectionFactor(e.target.value)}>
-                {EIGHTFOLD_FACTORS.map(f => <option key={f.id} value={f.id}>{f.sinhala} ({f.pali})</option>)}
-              </select>
-              <input
-                className="km-lab-input"
-                style={{ flex: 1, minWidth: '220px' }}
-                required
-                placeholder="මගේ වත්මන් විමසුම හෝ පටිපදා අරමුණ..."
-                value={reflectionIntention}
-                onChange={(e) => setReflectionIntention(e.target.value)}
-              />
-              <button type="submit" className="km-lab-btn-primary">සුරකින්න</button>
-            </form>
-          )}
-
-          {/* Ultimate Aim Box */}
+          {/* 1. Ultimate Direction: Nibbana */}
           <div style={{
-            maxWidth: '460px',
-            margin: '0 auto 4px auto',
-            padding: '10px 14px',
+            maxWidth: '480px',
+            width: '100%',
+            margin: '0 auto',
+            padding: '10px 16px',
             border: '1.5px solid #A35B3D',
-            borderRadius: '10px',
+            borderRadius: '12px',
             background: 'rgba(163, 91, 61, 0.08)',
             textAlign: 'center'
           }}>
             <div style={{ fontSize: '0.68rem', fontWeight: '700', color: '#A35B3D', marginBottom: '2px' }}>
-              පරම අරමුණ · දිශානතිය පමණි
+              පරම දිශානතිය
             </div>
-            <div style={{ fontSize: '1.08rem', fontWeight: '800', marginBottom: '2px', color: 'var(--lab-text)' }}>
-              නිවන (නිබ්බාන)
-            </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--lab-text-muted)' }}>
-              ප්‍රතිශත, ලකුණු හෝ මට්ටම් ගණනය කිරීමක් නොමැත
+            <div style={{ fontSize: '1.18rem', fontWeight: '800', color: 'var(--lab-text)' }}>
+              නිවන
             </div>
           </div>
 
-          <div style={{ textAlign: 'center', color: 'var(--lab-gold)', fontSize: '0.88rem', marginBottom: '4px' }}>↓</div>
-
-          {/* Current Self-Reflection Box */}
-          <div style={{ maxWidth: '560px', margin: '0 auto 6px auto', padding: '10px 14px', border: '1px solid var(--lab-border)', borderRadius: '10px', background: 'var(--lab-bg-subtle)', textAlign: 'center' }}>
-            <div style={{ fontSize: '0.68rem', fontWeight: '700', color: 'var(--lab-text-muted)', marginBottom: '2px' }}>
-              වත්මන් ස්වයං ආවර්ජනය
+          {/* 2. Pativedha — Non-evaluated horizon */}
+          <div style={{
+            maxWidth: '560px',
+            width: '100%',
+            margin: '0 auto',
+            padding: '9px 14px',
+            border: '1px dashed rgba(95, 110, 67, 0.45)',
+            borderRadius: '10px',
+            background: 'rgba(95, 110, 67, 0.06)',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '0.82rem', fontWeight: '700', color: '#5F6E43', marginBottom: '2px' }}>
+              පටිවේධ — ප්‍රත්යක්ෂ අවබෝධය
             </div>
-            <div style={{ fontSize: '0.9rem', fontWeight: '700', marginBottom: '2px' }}>
-              {latestReflection?.intention || 'විවේචන හමුවේ මා ප්‍රතිචාර දක්වන්නේ කෙසේද?'}
-            </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--lab-text-muted)' }}>
-              විවෘත විමසුමක් මිස මට්ටම් තීරණයක් නොවේ
-            </div>
-          </div>
-
-          <div style={{ textAlign: 'center', color: 'var(--lab-gold)', fontSize: '0.88rem', marginBottom: '8px' }}>↙ &nbsp; ↓ &nbsp; ↘</div>
-
-          {/* 3-Column Flow */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px', marginBottom: '10px' }}>
-            <div className="km-lab-card" style={{ padding: '12px 14px', background: 'var(--lab-bg-subtle)', borderTop: '3px solid #5F6E43' }}>
-              <div style={{ fontWeight: '700', fontSize: '0.86rem', marginBottom: '4px', color: '#5F6E43' }}>1 / පරියත්ති (අධ්‍යයනය)</div>
-              <p style={{ fontSize: '0.75rem', color: 'var(--lab-text-muted)', margin: '0 0 8px 0' }}>
-                අදාළ සූත්‍රයක් කියවා නව අවබෝධයක් සටහන් කරන්න.
-              </p>
-              <button onClick={() => navigate('/lab/sutta')} className="km-lab-btn" style={{ padding: '5px 11px', fontSize: '0.75rem' }}>කියවනය විවෘත කරන්න</button>
-            </div>
-
-            <div className="km-lab-card" style={{ padding: '12px 14px', background: 'var(--lab-bg-subtle)', borderTop: '3px solid #C06C47' }}>
-              <div style={{ fontWeight: '700', fontSize: '0.86rem', marginBottom: '4px', color: '#C06C47' }}>2 / ප්‍රතිපත්ති (ප්‍රතිපදාව)</div>
-              <p style={{ fontSize: '0.75rem', color: 'var(--lab-text-muted)', margin: '0 0 8px 0' }}>
-                ප්‍රතිචාර දැක්වීමට පෙර සිහියෙන් සවන් දීමට උත්සාහ කරන්න.
-              </p>
-              <button onClick={() => navigate('/lab/compass')} className="km-lab-btn" style={{ padding: '5px 11px', fontSize: '0.75rem' }}>ප්‍රතිපදාව සටහන් කරන්න</button>
-            </div>
-
-            <div className="km-lab-card" style={{ padding: '12px 14px', background: 'var(--lab-bg-subtle)', borderTop: '3px solid #98A27A' }}>
-              <div style={{ fontWeight: '700', fontSize: '0.86rem', marginBottom: '4px', color: '#5F6E43' }}>3 / නිරීක්ෂණය</div>
-              <p style={{ fontSize: '0.75rem', color: 'var(--lab-text-muted)', margin: '0 0 8px 0' }}>
-                ඇත්තටම සිදු වූයේ කුමක්ද? මා දුටුවේ කුමක්ද?
-              </p>
-              <button onClick={() => navigate('/lab/pin-potha')} className="km-lab-btn" style={{ padding: '5px 11px', fontSize: '0.75rem' }}>පින් පොත විවෘත කරන්න</button>
+            <div style={{ fontSize: '0.73rem', color: 'var(--lab-text-muted)', lineHeight: 1.45 }}>
+              ධර්ම සත්‍යය ප්‍රත්‍යක්ෂව අවබෝධ කිරීම — පුද්ගල සටහන් හෝ යෙදුමේ දත්ත මඟින් තීරණය නොකරයි.
             </div>
           </div>
 
-          <div style={{ padding: '8px 12px', borderRadius: '8px', border: '1px dashed var(--lab-border)', background: 'var(--lab-bg-subtle)', fontSize: '0.75rem', color: 'var(--lab-text-muted)' }}>
-            <strong>ආවර්ජන චක්‍රය:</strong>{' '}
-            අවබෝධය සංශෝධනය ↔ මූලාශ්‍ර විමසීම ↔ ප්‍රතිපත්ති ↔ නිරීක්ෂණය ↔ නැවත විමසීම.
+          {/* 3. Mutually Nourishing Cycle: Pariyatti <-> Patipatti */}
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '10px',
+            alignItems: 'stretch'
+          }}>
+            {/* Pariyatti */}
+            <div className="km-lab-card" style={{ flex: '1 1 240px', padding: '12px 14px', background: 'var(--lab-bg-subtle)', borderTop: '3px solid #5F6E43', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '8px' }}>
+              <div>
+                <div style={{ fontWeight: '800', fontSize: '0.9rem', color: '#5F6E43', marginBottom: '2px' }}>
+                  පරියත්ති
+                </div>
+                <div style={{ fontWeight: '600', fontSize: '0.78rem', color: 'var(--lab-text)', marginBottom: '4px' }}>
+                  ධර්මය ඉගෙනීම හා විමසීම
+                </div>
+                <p style={{ fontSize: '0.74rem', color: 'var(--lab-text-muted)', margin: 0, lineHeight: 1.45 }}>
+                  සූත්‍ර, අර්ථකථන, ප්‍රශ්න සහ සම්බන්ධතා
+                </p>
+              </div>
+              <button onClick={() => navigate('/lab/sutta')} className="km-lab-btn" style={{ padding: '5px 11px', fontSize: '0.74rem', alignSelf: 'flex-start' }}>
+                ධර්ම අධ්‍යයනය ආරම්භ කරන්න
+              </button>
+            </div>
+
+            {/* Mutual Nourishment Indicator */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '6px 8px',
+              textAlign: 'center',
+              color: '#A35B3D',
+              minWidth: '110px'
+            }}>
+              <div style={{ fontSize: '1.15rem', fontWeight: '800', lineHeight: 1 }}>↔</div>
+              <div style={{ fontSize: '0.69rem', fontWeight: '700', color: 'var(--lab-text-muted)', marginTop: '4px', lineHeight: 1.4 }}>
+                ඉගෙනීම ↔ ප්‍රතිපත්තිය ↔ ආවර්ජනය
+              </div>
+            </div>
+
+            {/* Patipatti */}
+            <div className="km-lab-card" style={{ flex: '1 1 240px', padding: '12px 14px', background: 'var(--lab-bg-subtle)', borderTop: '3px solid #A35B3D', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '8px' }}>
+              <div>
+                <div style={{ fontWeight: '800', fontSize: '0.9rem', color: '#A35B3D', marginBottom: '2px' }}>
+                  පටිපත්ති
+                </div>
+                <div style={{ fontWeight: '600', fontSize: '0.78rem', color: 'var(--lab-text)', marginBottom: '4px' }}>
+                  ධර්මය ජීවිතයට එක් කිරීම
+                </div>
+                <p style={{ fontSize: '0.74rem', color: 'var(--lab-text-muted)', margin: 0, lineHeight: 1.45 }}>
+                  සීලය, සමාධිය, ප්‍රඥාව, ජීවන පුරුදු සහ ප්‍රතිපත්ති ආවර්ජන
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                <button onClick={() => navigate('/lab/compass')} className="km-lab-btn" style={{ padding: '5px 10px', fontSize: '0.73rem' }}>
+                  අද ප්‍රතිපදාව සටහන් කරන්න
+                </button>
+                <button onClick={() => navigate('/lab/pin-potha')} className="km-lab-btn" style={{ padding: '5px 10px', fontSize: '0.73rem' }}>
+                  පින් පොත හා ආවර්ජන
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* 4. Current Self-Reflection & Map Connection */}
+          <div style={{ padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--lab-border)', background: 'var(--lab-bg-subtle)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+              <span style={{ fontSize: '0.78rem', fontWeight: '700', color: 'var(--lab-text)' }}>
+                මගේ වත්මන් ස්වයං ආවර්ජනය
+              </span>
+              <button
+                type="button"
+                onClick={() => setActiveTab('graph')}
+                className="km-lab-btn-primary"
+                style={{ padding: '4px 11px', fontSize: '0.73rem' }}
+              >
+                ධර්ම සිතියමේ සම්බන්ධතා විමසන්න →
+              </button>
+            </div>
+
+            <div style={{
+              padding: '8px 12px',
+              borderRadius: '8px',
+              background: '#FAF8F5',
+              borderLeft: '3px solid #A35B3D',
+              fontSize: '0.78rem',
+              color: 'var(--lab-text)',
+              lineHeight: 1.5
+            }}>
+              මට දැන් පැහැදිලි දේ, තවම ගැටලු ඇති දේ සහ වෙනස් කිරීමට අවශ්‍ය දේ
+            </div>
           </div>
         </div>
       )}

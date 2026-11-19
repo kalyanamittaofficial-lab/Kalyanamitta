@@ -306,12 +306,12 @@ export default function PinPotha() {
   ];
 
   return (
-    <div className="km-lab-page" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+    <div className="km-lab-page" style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '10px', paddingBottom: '10px' }}>
       {/* Terracotta Hero & Tab Bar */}
       <div
         style={{
-          borderRadius: '14px',
-          padding: '14px 18px',
+          borderRadius: '12px',
+          padding: '10px 16px',
           background: 'linear-gradient(135deg, #A35B3D 0%, #B86F4E 100%)',
           color: '#FAF8F5',
           boxShadow: '0 6px 20px rgba(163, 91, 61, 0.16)',
@@ -319,14 +319,14 @@ export default function PinPotha() {
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: '12px'
+          gap: '8px'
         }}
       >
         <div>
-          <h1 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 3px 0', fontFamily: 'var(--font-sinhala)' }}>
+          <h1 style={{ fontSize: '1.1rem', fontWeight: '800', margin: '0 0 2px 0', fontFamily: 'var(--font-sinhala)' }}>
             මගේ පින් පොත ({entries.length})
           </h1>
-          <div style={{ fontSize: '0.78rem', color: 'rgba(250, 248, 245, 0.88)', fontFamily: 'var(--font-sinhala)' }}>
+          <div style={{ fontSize: '0.73rem', color: 'rgba(250, 248, 245, 0.88)', fontFamily: 'var(--font-sinhala)' }}>
             පෞද්ගලික කුසල සටහන්, බුද්ධ පූජා සහ දහම් අධ්‍යයන සටහන්
           </div>
         </div>
@@ -389,29 +389,44 @@ export default function PinPotha() {
         </div>
       </div>
 
+      {entries.length > 0 && (
+        <div className="km-lab-card" style={{ padding: '6px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+          <div style={{ fontSize: '0.77rem', color: 'var(--lab-text-muted)' }}>
+            <Repeat size={12} style={{ verticalAlign: 'middle', marginRight: '6px' }} />
+            පූර්ණ පුණ්‍යානුමෝදනා සහ ධර්ම දාන කළමනාකරණය සඳහා:
+          </div>
+          <button className="km-lab-btn-primary" onClick={() => navigate('/lab/dedication')} style={{ padding: '4px 10px', fontSize: '0.73rem' }}>
+            <Sparkles size={12} />
+            <span>පුණ්‍යානුමෝදනා පිටුවට</span>
+          </button>
+        </div>
+      )}
+
       {activeTab === 'history' ? (
-        <div className="km-lab-card" style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div className="km-lab-card" style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <History size={17} color="#A35B3D" />
-            <h2 style={{ fontSize: '1rem', fontWeight: '700', margin: 0 }}>
+            <History size={16} color="#A35B3D" />
+            <h2 style={{ fontSize: '0.94rem', fontWeight: '700', margin: 0 }}>
               කාලානුක්‍රමික ආවර්ජන ඉතිහාසය ({historyRows.length})
             </h2>
           </div>
           {historyRows.length === 0 ? (
-            <p style={{ color: 'var(--lab-text-muted)', fontSize: '0.84rem', margin: 0 }}>
+            <p style={{ color: 'var(--lab-text-muted)', fontSize: '0.82rem', margin: 0 }}>
               තවමත් ආවර්ජන ඉතිහාසයක් නොමැත.
             </p>
           ) : (
             <>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                 {pagedHistoryRows.map(row => (
-                  <div key={row.id} style={{ padding: '10px 14px', borderRadius: '9px', background: 'var(--lab-bg-subtle)', border: '1px solid var(--lab-border)', borderLeft: '3px solid #5F6E43' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--lab-text-muted)', marginBottom: '3px' }}>
+                  <div key={row.id} style={{ padding: '6px 10px', borderRadius: '8px', background: 'var(--lab-bg-subtle)', border: '1px solid var(--lab-border)', borderLeft: '3px solid #5F6E43' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: 'var(--lab-text-muted)', marginBottom: '2px' }}>
                       <span style={{ fontWeight: '700', color: '#5F6E43' }}>{row.kind}</span>
                       <span style={{ fontFamily: 'monospace' }}>{row.date}</span>
                     </div>
-                    <div style={{ fontWeight: '700', fontSize: '0.88rem', marginBottom: '2px' }}>{row.title}</div>
-                    {row.body && <div style={{ fontSize: '0.78rem', color: 'var(--lab-text-muted)', lineHeight: 1.45 }}>{row.body}</div>}
+                    <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.84rem', lineHeight: 1.35 }}>
+                      <span style={{ fontWeight: '700', color: 'var(--lab-text)' }}>{row.title}</span>
+                      {row.body && <span style={{ fontSize: '0.74rem', color: 'var(--lab-text-muted)' }}> — {row.body}</span>}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -421,33 +436,20 @@ export default function PinPotha() {
         </div>
       ) : (
       <>
-      {activeTab === 'dedication' && (
-        <div className="km-lab-card" style={{ padding: '10px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-          <div style={{ fontSize: '0.82rem', color: 'var(--lab-text-muted)' }}>
-            <Repeat size={13} style={{ verticalAlign: 'middle', marginRight: '6px' }} />
-            පූර්ණ පුණ්‍යානුමෝදනා සහ ධර්ම දාන කළමනාකරණය සඳහා:
-          </div>
-          <button className="km-lab-btn-primary" onClick={() => navigate('/lab/dedication')} style={{ padding: '6px 12px', fontSize: '0.76rem' }}>
-            <Sparkles size={13} />
-            <span>පුණ්‍යානුමෝදනා පිටුවට</span>
-          </button>
-        </div>
-      )}
-
       <div className="km-lab-routine-grid">
         {/* Left: New Pin Potha Entry Form */}
-        <form onSubmit={handleSubmit} className="km-lab-card" style={{ padding: '16px 18px' }}>
-          <h2 style={{ fontSize: '0.98rem', fontWeight: '700', margin: '0 0 12px 0', color: 'var(--lab-text)', fontFamily: 'var(--font-sinhala)' }}>
+        <form onSubmit={handleSubmit} className="km-lab-card" style={{ padding: '12px 14px' }}>
+          <h2 style={{ fontSize: '0.92rem', fontWeight: '700', margin: '0 0 8px 0', color: 'var(--lab-text)', fontFamily: 'var(--font-sinhala)' }}>
             නව කුසල සටහනක් එක් කරන්න
           </h2>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 136px', gap: '8px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 130px', gap: '6px' }}>
               <select
                 value={entryType}
                 onChange={(e) => setEntryType(e.target.value)}
                 className="km-lab-input"
-                style={{ padding: '8px 10px', fontSize: '0.82rem' }}
+                style={{ padding: '6px 8px', fontSize: '0.8rem' }}
               >
                 {Object.values(PIN_POTHA_TYPES).map(tp => (
                   <option key={tp.id} value={tp.id}>{tp.sinhala}</option>
@@ -458,7 +460,7 @@ export default function PinPotha() {
                 value={entryDate}
                 onChange={(e) => setEntryDate(e.target.value)}
                 className="km-lab-input"
-                style={{ padding: '8px 8px', fontSize: '0.8rem' }}
+                style={{ padding: '6px 6px', fontSize: '0.78rem' }}
               />
             </div>
 
@@ -469,16 +471,16 @@ export default function PinPotha() {
               onChange={(e) => setTitle(e.target.value)}
               placeholder="උදා: දන් දීම / බුද්ධ පූජාව"
               className="km-lab-input"
-              style={{ padding: '8px 11px', fontSize: '0.84rem', fontFamily: 'var(--font-sinhala)' }}
+              style={{ padding: '6px 9px', fontSize: '0.8rem', fontFamily: 'var(--font-sinhala)' }}
             />
 
             <textarea
-              rows={3}
+              rows={2}
               value={reflection}
               onChange={(e) => setReflection(e.target.value)}
               placeholder="සිතේ ඇති වූ පැහැදීම හා ප්‍රතිපදා නිරීක්ෂණය..."
               className="km-lab-input"
-              style={{ padding: '8px 11px', fontSize: '0.84rem', fontFamily: 'var(--font-sinhala)', resize: 'vertical' }}
+              style={{ padding: '6px 9px', fontSize: '0.8rem', fontFamily: 'var(--font-sinhala)', resize: 'vertical' }}
             />
 
             {renderTimeModeFields({
@@ -503,23 +505,23 @@ export default function PinPotha() {
               onChange={(e) => setLinkedSuttaKey(e.target.value)}
               placeholder="සම්බන්ධ සූත්‍ර කේතය (විකල්ප)"
               className="km-lab-input"
-              style={{ padding: '8px 11px', fontSize: '0.8rem' }}
+              style={{ padding: '6px 9px', fontSize: '0.78rem' }}
             />
 
             <button
               type="submit"
               className="km-lab-btn-primary"
-              style={{ justifyContent: 'center', padding: '9px', borderRadius: '10px', fontSize: '0.84rem' }}
+              style={{ justifyContent: 'center', padding: '7px', borderRadius: '9px', fontSize: '0.8rem' }}
             >
-              <Plus size={15} />
+              <Plus size={14} />
               <span>පින් පොතේ සුරකින්න</span>
             </button>
           </div>
         </form>
 
         {/* Right: Pin Potha Entries Feed */}
-        <div className="km-lab-card" style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '10px', minWidth: 0, overflow: 'hidden' }}>
-          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+        <div className="km-lab-card" style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '8px', minWidth: 0, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
             <button
               type="button"
               onClick={() => {
@@ -527,7 +529,7 @@ export default function PinPotha() {
                 setPinPage(1);
               }}
               className={filterType === 'all' ? 'km-lab-btn-primary' : 'km-lab-btn'}
-              style={{ padding: '4px 10px', fontSize: '0.73rem' }}
+              style={{ padding: '3px 8px', fontSize: '0.7rem' }}
             >
               සියල්ල ({entries.length})
             </button>
@@ -542,9 +544,9 @@ export default function PinPotha() {
                     setPinPage(1);
                   }}
                   className={active ? 'km-lab-btn-primary' : 'km-lab-btn'}
-                  style={{ padding: '4px 10px', fontSize: '0.73rem', gap: '5px' }}
+                  style={{ padding: '3px 8px', fontSize: '0.7rem', gap: '4px' }}
                 >
-                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: active ? '#FAF8F5' : tp.color }} />
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: active ? '#FAF8F5' : tp.color }} />
                   <span>{tp.sinhala}</span>
                 </button>
               );
@@ -552,13 +554,13 @@ export default function PinPotha() {
           </div>
 
           {pagedPinEntries.length === 0 ? (
-            <div style={{ padding: '28px 16px', textAlign: 'center', color: 'var(--lab-text-muted)', fontFamily: 'var(--font-sinhala)', background: 'var(--lab-bg-subtle)', borderRadius: '10px' }}>
-              <BookHeart size={24} style={{ opacity: 0.45, marginBottom: '6px' }} />
-              <div style={{ fontSize: '0.84rem' }}>තවමත් පින් පොතේ සටහන් නොමැත.</div>
+            <div style={{ padding: '22px 14px', textAlign: 'center', color: 'var(--lab-text-muted)', fontFamily: 'var(--font-sinhala)', background: 'var(--lab-bg-subtle)', borderRadius: '10px' }}>
+              <BookHeart size={22} style={{ opacity: 0.45, marginBottom: '4px' }} />
+              <div style={{ fontSize: '0.82rem' }}>තවමත් පින් පොතේ සටහන් නොමැත.</div>
             </div>
           ) : (
             <>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                 {pagedPinEntries.map(item => {
                   const typeCfg = PIN_POTHA_TYPES[item.entryType] || PIN_POTHA_TYPES.sila;
                   return (
@@ -576,96 +578,84 @@ export default function PinPotha() {
                       })}
                       className="km-lab-card-interactive"
                       style={{
-                        padding: '10px 14px',
-                        borderRadius: '10px',
+                        padding: '6px 10px',
+                        borderRadius: '8px',
                         background: 'var(--lab-bg-subtle)',
                         border: '1px solid var(--lab-border)',
                         borderLeft: `4px solid ${typeCfg.color}`,
                         cursor: 'pointer'
                       }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                          <span style={{ fontSize: '0.7rem', fontWeight: '700', color: typeCfg.color, background: `${typeCfg.color}18`, padding: '2px 8px', borderRadius: '999px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', minWidth: 0, flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '0.67rem', fontWeight: '700', color: typeCfg.color, background: `${typeCfg.color}18`, padding: '1px 7px', borderRadius: '999px' }}>
                             {typeCfg.sinhala}
                           </span>
                           {item.scheduleType && item.scheduleType !== 'once' && (
-                            <span className="km-lab-tag">
+                            <span className="km-lab-tag" style={{ fontSize: '0.66rem', padding: '1px 6px' }}>
                               {item.scheduleType === 'daily' && 'දිනපතා'}
                               {item.scheduleType === 'poya' && 'පෝය දින'}
                               {item.scheduleType === 'range' && (item.endDate ? `${item.entryDate} → ${item.endDate}` : `දින ${item.durationDays || 7}`)}
                             </span>
                           )}
-                          <span style={{ fontSize: '0.72rem', color: 'var(--lab-text-muted)', fontFamily: 'monospace' }}>
+                          <span style={{ fontSize: '0.68rem', color: 'var(--lab-text-muted)', fontFamily: 'monospace' }}>
                             {item.entryDate}
                           </span>
                         </div>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deletePinPothaEntry(item.id);
-                          }}
-                          style={{ border: 'none', background: 'transparent', color: 'var(--lab-text-muted)', cursor: 'pointer', padding: '2px' }}
-                          title="ඉවත් කරන්න"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-
-                      <div style={{
-                        fontWeight: '700',
-                        fontSize: '0.89rem',
-                        color: 'var(--lab-text)',
-                        fontFamily: 'var(--font-sinhala)',
-                        marginBottom: '2px',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis'
-                      }}>
-                        {item.title}
-                      </div>
-                      {item.reflection && (
-                        <p style={{
-                          fontSize: '0.77rem',
-                          color: 'var(--lab-text-muted)',
-                          margin: '0 0 6px 0',
-                          lineHeight: 1.4,
-                          fontFamily: 'var(--font-sinhala)',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis'
-                        }}>
-                          {item.reflection}
-                        </p>
-                      )}
-
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', fontSize: '0.73rem' }}>
-                        {item.linkedSuttaKey && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                          {item.linkedSuttaKey && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/lab/sutta/${item.linkedSuttaKey}`);
+                              }}
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', border: 'none', background: 'transparent', color: 'var(--lab-accent)', fontWeight: '600', fontSize: '0.68rem', cursor: 'pointer', padding: 0 }}
+                            >
+                              <BookOpen size={11} />
+                              <span>{item.linkedSuttaKey}</span>
+                            </button>
+                          )}
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              navigate(`/lab/sutta/${item.linkedSuttaKey}`);
+                              navigate(`/lab/dedication?pinId=${encodeURIComponent(item.id)}&title=${encodeURIComponent(item.title)}`);
                             }}
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', border: 'none', background: 'transparent', color: 'var(--lab-accent)', fontWeight: '600', cursor: 'pointer', padding: 0 }}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', border: 'none', background: 'transparent', color: '#A35B3D', fontWeight: '700', fontSize: '0.69rem', cursor: 'pointer', padding: 0 }}
                           >
-                            <BookOpen size={12} />
-                            <span>{item.linkedSuttaKey}</span>
+                            <Sparkles size={11} />
+                            <span>පුණ්‍යානුමෝදනා</span>
+                            <ArrowRight size={10} />
                           </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deletePinPothaEntry(item.id);
+                            }}
+                            style={{ border: 'none', background: 'transparent', color: 'var(--lab-text-muted)', cursor: 'pointer', padding: '1px' }}
+                            title="ඉවත් කරන්න"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div style={{
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        fontFamily: 'var(--font-sinhala)',
+                        fontSize: '0.84rem',
+                        lineHeight: 1.35
+                      }}>
+                        <span style={{ fontWeight: '700', color: 'var(--lab-text)' }}>{item.title}</span>
+                        {item.reflection && (
+                          <span style={{ fontSize: '0.74rem', color: 'var(--lab-text-muted)', fontWeight: '400' }}>
+                            {' '}— {item.reflection}
+                          </span>
                         )}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/lab/dedication?pinId=${encodeURIComponent(item.id)}&title=${encodeURIComponent(item.title)}`);
-                          }}
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', border: 'none', background: 'transparent', color: '#A35B3D', fontWeight: '700', cursor: 'pointer', padding: 0, marginLeft: 'auto' }}
-                        >
-                          <Sparkles size={12} />
-                          <span>පුණ්‍යානුමෝදනා (පත්තිදාන)</span>
-                          <ArrowRight size={11} />
-                        </button>
                       </div>
                     </div>
                   );
