@@ -12,6 +12,8 @@
  * ====================================================================
  */
 
+import { upsertLabRow, deleteLabRow, fetchUserLabRows } from './labSyncService';
+
 const STORAGE_KEY = 'kalyanamitta_dhamma_study_roadmap_v1';
 
 export const NOTE_CATEGORIES = {
@@ -156,19 +158,43 @@ export function getRoadmapItems() {
 }
 
 /**
- * Retrieve annotations grouped by segmentId for a specific sutta
+ * Extract primary category, title, content, and visibility from a W3C annotation
+ */
+export function getAnnotationSummary(item) {
+  if (!item) return null;
+  const bodies = Array.isArray(item.body) ? item.body : [];
+  const primary = bodies.find(b => b.purpose === 'question' || b.purpose === 'study_note' || b.purpose === 'reflection') || bodies[0] || {};
+  const src = bodies.find(b => b.purpose === 'resource') || {};
+  const inq = bodies.find(b => b.purpose === 'further_inquiry') || {};
+  const yt = bodies.find(b => b.purpose === 'youtube') || {};
+  const cross = bodies.find(b => b.purpose === 'cross_sutta') || {};
+  return {
+    category: primary.category || 'reflection',
+    title: primary.title || '',
+    content: primary.content || '',
+    sources: src.content || '',
+    furtherInquiry: inq.content || '',
+    youtubeUrl: yt.url || '',
+    youtubeNote: yt.content || '',
+    crossSuttaRef: cross.content || '',
+    revisions: Array.isArray(item.revisions) ? item.revisions : [],
+    visibility: item.provenance?.visibility || 'private'
+  };
+}
+
+/**
+ * Retrieve annotations keyed by segmentId for a specific sutta
  */
 export function getAnnotationsBySutta(suttaId) {
   const all = getRoadmapItems();
   const normalizedSuttaId = suttaId.toLowerCase().trim();
-  
+
   const map = {};
   all.forEach(item => {
     if (item.target?.source?.toLowerCase() === normalizedSuttaId) {
       const segId = item.target?.selector?.value;
-      if (segId) {
-        if (!map[segId]) map[segId] = [];
-        map[segId].push(item);
+      if (segId && !map[segId]) {
+        map[segId] = item;
       }
     }
   });
@@ -192,11 +218,26 @@ export function saveRoadmapItem(itemData) {
   const id = itemData.id || `anno-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
   const now = new Date().toISOString();
 
+  const existingIdx = all.findIndex(i => i.id === id);
+  const previousItem = existingIdx >= 0 ? all[existingIdx] : null;
+  let revisions = Array.isArray(previousItem?.revisions) ? [...previousItem.revisions] : [];
+  if (previousItem) {
+    const prevSummary = getAnnotationSummary(previousItem);
+    if (prevSummary?.content) {
+      revisions.unshift({
+        savedAt: previousItem.updated || previousItem.created || now,
+        title: prevSummary.title || '',
+        content: prevSummary.content
+      });
+      revisions = revisions.slice(0, 10);
+    }
+  }
+
   const formattedItem = {
     '@context': 'http://www.w3.org/ns/anno.jsonld',
     id,
     type: 'Annotation',
-    created: itemData.created || now,
+    created: itemData.created || previousItem?.created || now,
     updated: now,
     action: itemData.action || 'Study Note',
     target: {
@@ -213,6 +254,7 @@ export function saveRoadmapItem(itemData) {
       translationQuote: itemData.target?.translationQuote || ''
     },
     body: Array.isArray(itemData.body) ? itemData.body : [],
+    revisions,
     provenance: {
       layer: 3,
       visibility: itemData.provenance?.visibility || 'private', // 'private' | 'submit_review' | 'public_trail'
@@ -223,7 +265,6 @@ export function saveRoadmapItem(itemData) {
     }
   };
 
-  const existingIdx = all.findIndex(i => i.id === id);
   let updated;
   if (existingIdx >= 0) {
     updated = [...all];
@@ -233,6 +274,34 @@ export function saveRoadmapItem(itemData) {
   }
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  const summary = getAnnotationSummary(formattedItem);
+  const dbVisibility = formattedItem.provenance.visibility === 'public_trail' || formattedItem.provenance.visibility === 'public'
+    ? 'public'
+    : formattedItem.provenance.visibility === 'shared_map'
+      ? 'shared_map'
+      : 'private';
+
+  upsertLabRow('lab_annotations', {
+    id: formattedItem.id,
+    sutta_key: formattedItem.target.source,
+    sutta_title_pali: formattedItem.target.suttaTitlePali,
+    sutta_title_sinhala: formattedItem.target.suttaTitleSinhala,
+    canonical_ref: formattedItem.target.canonicalRef,
+    segment_id: formattedItem.target.selector.value,
+    canonical_quote: formattedItem.target.canonicalQuote,
+    translation_quote: formattedItem.target.translationQuote,
+    category: summary?.category || 'reflection',
+    action_tag: formattedItem.action,
+    title: summary?.title || '',
+    body_json: formattedItem.body,
+    visibility: dbVisibility,
+    review_status: formattedItem.provenance.reviewStatus,
+    is_canon: false,
+    disclaimer: formattedItem.provenance.disclaimer,
+    created_at: formattedItem.created,
+    updated_at: formattedItem.updated
+  }, 'user_id,segment_id');
+
   // Dispatch custom window event so open readers can reactively update
   window.dispatchEvent(new CustomEvent('studyRoadmapUpdated', { detail: { id, suttaId: formattedItem.target.source } }));
   return formattedItem;
@@ -245,8 +314,66 @@ export function deleteRoadmapItem(id) {
   const all = getRoadmapItems();
   const filtered = all.filter(item => item.id !== id);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+  deleteLabRow('lab_annotations', { id });
   window.dispatchEvent(new CustomEvent('studyRoadmapUpdated', { detail: { id, deleted: true } }));
   return true;
+}
+
+/**
+ * Hydrate local annotations from Supabase when authenticated
+ */
+export async function hydrateAnnotationsFromCloud() {
+  const rows = await fetchUserLabRows('lab_annotations', 'updated_at', false);
+  if (!rows) return getRoadmapItems();
+
+  const local = getRoadmapItems();
+  const byId = new Map();
+
+  for (const r of rows) {
+    byId.set(r.id, {
+      '@context': 'http://www.w3.org/ns/anno.jsonld',
+      id: r.id,
+      type: 'Annotation',
+      created: r.created_at,
+      updated: r.updated_at,
+      action: r.action_tag || 'Study Note',
+      target: {
+        source: r.sutta_key,
+        suttaTitlePali: r.sutta_title_pali || '',
+        suttaTitleSinhala: r.sutta_title_sinhala || '',
+        canonicalRef: r.canonical_ref || r.sutta_key,
+        selector: {
+          type: 'FragmentSelector',
+          value: r.segment_id,
+          conformsTo: 'http://suttacentral.net/bilara/segment'
+        },
+        canonicalQuote: r.canonical_quote || '',
+        translationQuote: r.translation_quote || ''
+      },
+      body: Array.isArray(r.body_json) ? r.body_json : [],
+      provenance: {
+        layer: 3,
+        visibility: r.visibility || 'private',
+        reviewStatus: r.review_status || 'unreviewed',
+        isCanon: false,
+        creator: 'Kalyanamitta Seeker',
+        disclaimer: r.disclaimer || MANDATORY_DISCLAIMER
+      }
+    });
+  }
+
+  for (const item of local) {
+    if (!item.id.startsWith('anno-sample-') && !byId.has(item.id)) {
+      byId.set(item.id, item);
+    }
+  }
+
+  const merged = Array.from(byId.values());
+  if (merged.length > 0) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+    window.dispatchEvent(new CustomEvent('studyRoadmapUpdated'));
+  }
+  return merged;
 }
 
 /**

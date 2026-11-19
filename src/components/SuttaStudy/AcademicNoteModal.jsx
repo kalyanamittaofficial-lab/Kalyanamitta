@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { 
   X, 
   HelpCircle, 
@@ -7,10 +7,8 @@ import {
   FileText, 
   GitCompare, 
   Compass, 
-  ShieldAlert, 
   Lock, 
   Globe, 
-  Check, 
   Save, 
   Trash2,
   AlertCircle
@@ -30,36 +28,23 @@ export default function AcademicNoteModal({
   existingAnnotation = null,
   onSaved 
 }) {
-  const [selectedCategory, setSelectedCategory] = useState('question');
-  const [title, setTitle] = useState('');
-  const [studyContent, setStudyContent] = useState('');
-  const [sources, setSources] = useState('');
-  const [furtherInquiry, setFurtherInquiry] = useState('');
-  const [visibility, setVisibility] = useState('private'); // 'private' | 'submit_review'
+  const qBodyInit = existingAnnotation?.body?.find(b => b.purpose === 'question') || {};
+  const noteBodyInit = existingAnnotation?.body?.find(b => b.purpose === 'study_note' || b.purpose === 'reflection') || {};
+  const srcBodyInit = existingAnnotation?.body?.find(b => b.purpose === 'resource') || {};
+  const inqBodyInit = existingAnnotation?.body?.find(b => b.purpose === 'further_inquiry') || {};
+  const ytBodyInit = existingAnnotation?.body?.find(b => b.purpose === 'youtube') || {};
+  const crossBodyInit = existingAnnotation?.body?.find(b => b.purpose === 'cross_sutta') || {};
+
+  const [selectedCategory, setSelectedCategory] = useState(qBodyInit.category || 'question');
+  const [title, setTitle] = useState(qBodyInit.title || noteBodyInit.title || existingAnnotation?.target?.canonicalQuote || '');
+  const [studyContent, setStudyContent] = useState(noteBodyInit.content || qBodyInit.content || '');
+  const [sources, setSources] = useState(srcBodyInit.content || '');
+  const [furtherInquiry, setFurtherInquiry] = useState(inqBodyInit.content || '');
+  const [youtubeUrl, setYoutubeUrl] = useState(ytBodyInit.url || '');
+  const [youtubeNote, setYoutubeNote] = useState(ytBodyInit.content || '');
+  const [crossSuttaRef, setCrossSuttaRef] = useState(crossBodyInit.content || '');
+  const [visibility, setVisibility] = useState(existingAnnotation?.provenance?.visibility || 'private'); // 'private' | 'submit_review'
   const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    if (existingAnnotation) {
-      const qBody = existingAnnotation.body.find(b => b.purpose === 'question') || {};
-      const noteBody = existingAnnotation.body.find(b => b.purpose === 'study_note' || b.purpose === 'reflection') || {};
-      const srcBody = existingAnnotation.body.find(b => b.purpose === 'resource') || {};
-      const inqBody = existingAnnotation.body.find(b => b.purpose === 'further_inquiry') || {};
-
-      setTitle(qBody.title || noteBody.title || existingAnnotation.target?.canonicalQuote || '');
-      setStudyContent(noteBody.content || qBody.content || '');
-      setSources(srcBody.content || '');
-      setFurtherInquiry(inqBody.content || '');
-      setVisibility(existingAnnotation.provenance?.visibility || 'private');
-      if (qBody.category) setSelectedCategory(qBody.category);
-    } else if (segment) {
-      setTitle('');
-      setStudyContent('');
-      setSources('');
-      setFurtherInquiry('');
-      setVisibility('private');
-      setSelectedCategory('question');
-    }
-  }, [existingAnnotation, segment]);
 
   if (!isOpen || !segment) return null;
 
@@ -103,6 +88,29 @@ export default function AcademicNoteModal({
         category: 'further_inquiry',
         title: 'තවදුරටත් විමසිය යුතු දේ',
         content: furtherInquiry.trim()
+      });
+    }
+
+    // Optional YouTube explanatory resource
+    if (youtubeUrl.trim()) {
+      bodies.push({
+        type: 'TextualBody',
+        purpose: 'youtube',
+        category: 'resource',
+        title: 'YouTube පැහැදිලි කිරීම',
+        url: youtubeUrl.trim(),
+        content: youtubeNote.trim()
+      });
+    }
+
+    // Optional Cross-Sutta Reference
+    if (crossSuttaRef.trim()) {
+      bodies.push({
+        type: 'TextualBody',
+        purpose: 'cross_sutta',
+        category: 'comparison',
+        title: 'සම්බන්ධිත වෙනත් සූත්‍රය',
+        content: crossSuttaRef.trim()
       });
     }
 
@@ -470,6 +478,89 @@ export default function AcademicNoteModal({
               }}
             />
           </div>
+
+          {/* Cross-Sutta Reference & YouTube Resource */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.83rem', fontWeight: '600', marginBottom: '6px', color: 'var(--text-main)' }}>
+                වෙනත් සූත්‍ර සම්බන්ධතාවක් (Cross-Sutta Ref)
+              </label>
+              <input
+                type="text"
+                placeholder="උදා: MN 10 (සතිපට්ඨාන), SN 56.11"
+                value={crossSuttaRef}
+                onChange={(e) => setCrossSuttaRef(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px 14px',
+                  fontSize: '0.9rem',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color, rgba(0,0,0,0.15))',
+                  background: 'var(--bg-main, #FFFFFF)',
+                  color: 'var(--text-main)',
+                  outline: 'none',
+                  fontFamily: 'inherit'
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.83rem', fontWeight: '600', marginBottom: '6px', color: 'var(--text-main)' }}>
+                YouTube දේශනා සබැඳිය (External Resource)
+              </label>
+              <input
+                type="url"
+                placeholder="https://youtube.com/watch?v=... (විකල්ප)"
+                value={youtubeUrl}
+                onChange={(e) => setYoutubeUrl(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px 14px',
+                  fontSize: '0.9rem',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color, rgba(0,0,0,0.15))',
+                  background: 'var(--bg-main, #FFFFFF)',
+                  color: 'var(--text-main)',
+                  outline: 'none',
+                  fontFamily: 'inherit'
+                }}
+              />
+            </div>
+          </div>
+
+          {youtubeUrl.trim() && (
+            <input
+              type="text"
+              placeholder="මෙම වීඩියෝව සම්බන්ධ වන ආකාරය / කාල සලකුණ (Timestamp & relevance)..."
+              value={youtubeNote}
+              onChange={(e) => setYoutubeNote(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '9px 14px',
+                fontSize: '0.88rem',
+                borderRadius: '8px',
+                border: '1px solid var(--border-color, rgba(0,0,0,0.15))',
+                background: 'var(--bg-main, #FFFFFF)',
+                color: 'var(--text-main)',
+                outline: 'none',
+                fontFamily: 'inherit'
+              }}
+            />
+          )}
+
+          {Array.isArray(existingAnnotation?.revisions) && existingAnnotation.revisions.length > 0 && (
+            <div style={{ padding: '10px 12px', borderRadius: '8px', background: 'rgba(79,70,229,0.06)', border: '1px solid rgba(79,70,229,0.18)', fontSize: '0.8rem' }}>
+              <strong style={{ display: 'block', marginBottom: '4px' }}>
+                පෙර සංශෝධන ({existingAnnotation.revisions.length}) — Previous Revisions Preserved
+              </strong>
+              {existingAnnotation.revisions.slice(0, 2).map((rev, i) => (
+                <div key={i} style={{ color: 'var(--text-muted)', marginTop: '4px', paddingTop: '4px', borderTop: '1px dashed rgba(0,0,0,0.1)' }}>
+                  <span>{new Date(rev.savedAt).toLocaleDateString()}: </span>
+                  <span>{rev.content?.slice(0, 90)}...</span>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Visibility / Sharing Rules */}
           <div>

@@ -1,57 +1,101 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { 
-  FlaskConical, 
-  Compass, 
-  BookOpen, 
-  ArrowLeft, 
-  Sun, 
-  Moon, 
-  LogOut, 
-  Menu, 
-  X, 
-  Home, 
-  Quote, 
-  Bookmark, 
-  ExternalLink,
+import {
+  FlaskConical,
+  Highlighter,
+  BookOpen,
+  ArrowLeft,
+  Sun,
+  Moon,
+  LogOut,
+  Menu,
+  X,
+  Home,
   ChevronLeft,
   ChevronRight,
-  ShieldCheck,
+  ChevronDown,
+  Network,
+  Compass,
+  BookHeart,
+  Sparkles,
+  Globe,
+  FolderKanban,
+  Plus,
   Search,
-  Sparkles
+  User
 } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 import { supabase } from '../../utils/supabase';
-import AcademicCitationModal from '../../components/SuttaStudy/AcademicCitationModal';
+import { hydrateHighlightsFromCloud } from '../../services/highlightStore';
+import { hydrateAnnotationsFromCloud } from '../../services/studyRoadmapStore';
+import { hydrateReadingProgressFromCloud } from '../../services/readingProgressStore';
+import { hydrateKnowledgeMapsFromCloud } from '../../services/knowledgeMapStore';
+import { hydratePracticeEcosystemFromCloud } from '../../services/practiceEcosystemStore';
+import { hydrateMyPublicProfileFromCloud } from '../../services/communityExploreStore';
+import { t } from '../../services/labLangStore';
+import { searchLabWorkspace } from '../../services/collectionsStore';
+import { searchSuttas, getNikayas, getTreeChildren } from '../../services/tipitakaService';
+import LabLoadingScreen from './LabLoadingScreen';
+import './labTheme.css';
 
 export default function LabLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [session, setSession] = useState(null);
+  const [isLabInitializing, setIsLabInitializing] = useState(true);
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
-  
-  // Sidebar state: collapsed or expanded on desktop, open/close drawer on mobile
+  const lang = 'si';
+
   const [isSidebarOpenMobile, setIsSidebarOpenMobile] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  
-  // Global Citation Modal from Sidebar
-  const [isGlobalCitationOpen, setIsGlobalCitationOpen] = useState(false);
+  const [showQuickCreate, setShowQuickCreate] = useState(false);
+  const [showGlobalSearch, setShowGlobalSearch] = useState(false);
+  const [globalQuery, setGlobalQuery] = useState('');
+  const [globalSuttaHits, setGlobalSuttaHits] = useState([]);
+  const [nikayas, setNikayas] = useState([]);
+  const [isSuttaTreeOpen, setIsSuttaTreeOpen] = useState(false);
+  const [expandedKeys, setExpandedKeys] = useState({});
+  const [treeCache, setTreeCache] = useState({});
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
+    getNikayas().then(list => setNikayas(list));
   }, []);
 
-  // Close mobile sidebar on route change
   useEffect(() => {
-    setIsSidebarOpenMobile(false);
-  }, [location.pathname]);
+    let isMounted = true;
+    const minSplash = new Promise((resolve) => setTimeout(resolve, 600));
+    const hydrateAll = () => {
+      hydrateHighlightsFromCloud();
+      hydrateAnnotationsFromCloud();
+      hydrateReadingProgressFromCloud();
+      hydrateKnowledgeMapsFromCloud();
+      hydratePracticeEcosystemFromCloud();
+      hydrateMyPublicProfileFromCloud();
+    };
+
+    const authCheck = supabase.auth.getSession().then(({ data: { session } }) => {
+      if (isMounted) {
+        setSession(session);
+        if (session) hydrateAll();
+      }
+    });
+
+    Promise.all([minSplash, authCheck]).finally(() => {
+      if (isMounted) setIsLabInitializing(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      if (isMounted) {
+        setSession(nextSession);
+        if (nextSession) hydrateAll();
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -62,576 +106,736 @@ export default function LabLayout() {
 
   const isDark = theme === 'dark';
 
-  // Navigation Links
-  const navItems = [
+  useEffect(() => {
+    const q = globalQuery.trim();
+    if (!showGlobalSearch || !q) {
+      return;
+    }
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      searchSuttas(q, 8).then(res => {
+        if (!cancelled) setGlobalSuttaHits(res);
+      });
+    }, 150);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [globalQuery, showGlobalSearch]);
+
+  const navGroups = [
     {
-      to: '/lab',
-      label: 'Lab Overview',
-      sinhalaLabel: 'ප්‍රධාන පුවරුව',
-      icon: Home,
-      exact: true
+      titleSi: 'මගේ අධ්‍යයන අවකාශය',
+      titleEn: 'My Study Space',
+      items: [
+        { to: '/lab', label: 'Dashboard', sinhalaLabel: 'ප්‍රධාන පුවරුව', icon: Home, exact: true },
+        { to: '/lab/sutta', label: 'Sutta Library', sinhalaLabel: 'සූත්‍ර පුස්තකාලය', icon: BookOpen },
+        { to: '/lab/map', label: 'My Map', sinhalaLabel: 'මගේ සිතියම', icon: Network },
+        { to: '/lab/roadmap', label: 'My Notes', sinhalaLabel: 'මගේ සටහන්', icon: Highlighter },
+        { to: '/lab/collections', label: 'Collections', sinhalaLabel: 'අධ්‍යයන එකතු', icon: FolderKanban }
+      ]
     },
     {
-      to: '/lab/roadmap',
-      label: 'Study Roadmap',
-      sinhalaLabel: 'අධ්‍යයන ගමන්මඟ',
-      icon: Compass
+      titleSi: 'මගේ ජීවිතය සහ ප්‍රතිපදාව',
+      titleEn: 'My Life & Practice',
+      items: [
+        { to: '/lab/pin-potha', label: 'Pin Potha', sinhalaLabel: 'පින් පොත', icon: BookHeart },
+        { to: '/lab/compass', label: 'Path Compass', sinhalaLabel: 'මාර්ග දිශානතිය', icon: Compass },
+        { to: '/lab/dedication', label: 'Dedication', sinhalaLabel: 'පුණ්‍යානුමෝදනා', icon: Sparkles }
+      ]
     },
     {
-      to: '/lab/sutta',
-      label: 'Sutta Study',
-      sinhalaLabel: 'සූත්‍ර අධ්‍යයනය',
-      icon: BookOpen
+      titleSi: 'ප්‍රජාව',
+      titleEn: 'Community',
+      items: [
+        { to: '/lab/explore', label: 'Explore Maps', sinhalaLabel: 'සිතියම් ගවේෂණය', icon: Globe },
+        { to: '/lab/onboarding', label: 'Starting Point', sinhalaLabel: 'ආරම්භක සටහන', icon: User }
+      ]
     }
   ];
 
-  // Quick Sutta Corpus Links
-  const quickSuttas = [
-    {
-      id: 'snp1.8',
-      ref: 'Snp 1.8',
-      name: 'Karaṇīya Mettā Sutta',
-      sinhala: 'කරණීය මෙත්ත සූත්‍රය'
-    },
-    {
-      id: 'dhp1-20',
-      ref: 'Dhp 1-20',
-      name: 'Dhammapada Yamakavagga',
-      sinhala: 'යමක වග්ගය'
+  const handleTreeNodeClick = async (node) => {
+    const isBranch = node.hasChildren === undefined ? true : node.hasChildren;
+    if (!isBranch) {
+      setIsSidebarOpenMobile(false);
+      navigate(`/lab/sutta/${node.key}`);
+      return;
     }
-  ];
 
-  const sidebarWidth = isSidebarCollapsed ? '72px' : '260px';
+    const isExpanded = Boolean(expandedKeys[node.key]);
+    setExpandedKeys(prev => ({ ...prev, [node.key]: !isExpanded }));
+    navigate(`/lab/sutta?branch=${encodeURIComponent(node.key)}`);
+
+    if (!treeCache[node.key]) {
+      const children = await getTreeChildren(node.key);
+      setTreeCache(prev => ({ ...prev, [node.key]: children }));
+    }
+  };
+
+  const activeBranchKey = new URLSearchParams(location.search).get('branch');
+
+  const renderSidebarTree = (items, depth = 0) => {
+    return items.map(item => {
+      const isExpanded = Boolean(expandedKeys[item.key]);
+      const isSelected = activeBranchKey === item.key || location.pathname === `/lab/sutta/${item.key}`;
+      const children = treeCache[item.key] || [];
+      const isBranch = item.hasChildren === undefined ? true : item.hasChildren;
+
+      return (
+        <div key={item.key}>
+          <button
+            type="button"
+            onClick={() => handleTreeNodeClick({ ...item, hasChildren: isBranch })}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '6px',
+              padding: `6px 10px 6px ${10 + depth * 12}px`,
+              borderRadius: '8px',
+              border: 'none',
+              background: isSelected ? 'var(--lab-accent-soft)' : 'transparent',
+              color: isSelected ? 'var(--lab-accent)' : 'var(--lab-text)',
+              fontWeight: isSelected ? '700' : '500',
+              fontSize: depth === 0 ? '0.82rem' : '0.78rem',
+              fontFamily: 'var(--font-sinhala)',
+              textAlign: 'left',
+              cursor: 'pointer'
+            }}
+          >
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {item.sinhalaName}
+            </span>
+            {isBranch && (
+              isExpanded
+                ? <ChevronDown size={12} style={{ flexShrink: 0 }} />
+                : <ChevronRight size={12} style={{ flexShrink: 0 }} />
+            )}
+          </button>
+
+          {isBranch && isExpanded && children.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '2px' }}>
+              {renderSidebarTree(children, depth + 1)}
+            </div>
+          )}
+        </div>
+      );
+    });
+  };
+
+  const isNavActive = (item) => {
+    if (item.exact) return location.pathname === item.to;
+    return location.pathname.startsWith(item.to);
+  };
+
+  const sidebarWidth = isSidebarCollapsed ? '72px' : '264px';
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-main)', color: 'var(--text-main)', display: 'flex' }}>
-      
-      {/* MOBILE BACKDROP OVERLAY */}
+    <div
+      className="km-lab-root"
+      data-lab-theme={isDark ? 'dark' : 'light'}
+      style={{ minHeight: '100vh', display: 'flex' }}
+    >
+      <AnimatePresence>
+        {isLabInitializing && <LabLoadingScreen />}
+      </AnimatePresence>
+
+      {/* Mobile Backdrop */}
       {isSidebarOpenMobile && (
         <div
           onClick={() => setIsSidebarOpenMobile(false)}
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(0,0,0,0.5)',
-            backdropFilter: 'blur(3px)',
-            zIndex: 998,
-            display: 'block'
+            background: 'rgba(0,0,0,0.45)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 998
           }}
         />
       )}
 
-      {/* LEFT SIDEBAR NAVIGATION */}
+      {/* SIDEBAR */}
       <aside
+        className={`lab-sidebar ${isSidebarOpenMobile ? 'mobile-open' : ''}`}
         style={{
           width: sidebarWidth,
           minWidth: sidebarWidth,
-          background: isDark ? 'rgba(24, 24, 27, 0.98)' : 'rgba(255, 255, 255, 0.98)',
-          borderRight: '1px solid var(--border-color, rgba(0,0,0,0.08))',
+          height: '100vh',
+          position: 'sticky',
+          top: 0,
+          background: 'var(--lab-bg-elevated)',
+          borderRight: '1px solid var(--lab-border)',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          position: 'sticky',
-          top: 0,
-          height: '100vh',
+          transition: 'width 0.2s ease, min-width 0.2s ease, transform 0.25s ease',
           zIndex: 999,
-          transition: 'width 0.25s ease, transform 0.25s ease',
-          boxShadow: isDark ? '2px 0 16px rgba(0,0,0,0.4)' : '2px 0 16px rgba(0,0,0,0.03)'
+          overflowY: 'auto',
+          overflowX: 'hidden'
         }}
-        className={`lab-sidebar ${isSidebarOpenMobile ? 'mobile-open' : ''}`}
       >
-        {/* SIDEBAR HEADER / BRAND */}
-        <div style={{ padding: isSidebarCollapsed ? '16px 12px' : '18px 20px', borderBottom: '1px solid var(--border-color, rgba(0,0,0,0.06))' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+        {/* Brand Header */}
+        <div style={{
+          padding: isSidebarCollapsed ? '18px 12px' : '18px 18px',
+          borderBottom: '1px solid var(--lab-border)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: isSidebarCollapsed ? 'center' : 'space-between',
+          gap: '8px'
+        }}>
+          {!isSidebarCollapsed ? (
             <Link
               to="/lab"
-              style={{
+              onClick={() => setIsSidebarOpenMobile(false)}
+              style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'var(--lab-text)' }}
+            >
+              <div style={{
+                width: '34px',
+                height: '34px',
+                borderRadius: '10px',
+                background: 'var(--lab-accent)',
+                color: '#fff',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px',
-                textDecoration: 'none',
-                color: 'var(--text-main)',
-                overflow: 'hidden'
-              }}
-            >
-              <div
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '9px',
-                  background: 'linear-gradient(135deg, #8C1515, #B32424)',
-                  color: '#ffffff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                  boxShadow: '0 2px 8px rgba(140, 21, 21, 0.25)'
-                }}
-              >
-                <FlaskConical size={19} />
+                justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                <FlaskConical size={17} />
               </div>
-
-              {!isSidebarCollapsed && (
-                <div style={{ whiteSpace: 'nowrap' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontWeight: 800, fontSize: '0.98rem', fontFamily: 'var(--font-serif)', letterSpacing: '-0.01em' }}>
-                      Kalyanamitta
-                    </span>
-                    <span
-                      style={{
-                        fontSize: '0.62rem',
-                        fontWeight: 700,
-                        textTransform: 'uppercase',
-                        padding: '1px 5px',
-                        borderRadius: '4px',
-                        background: '#8C1515',
-                        color: '#ffffff'
-                      }}
-                    >
-                      Lab
-                    </span>
-                  </div>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block', marginTop: '1px' }}>
-                    Academic Research
-                  </span>
-                </div>
-              )}
+              <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.15 }}>
+                <span style={{ fontWeight: '700', fontSize: '0.95rem', letterSpacing: '-0.01em' }}>
+                  Dhamma Studio
+                </span>
+                <span style={{ fontSize: '0.68rem', color: 'var(--lab-text-muted)', fontWeight: 500 }}>
+                  Kalyanamitta Lab
+                </span>
+              </div>
             </Link>
+          ) : (
+            <Link to="/lab" title="Dhamma Studio" style={{ color: 'var(--lab-accent)', display: 'flex' }}>
+              <FlaskConical size={22} />
+            </Link>
+          )}
 
-            {/* Desktop Collapse Toggle Button */}
-            <button
-              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-              className="desktop-only-btn"
-              title={isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text-muted)',
-                cursor: 'pointer',
-                padding: '4px',
-                borderRadius: '6px',
-                display: isSidebarCollapsed ? 'none' : 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              <ChevronLeft size={16} />
-            </button>
-          </div>
-        </div>
-
-        {/* SIDEBAR MAIN MENU (SCROLLABLE) */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: isSidebarCollapsed ? '14px 8px' : '16px 14px' }}>
-          
-          {/* Section: Main Workspace Navigation */}
-          <div style={{ marginBottom: '22px' }}>
-            {!isSidebarCollapsed && (
-              <div style={{
-                fontSize: '0.68rem',
-                fontWeight: '700',
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                color: 'var(--text-muted)',
-                padding: '0 8px',
-                marginBottom: '8px'
-              }}>
-                Workspace
-              </div>
-            )}
-
-            <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              {navItems.map((item) => {
-                const isActive = item.exact 
-                  ? location.pathname === item.to 
-                  : location.pathname.startsWith(item.to);
-
-                return (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    title={isSidebarCollapsed ? item.label : undefined}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      padding: isSidebarCollapsed ? '10px 0' : '9px 12px',
-                      justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
-                      borderRadius: '8px',
-                      textDecoration: 'none',
-                      fontSize: '0.86rem',
-                      fontWeight: isActive ? 700 : 500,
-                      background: isActive ? 'rgba(140, 21, 21, 0.08)' : 'transparent',
-                      color: isActive ? '#8C1515' : 'var(--text-main)',
-                      transition: 'all 0.15s ease'
-                    }}
-                    onMouseEnter={e => {
-                      if (!isActive) e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)';
-                    }}
-                    onMouseLeave={e => {
-                      if (!isActive) e.currentTarget.style.background = 'transparent';
-                    }}
-                  >
-                    <item.icon size={17} color={isActive ? '#8C1515' : 'var(--text-muted)'} />
-                    {!isSidebarCollapsed && (
-                      <div style={{ lineHeight: 1.2 }}>
-                        <div>{item.label}</div>
-                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{item.sinhalaLabel}</div>
-                      </div>
-                    )}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-
-          {/* Section: Canonical Corpus (Quick Sutta Links) */}
-          <div style={{ marginBottom: '22px' }}>
-            {!isSidebarCollapsed && (
-              <div style={{
-                fontSize: '0.68rem',
-                fontWeight: '700',
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                color: 'var(--text-muted)',
-                padding: '0 8px',
-                marginBottom: '8px'
-              }}>
-                Canonical Suttas
-              </div>
-            )}
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-              {quickSuttas.map(s => {
-                const isCurrent = location.pathname === `/lab/sutta/${s.id}`;
-                return (
-                  <Link
-                    key={s.id}
-                    to={`/lab/sutta/${s.id}`}
-                    title={isSidebarCollapsed ? `${s.ref} - ${s.name}` : undefined}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: isSidebarCollapsed ? '8px 0' : '7px 10px',
-                      justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
-                      borderRadius: '6px',
-                      textDecoration: 'none',
-                      fontSize: '0.8rem',
-                      fontWeight: isCurrent ? 700 : 500,
-                      background: isCurrent ? 'rgba(140, 21, 21, 0.08)' : 'transparent',
-                      color: isCurrent ? '#8C1515' : 'var(--text-muted)',
-                      transition: 'all 0.15s ease'
-                    }}
-                    onMouseEnter={e => {
-                      if (!isCurrent) e.currentTarget.style.color = 'var(--text-main)';
-                    }}
-                    onMouseLeave={e => {
-                      if (!isCurrent) e.currentTarget.style.color = 'var(--text-muted)';
-                    }}
-                  >
-                    <span style={{
-                      fontFamily: 'monospace',
-                      fontSize: '0.68rem',
-                      padding: '1px 5px',
-                      borderRadius: '4px',
-                      background: isCurrent ? '#8C1515' : 'rgba(0,0,0,0.05)',
-                      color: isCurrent ? '#FFFFFF' : 'inherit'
-                    }}>
-                      {s.ref}
-                    </span>
-                    {!isSidebarCollapsed && (
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {s.name}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Section: Academic Utilities */}
-          <div>
-            {!isSidebarCollapsed && (
-              <div style={{
-                fontSize: '0.68rem',
-                fontWeight: '700',
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                color: 'var(--text-muted)',
-                padding: '0 8px',
-                marginBottom: '8px'
-              }}>
-                Tools
-              </div>
-            )}
-
-            <button
-              onClick={() => setIsGlobalCitationOpen(true)}
-              title="Academic Citation Generator"
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: isSidebarCollapsed ? '9px 0' : '8px 10px',
-                justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
-                borderRadius: '6px',
-                border: 'none',
-                background: 'transparent',
-                color: 'var(--text-main)',
-                fontSize: '0.82rem',
-                fontWeight: 500,
-                cursor: 'pointer',
-                textAlign: 'left'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <Quote size={15} color="#8C1515" />
-              {!isSidebarCollapsed && <span>Citation Tool</span>}
-            </button>
-          </div>
-
-        </div>
-
-        {/* SIDEBAR FOOTER */}
-        <div style={{
-          padding: isSidebarCollapsed ? '12px 8px' : '14px 16px',
-          borderTop: '1px solid var(--border-color, rgba(0,0,0,0.06))',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px'
-        }}>
-          {/* User Profile or Sign In */}
-          {session ? (
-            <div style={{
+          <button
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            className="desktop-only-btn"
+            title={isSidebarCollapsed ? 'Expand' : 'Collapse'}
+            style={{
+              background: 'transparent',
+              border: '1px solid var(--lab-border)',
+              borderRadius: '8px',
+              width: '26px',
+              height: '26px',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: isSidebarCollapsed ? 'center' : 'space-between',
-              gap: '8px'
-            }}>
+              justifyContent: 'center',
+              color: 'var(--lab-text-muted)',
+              cursor: 'pointer'
+            }}
+          >
+            {isSidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+          </button>
+
+          <button
+            onClick={() => setIsSidebarOpenMobile(false)}
+            className="mobile-only-btn"
+            style={{ background: 'none', border: 'none', color: 'var(--lab-text-muted)', cursor: 'pointer', padding: '4px' }}
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Navigation Body */}
+        <div style={{ flex: 1, padding: isSidebarCollapsed ? '14px 10px' : '18px 12px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {navGroups.map(group => (
+              <div key={group.titleEn} style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                {!isSidebarCollapsed && (
+                  <div style={{
+                    fontSize: '0.68rem',
+                    fontWeight: '700',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.06em',
+                    color: 'var(--lab-text-muted)',
+                    padding: '0 10px',
+                    marginBottom: '3px'
+                  }}>
+                    {lang === 'en' ? group.titleEn : group.titleSi}
+                  </div>
+                )}
+
+                {group.items.map(item => {
+                  const Icon = item.icon;
+                  const active = isNavActive(item);
+                  const isSuttaItem = item.to === '/lab/sutta';
+                  return (
+                    <div key={item.to}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Link
+                          to={item.to}
+                          onClick={() => {
+                            setIsSidebarOpenMobile(false);
+                            if (isSuttaItem) setIsSuttaTreeOpen(true);
+                          }}
+                          title={isSidebarCollapsed ? (lang === 'en' ? item.label : item.sinhalaLabel) : undefined}
+                          style={{
+                            flex: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            padding: isSidebarCollapsed ? '10px 0' : '8px 12px',
+                            justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
+                            borderRadius: '10px',
+                            textDecoration: 'none',
+                            color: active ? 'var(--lab-accent)' : 'var(--lab-text)',
+                            background: active ? 'var(--lab-accent-soft)' : 'transparent',
+                            fontWeight: active ? 600 : 500,
+                            fontSize: '0.87rem',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          <Icon size={17} color={active ? 'var(--lab-accent)' : 'var(--lab-text-muted)'} />
+                          {!isSidebarCollapsed && (
+                            <span style={{ fontSize: '0.87rem', lineHeight: 1.25 }}>
+                              {lang === 'en' ? item.label : item.sinhalaLabel}
+                            </span>
+                          )}
+                        </Link>
+                        {isSuttaItem && !isSidebarCollapsed && (
+                          <button
+                            type="button"
+                            onClick={() => setIsSuttaTreeOpen(v => !v)}
+                            aria-label="Toggle Nikāya menu"
+                            style={{
+                              border: 'none',
+                              background: 'transparent',
+                              color: 'var(--lab-text-muted)',
+                              cursor: 'pointer',
+                              padding: '6px',
+                              borderRadius: '6px',
+                              display: 'flex',
+                              alignItems: 'center'
+                            }}
+                          >
+                            {isSuttaTreeOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                          </button>
+                        )}
+                      </div>
+
+                      {isSuttaItem && !isSidebarCollapsed && isSuttaTreeOpen && nikayas.length > 0 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingLeft: '14px', marginTop: '3px', marginBottom: '4px' }}>
+                          {renderSidebarTree(nikayas, 0)}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{
+          padding: isSidebarCollapsed ? '12px 8px' : '14px 14px',
+          borderTop: '1px solid var(--lab-border)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: isSidebarCollapsed ? 'center' : 'space-between',
+            gap: '8px'
+          }}>
+            <button
+              onClick={toggleTheme}
+              title={isDark ? 'Switch to Light' : 'Switch to Dark'}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '7px 10px',
+                borderRadius: '9px',
+                border: '1px solid var(--lab-border)',
+                background: 'var(--lab-bg-subtle)',
+                color: 'var(--lab-text)',
+                fontSize: '0.78rem',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              {isDark ? <Sun size={14} color="#FBBF24" /> : <Moon size={14} />}
+              {!isSidebarCollapsed && <span>{isDark ? 'ආලෝක' : 'අඳුරු'}</span>}
+            </button>
+
+            {!isSidebarCollapsed && (
               <Link
-                to="/dashboard"
+                to="/"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
+                  gap: '5px',
+                  fontSize: '0.78rem',
+                  color: 'var(--lab-text-muted)',
                   textDecoration: 'none',
-                  color: 'var(--text-main)',
-                  overflow: 'hidden'
+                  padding: '6px 8px',
+                  borderRadius: '8px'
                 }}
               >
-                {session.user?.user_metadata?.avatar_url || session.user?.user_metadata?.picture ? (
-                  <img
-                    src={session.user.user_metadata.avatar_url || session.user.user_metadata.picture}
-                    alt="User"
-                    referrerPolicy="no-referrer"
-                    style={{ width: '26px', height: '26px', borderRadius: '50%', objectFit: 'cover' }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      width: '26px',
-                      height: '26px',
-                      borderRadius: '50%',
-                      background: 'var(--primary)',
-                      color: '#fff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '0.75rem',
-                      fontWeight: '700'
-                    }}
-                  >
+                <ArrowLeft size={13} />
+                <span>ප්‍රධාන අඩවිය</span>
+              </Link>
+            )}
+          </div>
+
+          {!isSidebarCollapsed && (
+            session ? (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '8px',
+                padding: '8px 10px',
+                borderRadius: '10px',
+                background: 'var(--lab-bg-subtle)',
+                border: '1px solid var(--lab-border)'
+              }}>
+                <Link
+                  to="/profile"
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'var(--lab-text)', minWidth: 0 }}
+                >
+                  <div style={{
+                    width: '26px',
+                    height: '26px',
+                    borderRadius: '50%',
+                    background: 'var(--lab-accent)',
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.74rem',
+                    fontWeight: 'bold',
+                    flexShrink: 0
+                  }}>
                     {(session.user?.user_metadata?.full_name || session.user?.email || 'U')[0].toUpperCase()}
                   </div>
-                )}
-                {!isSidebarCollapsed && (
-                  <div style={{ overflow: 'hidden' }}>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 600, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {session.user?.user_metadata?.full_name?.split(' ')[0] || 'Seeker'}
-                    </div>
-                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
-                      Personal Lab
-                    </div>
-                  </div>
-                )}
-              </Link>
-
-              {!isSidebarCollapsed && (
+                  <span style={{ fontSize: '0.8rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {session.user?.user_metadata?.full_name?.split(' ')[0] || 'Member'}
+                  </span>
+                </Link>
                 <button
                   onClick={async () => {
                     await supabase.auth.signOut();
                     setSession(null);
                   }}
                   title="Sign Out"
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: 'var(--text-muted)',
-                    cursor: 'pointer',
-                    padding: '4px'
-                  }}
+                  style={{ background: 'none', border: 'none', color: 'var(--lab-text-muted)', cursor: 'pointer', padding: '4px' }}
                 >
-                  <LogOut size={15} />
+                  <LogOut size={14} />
                 </button>
-              )}
-            </div>
-          ) : (
-            <Link
-              to="/login"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                fontSize: '0.8rem',
-                fontWeight: 600,
-                color: '#ffffff',
-                background: '#8C1515',
-                padding: '7px 12px',
-                borderRadius: '6px',
-                textDecoration: 'none'
-              }}
-            >
-              <span>{isSidebarCollapsed ? 'Sign In' : 'Sign In with Google'}</span>
-            </Link>
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '9px',
+                  borderRadius: '10px',
+                  background: 'var(--lab-accent)',
+                  color: '#fff',
+                  textDecoration: 'none',
+                  fontSize: '0.82rem',
+                  fontWeight: 600
+                }}
+              >
+                පිවිසෙන්න
+              </Link>
+            )
           )}
-
-          {/* Theme & Back to Main Web */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: isSidebarCollapsed ? 'center' : 'space-between',
-            gap: '6px',
-            paddingTop: '6px'
-          }}>
-            <Link
-              to="/"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                textDecoration: 'none',
-                color: 'var(--text-muted)',
-                fontSize: '0.76rem',
-                fontWeight: 500
-              }}
-              title="Return to Main Website"
-            >
-              <ArrowLeft size={13} />
-              {!isSidebarCollapsed && <span>Main Website</span>}
-            </Link>
-
-            <button
-              onClick={toggleTheme}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text-muted)',
-                cursor: 'pointer',
-                padding: '4px',
-                borderRadius: '4px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-              title="Toggle Light/Dark Theme"
-            >
-              {isDark ? <Sun size={15} /> : <Moon size={15} />}
-            </button>
-          </div>
         </div>
       </aside>
 
-      {/* RIGHT CANVAS: MAIN CONTENT AREA */}
+      {/* MAIN CONTENT */}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-        
-        {/* Sleek Minimalist Topbar */}
-        <header
-          style={{
-            position: 'sticky',
-            top: 0,
-            zIndex: 100,
-            background: isDark ? 'rgba(28, 25, 23, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(10px)',
-            borderBottom: '1px solid var(--border-color, rgba(0,0,0,0.06))',
-            height: '52px',
-            padding: '0 clamp(16px, 3vw, 36px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '12px'
-          }}
-        >
-          {/* Left: Mobile hamburger & breadcrumbs */}
+        <header style={{
+          height: '56px',
+          padding: '0 clamp(16px, 3vw, 28px)',
+          borderBottom: '1px solid var(--lab-border)',
+          background: 'var(--lab-bg-glass)',
+          backdropFilter: 'blur(14px)',
+          WebkitBackdropFilter: 'blur(14px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          position: 'sticky',
+          top: 0,
+          zIndex: 30
+        }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            {/* Mobile Sidebar Hamburger Toggle */}
             <button
-              onClick={() => setIsSidebarOpenMobile(!isSidebarOpenMobile)}
+              onClick={() => setIsSidebarOpenMobile(true)}
               className="mobile-only-btn"
               style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text-main)',
+                background: 'none',
+                border: '1px solid var(--lab-border)',
+                borderRadius: '8px',
+                padding: '6px',
+                color: 'var(--lab-text)',
                 cursor: 'pointer',
-                padding: '4px',
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
+                alignItems: 'center'
               }}
             >
-              {isSidebarOpenMobile ? <X size={20} /> : <Menu size={20} />}
+              <Menu size={18} />
             </button>
 
-            {/* Breadcrumb Indicator */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-              <Link to="/lab" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Lab</Link>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.84rem', color: 'var(--lab-text-muted)' }}>
+              <Link to="/lab" style={{ color: 'var(--lab-text-muted)', textDecoration: 'none', fontWeight: 500 }}>
+                {t(lang, 'අධ්‍යයනාගාරය', 'Lab')}
+              </Link>
               <span>/</span>
-              <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>
-                {location.pathname === '/lab' && 'Overview'}
-                {location.pathname.startsWith('/lab/roadmap') && 'Study Roadmap'}
-                {location.pathname.startsWith('/lab/sutta') && 'Sutta Study'}
+              <span style={{ color: 'var(--lab-text)', fontWeight: 600 }}>
+                {location.pathname === '/lab' && t(lang, 'ප්‍රධාන පුවරුව', 'Dashboard')}
+                {location.pathname.startsWith('/lab/sutta') && t(lang, 'සූත්‍ර කියවනය', 'Sutta Library & Reader')}
+                {location.pathname.startsWith('/lab/roadmap') && t(lang, 'මගේ සටහන්', 'My Notes')}
+                {location.pathname.startsWith('/lab/map') && t(lang, 'මගේ සිතියම', 'My Map')}
+                {location.pathname.startsWith('/lab/collections') && t(lang, 'අධ්‍යයන එකතු', 'Collections')}
+                {location.pathname.startsWith('/lab/compass') && t(lang, 'මාර්ග දිශානතිය', 'Path Compass')}
+                {location.pathname.startsWith('/lab/pin-potha') && t(lang, 'පින් පොත', 'Pin Potha')}
+                {location.pathname.startsWith('/lab/dedication') && t(lang, 'පුණ්‍යානුමෝදනා', 'Dedication')}
+                {location.pathname.startsWith('/lab/explore') && t(lang, 'සිතියම් ගවේෂණය', 'Explore Maps')}
+                {location.pathname.startsWith('/lab/maps/') && t(lang, 'ප්‍රජා සිතියම', 'Public Map')}
+                {location.pathname.startsWith('/lab/onboarding') && t(lang, 'ආරම්භක සටහන', 'Starting Point')}
               </span>
             </div>
           </div>
 
-          {/* Right: Methodological badge */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{
-              fontSize: '0.74rem',
-              fontWeight: 600,
-              color: '#8C1515',
-              background: 'rgba(140, 21, 21, 0.06)',
-              padding: '3px 8px',
-              borderRadius: '6px'
-            }}>
-              W3C Stand-off Canonical Edition
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
+            <button
+              onClick={() => setShowGlobalSearch(true)}
+              className="km-lab-btn"
+              style={{ padding: '6px 12px', borderRadius: '999px', fontSize: '0.8rem' }}
+              title={t(lang, 'සමස්ත සෙවුම', 'Global Search')}
+            >
+              <Search size={14} />
+              <span>{t(lang, 'සොයන්න', 'Search')}</span>
+            </button>
+
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => setShowQuickCreate(v => !v)}
+                className="km-lab-btn-primary"
+                style={{ padding: '6px 12px', borderRadius: '999px', fontSize: '0.8rem' }}
+                title={t(lang, 'ඉක්මන් නිර්මාණය', 'Quick Create')}
+              >
+                <Plus size={14} />
+                <span>{t(lang, 'නව', 'Create')}</span>
+              </button>
+
+              {showQuickCreate && (
+                <div
+                  className="km-lab-card"
+                  style={{
+                    position: 'absolute',
+                    right: 0,
+                    top: '42px',
+                    width: '230px',
+                    padding: '8px',
+                    zIndex: 80,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px'
+                  }}
+                >
+                  {[
+                    { to: '/lab/sutta', label: t(lang, 'නව සූත්‍ර සටහනක්', 'New Sutta Note'), icon: Highlighter },
+                    { to: '/lab/map', label: t(lang, 'නව සිතියම් අංගයක්', 'New Map Node'), icon: Network },
+                    { to: '/lab/pin-potha', label: t(lang, 'පින් පොත සටහනක්', 'New Pin Potha Entry'), icon: BookHeart },
+                    { to: '/lab/dedication', label: t(lang, 'දායකත්වයක් / පින් අනුමෝදනාවක්', 'New Contribution'), icon: Sparkles },
+                    { to: '/lab/compass', label: t(lang, 'ප්‍රතිපදා අරමුණක්', 'New Practice Intention'), icon: Compass },
+                    { to: '/lab/collections', label: t(lang, 'නව අධ්‍යයන එකතුවක්', 'New Collection'), icon: FolderKanban }
+                  ].map(item => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.to}
+                        onClick={() => {
+                          setShowQuickCreate(false);
+                          navigate(item.to);
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '9px',
+                          padding: '8px 10px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          background: 'transparent',
+                          color: 'var(--lab-text)',
+                          fontSize: '0.82rem',
+                          fontWeight: 500,
+                          textAlign: 'left',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <Icon size={14} color="var(--lab-accent)" />
+                        <span>{item.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
-        {/* WORKSPACE OUTLET CANVAS */}
+        {/* Global Search Modal */}
+        {showGlobalSearch && (() => {
+          const wsResults = searchLabWorkspace(globalQuery);
+          return (
+            <div
+              onClick={() => setShowGlobalSearch(false)}
+              style={{
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(0,0,0,0.45)',
+                backdropFilter: 'blur(4px)',
+                zIndex: 1000,
+                display: 'flex',
+                alignItems: 'flex-start',
+                justifyContent: 'center',
+                padding: '72px 16px 24px'
+              }}
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="km-lab-card"
+                style={{ width: '100%', maxWidth: '640px', padding: '18px', maxHeight: '78vh', overflowY: 'auto' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                  <Search size={17} color="var(--lab-text-muted)" />
+                  <input
+                    autoFocus
+                    className="km-lab-input"
+                    value={globalQuery}
+                    onChange={(e) => setGlobalQuery(e.target.value)}
+                    placeholder={t(lang, 'සූත්‍ර, සටහන්, සිතියම්, පින් පොත හෝ එකතු සොයන්න...', 'Search suttas, notes, map nodes, collections, or Pin Potha...')}
+                  />
+                  <button
+                    onClick={() => setShowGlobalSearch(false)}
+                    className="km-lab-btn"
+                    style={{ padding: '7px 10px' }}
+                  >
+                    <X size={15} />
+                  </button>
+                </div>
+
+                {!globalQuery.trim() ? (
+                  <p style={{ fontSize: '0.84rem', color: 'var(--lab-text-muted)', margin: 0, textAlign: 'center', padding: '18px 0' }}>
+                    {t(lang, 'සෙවීම සඳහා වචනයක් ටයිප් කරන්න (උදා: මෙත්ත, සතිපට්ඨාන, දාන).', 'Type a Pāli, Sinhala, or English term to search across your workspace.')}
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    {globalSuttaHits.length > 0 && (
+                      <div>
+                        <div style={{ fontSize: '0.74rem', fontWeight: '700', color: 'var(--lab-accent)', marginBottom: '6px' }}>
+                          {t(lang, 'ත්‍රිපිටක සූත්‍ර', 'Suttas')} ({globalSuttaHits.length})
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                          {globalSuttaHits.map(s => (
+                            <button
+                              key={s.key}
+                              onClick={() => {
+                                setShowGlobalSearch(false);
+                                navigate(`/lab/sutta/${s.key}`);
+                              }}
+                              style={{ textAlign: 'left', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--lab-border)', background: 'var(--lab-bg-subtle)', color: 'var(--lab-text)', cursor: 'pointer' }}
+                            >
+                              <div style={{ fontWeight: '600', fontSize: '0.86rem' }}>{s.sinhalaName}</div>
+                              <div style={{ fontSize: '0.75rem', color: 'var(--lab-text-muted)' }}>{s.paliName}</div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {wsResults.notes.length > 0 && (
+                      <div>
+                        <div style={{ fontSize: '0.74rem', fontWeight: '700', color: 'var(--lab-accent)', marginBottom: '6px' }}>
+                          {t(lang, 'මගේ සටහන්', 'My Notes')} ({wsResults.notes.length})
+                        </div>
+                        {wsResults.notes.slice(0, 5).map(n => (
+                          <button
+                            key={n.id}
+                            onClick={() => {
+                              setShowGlobalSearch(false);
+                              navigate(`/lab/sutta/${n.target?.source}`);
+                            }}
+                            style={{ width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--lab-border)', background: 'var(--lab-bg-subtle)', color: 'var(--lab-text)', cursor: 'pointer', marginBottom: '5px' }}
+                          >
+                            <div style={{ fontWeight: '600', fontSize: '0.84rem' }}>{n.target?.suttaTitleSinhala || n.target?.source}</div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {wsResults.nodes.length > 0 && (
+                      <div>
+                        <div style={{ fontSize: '0.74rem', fontWeight: '700', color: 'var(--lab-accent)', marginBottom: '6px' }}>
+                          {t(lang, 'සිතියම් අංග', 'Map Nodes')} ({wsResults.nodes.length})
+                        </div>
+                        {wsResults.nodes.slice(0, 5).map(node => (
+                          <button
+                            key={node.id}
+                            onClick={() => {
+                              setShowGlobalSearch(false);
+                              navigate('/lab/map');
+                            }}
+                            style={{ width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--lab-border)', background: 'var(--lab-bg-subtle)', color: 'var(--lab-text)', cursor: 'pointer', marginBottom: '5px' }}
+                          >
+                            <div style={{ fontWeight: '600', fontSize: '0.84rem' }}>{node.label}</div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {wsResults.pinPotha.length > 0 && (
+                      <div>
+                        <div style={{ fontSize: '0.74rem', fontWeight: '700', color: '#059669', marginBottom: '6px' }}>
+                          {t(lang, 'පින් පොත (පෞද්ගලික)', 'Pin Potha (Private)')} ({wsResults.pinPotha.length})
+                        </div>
+                        {wsResults.pinPotha.slice(0, 5).map(p => (
+                          <button
+                            key={p.id}
+                            onClick={() => {
+                              setShowGlobalSearch(false);
+                              navigate('/lab/pin-potha');
+                            }}
+                            style={{ width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--lab-border)', background: 'var(--lab-bg-subtle)', color: 'var(--lab-text)', cursor: 'pointer', marginBottom: '5px' }}
+                          >
+                            <div style={{ fontWeight: '600', fontSize: '0.84rem' }}>{p.title}</div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+
         <main style={{ flex: 1, minWidth: 0 }}>
           <Outlet />
         </main>
       </div>
 
-      {/* GLOBAL CITATION MODAL */}
-      <AcademicCitationModal
-        isOpen={isGlobalCitationOpen}
-        onClose={() => setIsGlobalCitationOpen(false)}
-        sutta={{
-          id: 'snp1.8',
-          titlePali: 'Karaṇīya Mettā Sutta',
-          titleEnglish: 'Discourse on Loving-Kindness',
-          canonicalRef: 'Snp 1.8 / Khp 9'
-        }}
-        activeSegment={null}
-      />
-
-      {/* RESPONSIVE STYLES */}
       <style>{`
         @media (max-width: 768px) {
           .lab-sidebar {
@@ -640,8 +844,8 @@ export default function LabLayout() {
             top: 0;
             bottom: 0;
             transform: translateX(-100%);
-            width: 270px !important;
-            min-width: 270px !important;
+            width: 264px !important;
+            min-width: 264px !important;
           }
           .lab-sidebar.mobile-open {
             transform: translateX(0) !important;
