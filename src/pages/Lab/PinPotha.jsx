@@ -10,7 +10,6 @@ import {
   getDedications,
   getPathReflections
 } from '../../services/practiceEcosystemStore';
-import { getLabLang, t } from '../../services/labLangStore';
 import { EasyDurationSelector } from '../../components/Lab/TimeSelectors';
 import PaginationBar from '../../components/Lab/PaginationBar';
 
@@ -74,7 +73,6 @@ function parseBulkPinPothaText(rawText, fallbackDate) {
 export default function PinPotha() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [lang, setLang] = useState(() => getLabLang());
 
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'amisa' | 'patipatti' | 'habits' | 'dedication' | 'history'
   const [entries, setEntries] = useState(() => getPinPothaEntries());
@@ -111,12 +109,9 @@ export default function PinPotha() {
       setDedications(getDedications());
       setPathReflections(getPathReflections());
     };
-    const onLang = (e) => setLang(e.detail || getLabLang());
     window.addEventListener('labPracticeUpdated', refresh);
-    window.addEventListener('labLangUpdated', onLang);
     return () => {
       window.removeEventListener('labPracticeUpdated', refresh);
-      window.removeEventListener('labLangUpdated', onLang);
     };
   }, []);
 
@@ -164,24 +159,24 @@ export default function PinPotha() {
   }) => (
     <>
       <select
-        aria-label="කාල රටාව"
+        aria-label="Schedule pattern"
         value={mode}
         onChange={(e) => onModeChange(e.target.value)}
         className="km-lab-input"
         style={{ padding: '8px 10px', fontSize: '0.82rem' }}
       >
-        <option value="once">එක් දිනක් / වේලාව (පැය : මිනිත්තු)</option>
-        <option value="days">දින ගණනක් (දින)</option>
-        <option value="weeks">සති ගණනක් (සති)</option>
-        <option value="months">මාස ගණනක් (මාස)</option>
-        <option value="range">දින පරාසය (අවසන් දිනය)</option>
-        <option value="daily">දිනපතා</option>
-        <option value="poya">පෝය දිනවල පමණි</option>
+        <option value="once">Single Day / Duration (hrs : mins)</option>
+        <option value="days">Number of Days</option>
+        <option value="weeks">Number of Weeks</option>
+        <option value="months">Number of Months</option>
+        <option value="range">Date Range (End Date)</option>
+        <option value="daily">Daily</option>
+        <option value="poya">Poya Days Only</option>
       </select>
 
       {mode === 'once' && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '0.78rem', color: 'var(--lab-text-muted)', whiteSpace: 'nowrap' }}>කාලය:</span>
+          <span style={{ fontSize: '0.78rem', color: 'var(--lab-text-muted)', whiteSpace: 'nowrap' }}>Duration:</span>
           <EasyDurationSelector
             totalMinutes={Number(dMinutes)}
             onChange={(mins) => onMinutesChange(String(mins))}
@@ -191,49 +186,49 @@ export default function PinPotha() {
 
       {mode === 'days' && (
         <select
-          aria-label="දින ගණන"
+          aria-label="Number of days"
           value={dCount}
           onChange={(e) => onDayCountChange(e.target.value)}
           className="km-lab-input"
           style={{ padding: '8px 10px', fontSize: '0.82rem' }}
         >
           {Array.from({ length: 30 }, (_, i) => i + 1).map(d => (
-            <option key={d} value={String(d)}>දින {d}</option>
+            <option key={d} value={String(d)}>{d} {d === 1 ? 'day' : 'days'}</option>
           ))}
         </select>
       )}
 
       {mode === 'weeks' && (
         <select
-          aria-label="සති ගණන"
+          aria-label="Number of weeks"
           value={wCount}
           onChange={(e) => onWeekCountChange(e.target.value)}
           className="km-lab-input"
           style={{ padding: '8px 10px', fontSize: '0.82rem' }}
         >
           {Array.from({ length: 12 }, (_, i) => i + 1).map(w => (
-            <option key={w} value={String(w)}>සති {w} (දින {w * 7})</option>
+            <option key={w} value={String(w)}>{w} {w === 1 ? 'week' : 'weeks'} ({w * 7} days)</option>
           ))}
         </select>
       )}
 
       {mode === 'months' && (
         <select
-          aria-label="මාස ගණන"
+          aria-label="Number of months"
           value={mCount}
           onChange={(e) => onMonthCountChange(e.target.value)}
           className="km-lab-input"
           style={{ padding: '8px 10px', fontSize: '0.82rem' }}
         >
           {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
-            <option key={m} value={String(m)}>මාස {m}</option>
+            <option key={m} value={String(m)}>{m} {m === 1 ? 'month' : 'months'}</option>
           ))}
         </select>
       )}
 
       {mode === 'range' && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '0.78rem', color: 'var(--lab-text-muted)', whiteSpace: 'nowrap' }}>අවසන් දිනය:</span>
+          <span style={{ fontSize: '0.78rem', color: 'var(--lab-text-muted)', whiteSpace: 'nowrap' }}>End date:</span>
           <input
             type="date"
             required
@@ -287,9 +282,9 @@ export default function PinPotha() {
   const pagedPinEntries = filtered.slice((safePinPage - 1) * PIN_ITEMS_PER_PAGE, safePinPage * PIN_ITEMS_PER_PAGE);
 
   const historyRows = [
-    ...entries.map(e => ({ id: e.id, date: e.entryDate, kind: 'පින් පොත', title: e.title, body: e.reflection })),
-    ...pathReflections.map(r => ({ id: r.id, date: (r.createdAt || '').slice(0, 10), kind: 'මාර්ග දිශානතිය', title: r.intention, body: r.observation })),
-    ...dedications.map(d => ({ id: d.id, date: (d.createdAt || '').slice(0, 10), kind: 'පුණ්‍යානුමෝදනා', title: d.title, body: d.dedicationText }))
+    ...entries.map(e => ({ id: e.id, date: e.entryDate, kind: 'Merit Book', title: e.title, body: e.reflection })),
+    ...pathReflections.map(r => ({ id: r.id, date: (r.createdAt || '').slice(0, 10), kind: 'Path Compass', title: r.intention, body: r.observation })),
+    ...dedications.map(d => ({ id: d.id, date: (d.createdAt || '').slice(0, 10), kind: 'Dedication', title: d.title, body: d.dedicationText }))
   ].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
   const historyTotalPages = Math.max(1, Math.ceil(historyRows.length / PIN_ITEMS_PER_PAGE));
@@ -297,24 +292,24 @@ export default function PinPotha() {
   const pagedHistoryRows = historyRows.slice((safeHistoryPage - 1) * PIN_ITEMS_PER_PAGE, safeHistoryPage * PIN_ITEMS_PER_PAGE);
 
   const pinTabs = [
-    { id: 'overview', label: t(lang, 'සමස්තය', 'Overview') },
-    { id: 'amisa', label: t(lang, 'ආමිස හා දාන', 'Āmisa & Dāna') },
-    { id: 'patipatti', label: t(lang, 'ප්‍රතිපත්ති', 'Paṭipatti') },
-    { id: 'habits', label: t(lang, 'පුරුදු', 'Habits') },
-    { id: 'dedication', label: t(lang, 'වන්දනා හා පූජා', 'Worship & Offerings') },
-    { id: 'history', label: t(lang, 'ඉතිහාසය', 'History') }
+    { id: 'overview', label: 'Overview' },
+    { id: 'amisa', label: 'Āmisa & Dāna' },
+    { id: 'patipatti', label: 'Paṭipatti' },
+    { id: 'habits', label: 'Habits' },
+    { id: 'dedication', label: 'Worship & Offerings' },
+    { id: 'history', label: 'History' }
   ];
 
   return (
-    <div className="km-lab-page" style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '10px', paddingBottom: '10px' }}>
-      {/* Terracotta Hero & Tab Bar */}
+    <div className="km-lab-page" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      {/* PATH/OS Hero & Tab Bar */}
       <div
         style={{
-          borderRadius: '12px',
-          padding: '10px 16px',
-          background: 'linear-gradient(135deg, #A35B3D 0%, #B86F4E 100%)',
-          color: '#FAF8F5',
-          boxShadow: '0 6px 20px rgba(163, 91, 61, 0.16)',
+          borderRadius: '16px',
+          padding: '12px 16px',
+          background: 'linear-gradient(135deg, #0F1115 0%, #0B3BFA 145%)',
+          color: '#F8FAFC',
+          boxShadow: '0 8px 24px rgba(15, 17, 21, 0.16)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -323,11 +318,11 @@ export default function PinPotha() {
         }}
       >
         <div>
-          <h1 style={{ fontSize: '1.1rem', fontWeight: '800', margin: '0 0 2px 0', fontFamily: 'var(--font-sinhala)' }}>
-            මගේ පින් පොත ({entries.length})
+          <h1 style={{ fontSize: '1.1rem', fontWeight: '800', margin: '0 0 2px 0' }}>
+            My Merit Book ({entries.length})
           </h1>
-          <div style={{ fontSize: '0.73rem', color: 'rgba(250, 248, 245, 0.88)', fontFamily: 'var(--font-sinhala)' }}>
-            පෞද්ගලික කුසල සටහන්, බුද්ධ පූජා සහ දහම් අධ්‍යයන සටහන්
+          <div style={{ fontSize: '0.73rem', color: 'rgba(250, 248, 245, 0.88)' }}>
+            Personal wholesome deeds, Buddha Pūjā, and Dhamma study journal
           </div>
         </div>
 
@@ -355,7 +350,6 @@ export default function PinPotha() {
                     color: active ? '#231F1B' : '#FAF8F5',
                     fontSize: '0.75rem',
                     fontWeight: active ? '700' : '600',
-                    fontFamily: 'var(--font-sinhala)',
                     cursor: 'pointer'
                   }}
                 >
@@ -379,12 +373,11 @@ export default function PinPotha() {
               color: '#FAF8F5',
               fontSize: '0.75rem',
               fontWeight: '600',
-              fontFamily: 'var(--font-sinhala)',
               cursor: 'pointer'
             }}
           >
             <FileUp size={13} />
-            <span>පෙළෙන් එක් කරන්න</span>
+            <span>Import from Text</span>
           </button>
         </div>
       </div>
@@ -393,11 +386,11 @@ export default function PinPotha() {
         <div className="km-lab-card" style={{ padding: '6px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
           <div style={{ fontSize: '0.77rem', color: 'var(--lab-text-muted)' }}>
             <Repeat size={12} style={{ verticalAlign: 'middle', marginRight: '6px' }} />
-            පූර්ණ පුණ්‍යානුමෝදනා සහ ධර්ම දාන කළමනාකරණය සඳහා:
+            For full merit dedications and Dhamma Dāna management:
           </div>
           <button className="km-lab-btn-primary" onClick={() => navigate('/lab/dedication')} style={{ padding: '4px 10px', fontSize: '0.73rem' }}>
             <Sparkles size={12} />
-            <span>පුණ්‍යානුමෝදනා පිටුවට</span>
+            <span>Dedication Page</span>
           </button>
         </div>
       )}
@@ -407,12 +400,12 @@ export default function PinPotha() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <History size={16} color="#A35B3D" />
             <h2 style={{ fontSize: '0.94rem', fontWeight: '700', margin: 0 }}>
-              කාලානුක්‍රමික ආවර්ජන ඉතිහාසය ({historyRows.length})
+              Chronological Reflection History ({historyRows.length})
             </h2>
           </div>
           {historyRows.length === 0 ? (
             <p style={{ color: 'var(--lab-text-muted)', fontSize: '0.82rem', margin: 0 }}>
-              තවමත් ආවර්ජන ඉතිහාසයක් නොමැත.
+              No reflection history yet.
             </p>
           ) : (
             <>
@@ -423,9 +416,9 @@ export default function PinPotha() {
                       <span style={{ fontWeight: '700', color: '#5F6E43' }}>{row.kind}</span>
                       <span style={{ fontFamily: 'monospace' }}>{row.date}</span>
                     </div>
-                    <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '0.84rem', lineHeight: 1.35 }}>
+                    <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '1.2rem', lineHeight: 1.35 }}>
                       <span style={{ fontWeight: '700', color: 'var(--lab-text)' }}>{row.title}</span>
-                      {row.body && <span style={{ fontSize: '0.74rem', color: 'var(--lab-text-muted)' }}> — {row.body}</span>}
+                      {row.body && <span style={{ fontSize: '1rem', color: 'var(--lab-text-muted)' }}> — {row.body}</span>}
                     </div>
                   </div>
                 ))}
@@ -437,10 +430,10 @@ export default function PinPotha() {
       ) : (
       <>
       <div className="km-lab-routine-grid">
-        {/* Left: New Pin Potha Entry Form */}
+        {/* Left: New Merit Book Entry Form */}
         <form onSubmit={handleSubmit} className="km-lab-card" style={{ padding: '12px 14px' }}>
-          <h2 style={{ fontSize: '0.92rem', fontWeight: '700', margin: '0 0 8px 0', color: 'var(--lab-text)', fontFamily: 'var(--font-sinhala)' }}>
-            නව කුසල සටහනක් එක් කරන්න
+          <h2 style={{ fontSize: '0.92rem', fontWeight: '700', margin: '0 0 8px 0', color: 'var(--lab-text)' }}>
+            Add New Merit Entry
           </h2>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
@@ -452,7 +445,7 @@ export default function PinPotha() {
                 style={{ padding: '6px 8px', fontSize: '0.8rem' }}
               >
                 {Object.values(PIN_POTHA_TYPES).map(tp => (
-                  <option key={tp.id} value={tp.id}>{tp.sinhala}</option>
+                  <option key={tp.id} value={tp.id}>{tp.label}</option>
                 ))}
               </select>
               <input
@@ -469,18 +462,18 @@ export default function PinPotha() {
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="උදා: දන් දීම / බුද්ධ පූජාව"
+              placeholder="e.g., Offering Dāna / Buddha Pūjā"
               className="km-lab-input"
-              style={{ padding: '6px 9px', fontSize: '0.8rem', fontFamily: 'var(--font-sinhala)' }}
+              style={{ padding: '7px 10px', fontSize: '1.12rem', fontFamily: 'var(--font-sinhala)' }}
             />
 
             <textarea
               rows={2}
               value={reflection}
               onChange={(e) => setReflection(e.target.value)}
-              placeholder="සිතේ ඇති වූ පැහැදීම හා ප්‍රතිපදා නිරීක්ෂණය..."
+              placeholder="Clarity of mind & practice reflection..."
               className="km-lab-input"
-              style={{ padding: '6px 9px', fontSize: '0.8rem', fontFamily: 'var(--font-sinhala)', resize: 'vertical' }}
+              style={{ padding: '7px 10px', fontSize: '1.05rem', fontFamily: 'var(--font-sinhala)', resize: 'vertical' }}
             />
 
             {renderTimeModeFields({
@@ -503,7 +496,7 @@ export default function PinPotha() {
               type="text"
               value={linkedSuttaKey}
               onChange={(e) => setLinkedSuttaKey(e.target.value)}
-              placeholder="සම්බන්ධ සූත්‍ර කේතය (විකල්ප)"
+              placeholder="Linked Sutta Key (optional)"
               className="km-lab-input"
               style={{ padding: '6px 9px', fontSize: '0.78rem' }}
             />
@@ -514,12 +507,12 @@ export default function PinPotha() {
               style={{ justifyContent: 'center', padding: '7px', borderRadius: '9px', fontSize: '0.8rem' }}
             >
               <Plus size={14} />
-              <span>පින් පොතේ සුරකින්න</span>
+              <span>Save to Merit Book</span>
             </button>
           </div>
         </form>
 
-        {/* Right: Pin Potha Entries Feed */}
+        {/* Right: Merit Book Entries Feed */}
         <div className="km-lab-card" style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '8px', minWidth: 0, overflow: 'hidden' }}>
           <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
             <button
@@ -531,7 +524,7 @@ export default function PinPotha() {
               className={filterType === 'all' ? 'km-lab-btn-primary' : 'km-lab-btn'}
               style={{ padding: '3px 8px', fontSize: '0.7rem' }}
             >
-              සියල්ල ({entries.length})
+              All ({entries.length})
             </button>
             {Object.values(PIN_POTHA_TYPES).map(tp => {
               const active = filterType === tp.id;
@@ -547,16 +540,16 @@ export default function PinPotha() {
                   style={{ padding: '3px 8px', fontSize: '0.7rem', gap: '4px' }}
                 >
                   <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: active ? '#FAF8F5' : tp.color }} />
-                  <span>{tp.sinhala}</span>
+                  <span>{tp.label}</span>
                 </button>
               );
             })}
           </div>
 
           {pagedPinEntries.length === 0 ? (
-            <div style={{ padding: '22px 14px', textAlign: 'center', color: 'var(--lab-text-muted)', fontFamily: 'var(--font-sinhala)', background: 'var(--lab-bg-subtle)', borderRadius: '10px' }}>
+            <div style={{ padding: '22px 14px', textAlign: 'center', color: 'var(--lab-text-muted)', background: 'var(--lab-bg-subtle)', borderRadius: '10px' }}>
               <BookHeart size={22} style={{ opacity: 0.45, marginBottom: '4px' }} />
-              <div style={{ fontSize: '0.82rem' }}>තවමත් පින් පොතේ සටහන් නොමැත.</div>
+              <div style={{ fontSize: '0.82rem' }}>No entries in your Merit Book yet.</div>
             </div>
           ) : (
             <>
@@ -589,13 +582,13 @@ export default function PinPotha() {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '5px', minWidth: 0, flexWrap: 'wrap' }}>
                           <span style={{ fontSize: '0.67rem', fontWeight: '700', color: typeCfg.color, background: `${typeCfg.color}18`, padding: '1px 7px', borderRadius: '999px' }}>
-                            {typeCfg.sinhala}
+                            {typeCfg.label}
                           </span>
                           {item.scheduleType && item.scheduleType !== 'once' && (
                             <span className="km-lab-tag" style={{ fontSize: '0.66rem', padding: '1px 6px' }}>
-                              {item.scheduleType === 'daily' && 'දිනපතා'}
-                              {item.scheduleType === 'poya' && 'පෝය දින'}
-                              {item.scheduleType === 'range' && (item.endDate ? `${item.entryDate} → ${item.endDate}` : `දින ${item.durationDays || 7}`)}
+                              {item.scheduleType === 'daily' && 'Daily'}
+                              {item.scheduleType === 'poya' && 'Poya Days'}
+                              {item.scheduleType === 'range' && (item.endDate ? `${item.entryDate} → ${item.endDate}` : `${item.durationDays || 7} days`)}
                             </span>
                           )}
                           <span style={{ fontSize: '0.68rem', color: 'var(--lab-text-muted)', fontFamily: 'monospace' }}>
@@ -625,7 +618,7 @@ export default function PinPotha() {
                             style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', border: 'none', background: 'transparent', color: '#A35B3D', fontWeight: '700', fontSize: '0.69rem', cursor: 'pointer', padding: 0 }}
                           >
                             <Sparkles size={11} />
-                            <span>පුණ්‍යානුමෝදනා</span>
+                            <span>Dedicate Merit</span>
                             <ArrowRight size={10} />
                           </button>
                           <button
@@ -635,7 +628,7 @@ export default function PinPotha() {
                               deletePinPothaEntry(item.id);
                             }}
                             style={{ border: 'none', background: 'transparent', color: 'var(--lab-text-muted)', cursor: 'pointer', padding: '1px' }}
-                            title="ඉවත් කරන්න"
+                            title="Remove"
                           >
                             <Trash2 size={12} />
                           </button>
@@ -647,12 +640,12 @@ export default function PinPotha() {
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         fontFamily: 'var(--font-sinhala)',
-                        fontSize: '0.84rem',
+                        fontSize: '1.22rem',
                         lineHeight: 1.35
                       }}>
                         <span style={{ fontWeight: '700', color: 'var(--lab-text)' }}>{item.title}</span>
                         {item.reflection && (
-                          <span style={{ fontSize: '0.74rem', color: 'var(--lab-text-muted)', fontWeight: '400' }}>
+                          <span style={{ fontSize: '1.02rem', color: 'var(--lab-text-muted)', fontWeight: '400' }}>
                             {' '}— {item.reflection}
                           </span>
                         )}
@@ -708,7 +701,7 @@ export default function PinPotha() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <BookHeart size={17} color="var(--lab-gold)" />
-                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '700' }}>සටහන බලන්න සහ සංස්කරණය කරන්න</h3>
+                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '700' }}>View & Edit Entry</h3>
               </div>
               <button type="button" onClick={() => setEditingEntry(null)} className="km-lab-btn" style={{ padding: '4px 8px' }}>
                 <X size={15} />
@@ -746,7 +739,7 @@ export default function PinPotha() {
                   onChange={(e) => setEditingEntry(prev => ({ ...prev, entryType: e.target.value }))}
                 >
                   {Object.values(PIN_POTHA_TYPES).map(tp => (
-                    <option key={tp.id} value={tp.id}>{tp.sinhala}</option>
+                    <option key={tp.id} value={tp.id}>{tp.label}</option>
                   ))}
                 </select>
                 <input
@@ -761,18 +754,19 @@ export default function PinPotha() {
                 type="text"
                 required
                 className="km-lab-input"
+                style={{ fontFamily: 'var(--font-sinhala)', fontSize: '1.18rem' }}
                 value={editingEntry.title}
                 onChange={(e) => setEditingEntry(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="මාතෘකාව"
+                placeholder="Title"
               />
 
               <textarea
                 rows={7}
                 className="km-lab-input"
-                style={{ fontFamily: 'var(--font-sinhala)', resize: 'vertical', lineHeight: 1.55 }}
+                style={{ fontFamily: 'var(--font-sinhala)', fontSize: '1.08rem', resize: 'vertical', lineHeight: 1.55 }}
                 value={editingEntry.reflection}
                 onChange={(e) => setEditingEntry(prev => ({ ...prev, reflection: e.target.value }))}
-                placeholder="විස්තරය"
+                placeholder="Description / Reflection"
               />
 
               {renderTimeModeFields({
@@ -796,7 +790,7 @@ export default function PinPotha() {
                 className="km-lab-input"
                 value={editingEntry.linkedSuttaKey}
                 onChange={(e) => setEditingEntry(prev => ({ ...prev, linkedSuttaKey: e.target.value }))}
-                placeholder="සම්බන්ධ සූත්‍ර කේතය (විකල්ප)"
+                placeholder="Linked Sutta Key (optional)"
               />
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', paddingTop: '8px', borderTop: '1px solid var(--lab-border)' }}>
@@ -809,14 +803,14 @@ export default function PinPotha() {
                   className="km-lab-btn"
                   style={{ color: '#B91C1C' }}
                 >
-                  <Trash2 size={13} /> ඉවත් කරන්න
+                  <Trash2 size={13} /> Remove
                 </button>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button type="button" onClick={() => setEditingEntry(null)} className="km-lab-btn">
-                    වසන්න
+                    Close
                   </button>
                   <button type="submit" className="km-lab-btn-primary">
-                    <Check size={14} /> සුරකින්න
+                    <Check size={14} /> Save
                   </button>
                 </div>
               </div>
@@ -861,7 +855,7 @@ export default function PinPotha() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <FileUp size={17} color="var(--lab-gold)" />
-                  <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '700' }}>සටහන් එකවර එක් කරන්න</h3>
+                  <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '700' }}>Bulk Import Entries</h3>
                 </div>
                 <button type="button" onClick={() => setShowBulkModal(false)} className="km-lab-btn" style={{ padding: '4px 8px' }}>
                   <X size={15} />
@@ -869,7 +863,7 @@ export default function PinPotha() {
               </div>
 
               <div style={{ fontSize: '0.78rem', color: 'var(--lab-text-muted)', lineHeight: 1.5 }}>
-                ඔබගේ සියලුම සටහන් මෙහි Paste කරන්න. <code>11/04/2026</code> වැනි දින සහිත සටහන් ස්වයංක්‍රීයව එම දිනයටත්, දිනය නොමැති ඡේද පහත තෝරන දිනයටත් වෙන් වෙන් වශයෙන් සුරැකේ.
+                Paste all your notes here. Entries preceded by a date such as <code>11/04/2026</code> or <code>2026-04-11</code> will be saved under that date, while undated paragraphs will use the fallback date selected below.
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 150px', gap: '10px' }}>
@@ -879,7 +873,7 @@ export default function PinPotha() {
                   onChange={(e) => setBulkType(e.target.value)}
                 >
                   {Object.values(PIN_POTHA_TYPES).map(tp => (
-                    <option key={tp.id} value={tp.id}>{tp.sinhala}</option>
+                    <option key={tp.id} value={tp.id}>{tp.label}</option>
                   ))}
                 </select>
                 <input
@@ -887,7 +881,7 @@ export default function PinPotha() {
                   className="km-lab-input"
                   value={bulkDefaultDate}
                   onChange={(e) => setBulkDefaultDate(e.target.value)}
-                  title="දිනය නොමැති සටහන් සඳහා දිනය"
+                  title="Fallback date for undated entries"
                 />
               </div>
 
@@ -895,18 +889,18 @@ export default function PinPotha() {
                 rows={8}
                 className="km-lab-input"
                 style={{ fontFamily: 'var(--font-sinhala)', resize: 'vertical', lineHeight: 1.5 }}
-                placeholder="මෙහි ඔබේ පින්කම් සටහන් Paste කරන්න..."
+                placeholder="Paste your merit journal entries here..."
                 value={bulkText}
                 onChange={(e) => setBulkText(e.target.value)}
               />
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', paddingTop: '6px', borderTop: '1px solid var(--lab-border)' }}>
                 <span style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--lab-accent)' }}>
-                  හඳුනාගත් සටහන්: {parsedEntries.length}
+                  Detected entries: {parsedEntries.length}
                 </span>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button type="button" onClick={() => setShowBulkModal(false)} className="km-lab-btn">
-                    අවලංගු
+                    Cancel
                   </button>
                   <button
                     type="button"
@@ -928,7 +922,7 @@ export default function PinPotha() {
                     className="km-lab-btn-primary"
                     style={{ opacity: parsedEntries.length === 0 ? 0.5 : 1 }}
                   >
-                    <Plus size={14} /> සියල්ල සුරකින්න ({parsedEntries.length})
+                    <Plus size={14} /> Save All ({parsedEntries.length})
                   </button>
                 </div>
               </div>

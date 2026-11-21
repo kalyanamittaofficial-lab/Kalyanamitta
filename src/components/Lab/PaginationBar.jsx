@@ -1,7 +1,15 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-export default function PaginationBar({ page, totalPages, onPageChange, compact = false }) {
-  if (totalPages <= 1) return null;
+export default function PaginationBar({
+  page,
+  totalPages,
+  onPageChange,
+  compact = false,
+  alwaysShow = false,
+  prevLabel = 'පෙර',
+  nextLabel = 'ඊළඟ'
+}) {
+  if (!alwaysShow && totalPages <= 1) return null;
 
   const safePage = Math.min(Math.max(1, page), totalPages);
 
@@ -28,7 +36,7 @@ export default function PaginationBar({ page, totalPages, onPageChange, compact 
         }}
       >
         <ChevronLeft size={13} />
-        <span>පෙර</span>
+        <span>{prevLabel}</span>
       </button>
 
       <span style={{ fontSize: compact ? '0.72rem' : '0.75rem', fontWeight: '700', color: 'var(--lab-text-muted)', fontVariantNumeric: 'tabular-nums' }}>
@@ -47,7 +55,7 @@ export default function PaginationBar({ page, totalPages, onPageChange, compact 
           cursor: safePage >= totalPages ? 'default' : 'pointer'
         }}
       >
-        <span>ඊළඟ</span>
+        <span>{nextLabel}</span>
         <ChevronRight size={13} />
       </button>
     </div>

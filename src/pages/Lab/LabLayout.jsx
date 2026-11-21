@@ -15,14 +15,17 @@ import {
   ChevronRight,
   ChevronDown,
   Network,
-  Compass,
   BookHeart,
   Sparkles,
   Globe,
   FolderKanban,
   Plus,
   Search,
-  User
+  User,
+  Shield,
+  Leaf,
+  Lightbulb,
+  Hourglass
 } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { supabase } from '../../utils/supabase';
@@ -189,7 +192,7 @@ export default function LabLayout() {
       titleSi: 'මගේ අධ්‍යයන අවකාශය',
       titleEn: 'My Study Space',
       items: [
-        { to: '/lab', label: 'Dashboard', sinhalaLabel: 'ප්‍රධාන පුවරුව', icon: Home, exact: true },
+        { to: '/lab', label: 'Overview', sinhalaLabel: 'Overview', icon: Home, exact: true },
         { to: '/lab/sutta', label: 'Sutta Library', sinhalaLabel: 'සූත්‍ර පුස්තකාලය', icon: BookOpen },
         { to: '/lab/map', label: 'My Map', sinhalaLabel: 'මගේ සිතියම', icon: Network },
         { to: '/lab/roadmap', label: 'My Notes', sinhalaLabel: 'මගේ සටහන්', icon: Highlighter },
@@ -201,8 +204,8 @@ export default function LabLayout() {
       titleEn: 'My Life & Practice',
       items: [
         { to: '/lab/daily-routine', label: 'Daily Routine', sinhalaLabel: 'දෛනික දහම් රටාව', icon: Sun },
-        { to: '/lab/pin-potha', label: 'Pin Potha', sinhalaLabel: 'පින් පොත', icon: BookHeart },
-        { to: '/lab/compass', label: 'Path Compass', sinhalaLabel: 'මාර්ග දිශානතිය', icon: Compass },
+        { to: '/lab/pin-potha', label: 'Merit Book', sinhalaLabel: 'Merit Book', icon: BookHeart },
+        { to: '/lab/reflection', label: 'Reflection', sinhalaLabel: 'Reflection', icon: Lightbulb },
         { to: '/lab/dedication', label: 'Dedication', sinhalaLabel: 'පුණ්‍යානුමෝදනා', icon: Sparkles }
       ]
     },
@@ -357,8 +360,9 @@ export default function LabLayout() {
                 width: '34px',
                 height: '34px',
                 borderRadius: '10px',
-                background: 'var(--lab-gold)',
-                color: '#FAF8F5',
+                background: 'rgba(200, 255, 0, 0.14)',
+                border: '1px solid rgba(200, 255, 0, 0.55)',
+                color: '#C8FF00',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -366,17 +370,17 @@ export default function LabLayout() {
               }}>
                 <FlaskConical size={17} />
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
-                <span style={{ fontWeight: '700', fontSize: '0.96rem', fontFamily: 'var(--font-sinhala)', color: 'var(--lab-sidebar-text)' }}>
-                  මගේ දහම් මඟ
+              <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.15 }}>
+                <span style={{ fontWeight: '800', fontSize: '1.02rem', letterSpacing: '-0.02em', color: 'var(--lab-sidebar-text)' }}>
+                  PATH<span style={{ color: '#C8FF00' }}>/</span>OS
                 </span>
-                <span style={{ fontSize: '0.69rem', color: 'var(--lab-sidebar-muted)', fontWeight: 500, fontFamily: 'var(--font-sinhala)' }}>
-                  අත්තදීප · මා දකින මඟ
+                <span style={{ fontSize: '0.67rem', color: 'var(--lab-sidebar-muted)', fontWeight: 500, fontFamily: 'var(--font-sinhala)' }}>
+                  මගේ දහම් මඟ · අත්තදීප
                 </span>
               </div>
             </Link>
           ) : (
-            <Link to="/lab" title="මගේ දහම් මඟ" style={{ color: 'var(--lab-gold)', display: 'flex' }}>
+            <Link to="/lab" title="PATH/OS · මගේ දහම් මඟ" style={{ color: '#C8FF00', display: 'flex' }}>
               <FlaskConical size={22} />
             </Link>
           )}
@@ -425,7 +429,7 @@ export default function LabLayout() {
                     padding: '0 10px',
                     marginBottom: '3px'
                   }}>
-                    {lang === 'en' ? group.titleEn : group.titleSi}
+                    {group.titleEn}
                   </div>
                 )}
 
@@ -433,6 +437,7 @@ export default function LabLayout() {
                   const Icon = item.icon;
                   const active = isNavActive(item);
                   const isSuttaItem = item.to === '/lab/sutta';
+                  const displayLabel = isSuttaItem ? item.sinhalaLabel : item.label;
                   return (
                     <div key={item.to}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -442,7 +447,7 @@ export default function LabLayout() {
                             setIsSidebarOpenMobile(false);
                             if (isSuttaItem) setIsSuttaTreeOpen(true);
                           }}
-                          title={isSidebarCollapsed ? (lang === 'en' ? item.label : item.sinhalaLabel) : undefined}
+                          title={isSidebarCollapsed ? displayLabel : undefined}
                           style={{
                             flex: 1,
                             display: 'flex',
@@ -462,7 +467,7 @@ export default function LabLayout() {
                           <Icon size={17} color={active ? 'var(--lab-sidebar-active-text)' : 'var(--lab-sidebar-muted)'} />
                           {!isSidebarCollapsed && (
                             <span style={{ fontSize: '0.87rem', lineHeight: 1.25 }}>
-                              {lang === 'en' ? item.label : item.sinhalaLabel}
+                              {displayLabel}
                             </span>
                           )}
                         </Link>
@@ -532,7 +537,7 @@ export default function LabLayout() {
               }}
             >
               {isDark ? <Sun size={14} color="#FBBF24" /> : <Moon size={14} />}
-              {!isSidebarCollapsed && <span>{isDark ? 'ආලෝක' : 'අඳුරු'}</span>}
+              {!isSidebarCollapsed && <span>{isDark ? 'Light' : 'Dark'}</span>}
             </button>
 
             {!isSidebarCollapsed && (
@@ -550,7 +555,7 @@ export default function LabLayout() {
                 }}
               >
                 <ArrowLeft size={13} />
-                <span>ප්‍රධාන අඩවිය</span>
+                <span>Main Site</span>
               </Link>
             )}
           </div>
@@ -617,7 +622,7 @@ export default function LabLayout() {
                   fontWeight: 600
                 }}
               >
-                පිවිසෙන්න
+                Sign In
               </Link>
             )
           )}
@@ -660,30 +665,90 @@ export default function LabLayout() {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.84rem', color: 'var(--lab-text-muted)' }}>
               <Link to="/lab" style={{ color: 'var(--lab-text-muted)', textDecoration: 'none', fontWeight: 500 }}>
-                {t(lang, 'අධ්‍යයනාගාරය', 'Lab')}
+                PATH/OS
               </Link>
               <span>/</span>
               <span style={{ color: 'var(--lab-text)', fontWeight: 600 }}>
-                {location.pathname === '/lab' && t(lang, 'ප්‍රධාන පුවරුව', 'Dashboard')}
-                {location.pathname.startsWith('/lab/sutta') && t(lang, 'සූත්‍ර කියවනය', 'Sutta Library & Reader')}
-                {location.pathname.startsWith('/lab/roadmap') && t(lang, 'මගේ සටහන්', 'My Notes')}
-                {location.pathname.startsWith('/lab/map') && t(lang, 'මගේ සිතියම', 'My Map')}
-                {location.pathname.startsWith('/lab/collections') && t(lang, 'අධ්‍යයන එකතු', 'Collections')}
-                {location.pathname.startsWith('/lab/compass') && t(lang, 'මාර්ග දිශානතිය', 'Path Compass')}
-                {location.pathname.startsWith('/lab/pin-potha') && t(lang, 'පින් පොත', 'Pin Potha')}
-                {location.pathname.startsWith('/lab/daily-routine') && 'දෛනික දහම් රටාව'}
-                {location.pathname.startsWith('/lab/dedication') && t(lang, 'පුණ්‍යානුමෝදනා', 'Dedication')}
-                {location.pathname.startsWith('/lab/explore') && t(lang, 'සිතියම් ගවේෂණය', 'Explore Maps')}
-                {location.pathname.startsWith('/lab/maps/') && t(lang, 'ප්‍රජා සිතියම', 'Public Map')}
-                {location.pathname.startsWith('/lab/onboarding') && t(lang, 'ආරම්භක සටහන', 'Starting Point')}
+                {location.pathname === '/lab' && 'Overview'}
+                {location.pathname.startsWith('/lab/sutta') && 'සූත්‍ර කියවනය'}
+                {location.pathname.startsWith('/lab/roadmap') && 'My Notes'}
+                {location.pathname.startsWith('/lab/map') && 'My Map'}
+                {location.pathname.startsWith('/lab/collections') && 'Collections'}
+                {location.pathname.startsWith('/lab/pin-potha') && 'Merit Book'}
+                {location.pathname.startsWith('/lab/daily-routine') && 'Daily Routine'}
+                {location.pathname.startsWith('/lab/reflection') && 'Reflection'}
+                {location.pathname.startsWith('/lab/dedication') && 'Dedication'}
+                {location.pathname.startsWith('/lab/explore') && 'Explore Maps'}
+                {location.pathname.startsWith('/lab/maps/') && 'Public Map'}
+                {location.pathname.startsWith('/lab/onboarding') && 'Starting Point'}
               </span>
             </div>
+          </div>
+
+          {/* PATH/OS Main Modes */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+            {[
+              {
+                id: 'seeker',
+                label: 'THE SEEKER',
+                sub: 'Sutta & Deep Study',
+                to: '/lab/sutta',
+                icon: BookOpen,
+                active: location.pathname === '/lab' || location.pathname.startsWith('/lab/sutta') || location.pathname.startsWith('/lab/map') || location.pathname.startsWith('/lab/roadmap') || location.pathname.startsWith('/lab/collections')
+              },
+              {
+                id: 'warrior',
+                label: 'THE WARRIOR',
+                sub: 'Daily Routine & Habits',
+                to: '/lab/daily-routine',
+                icon: Shield,
+                active: location.pathname.startsWith('/lab/daily-routine') || location.pathname.startsWith('/lab/reflection')
+              },
+              {
+                id: 'changemaker',
+                label: 'THE CHANGEMAKER',
+                sub: 'Merit Book & Deeds',
+                to: '/lab/pin-potha',
+                icon: Leaf,
+                active: location.pathname.startsWith('/lab/pin-potha') || location.pathname.startsWith('/lab/dedication') || location.pathname.startsWith('/lab/explore') || location.pathname.startsWith('/lab/maps/') || location.pathname.startsWith('/lab/onboarding')
+              }
+            ].map(mode => {
+              const Icon = mode.icon;
+              return (
+                <button
+                  key={mode.id}
+                  type="button"
+                  onClick={() => navigate(mode.to)}
+                  title={mode.sub}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '5px 12px',
+                    borderRadius: '999px',
+                    border: `1px solid ${mode.active ? 'transparent' : 'var(--lab-border)'}`,
+                    background: mode.active ? 'var(--po-blue, #0B3BFA)' : 'var(--lab-bg-elevated)',
+                    color: mode.active ? '#FFFFFF' : 'var(--lab-text)',
+                    fontSize: '0.72rem',
+                    fontWeight: '800',
+                    letterSpacing: '0.04em',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.15s ease',
+                    boxShadow: mode.active ? '0 4px 12px rgba(11, 59, 250, 0.25)' : 'none'
+                  }}
+                >
+                  <Icon size={12} />
+                  <span>{mode.label}</span>
+                </button>
+              );
+            })}
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
             <Link
               to="/lab"
-              title="දුල්ලභෝ මනුස්ස පටිලාභෝ · මිනිසත් බව ලැබීම දුර්ලභය"
+              title="Dullabho manussapaṭilābho · Rare is birth as a human being"
               className="km-lab-nav-clock"
               style={{
                 display: 'inline-flex',
@@ -701,17 +766,17 @@ export default function LabLayout() {
                 whiteSpace: 'nowrap'
               }}
             >
-              <span>ව {String(navClock.years).padStart(2, '0')}</span>
+              <span><Hourglass size={12} color="var(--po-blue, #0B3BFA)" style={{ display: 'inline', verticalAlign: '-2px', marginRight: '3px' }} />{String(navClock.years).padStart(2, '0')}y</span>
               <span>:</span>
-              <span>මා {String(navClock.months).padStart(2, '0')}</span>
+              <span>{String(navClock.months).padStart(2, '0')}mo</span>
               <span>:</span>
-              <span>දි {String(navClock.days).padStart(2, '0')}</span>
+              <span>{String(navClock.days).padStart(2, '0')}d</span>
               <span>:</span>
-              <span>පැ {String(navClock.hours).padStart(2, '0')}</span>
+              <span>{String(navClock.hours).padStart(2, '0')}h</span>
               <span>:</span>
-              <span>මි {String(navClock.minutes).padStart(2, '0')}</span>
+              <span>{String(navClock.minutes).padStart(2, '0')}m</span>
               <span>:</span>
-              <span>ත {String(navClock.seconds).padStart(2, '0')}</span>
+              <span>{String(navClock.seconds).padStart(2, '0')}s</span>
             </Link>
 
             <button
@@ -753,9 +818,8 @@ export default function LabLayout() {
                   {[
                     { to: '/lab/sutta', label: t(lang, 'නව සූත්‍ර සටහනක්', 'New Sutta Note'), icon: Highlighter },
                     { to: '/lab/map', label: t(lang, 'නව සිතියම් අංගයක්', 'New Map Node'), icon: Network },
-                    { to: '/lab/pin-potha', label: t(lang, 'පින් පොත සටහනක්', 'New Pin Potha Entry'), icon: BookHeart },
+                    { to: '/lab/pin-potha', label: 'New Merit Book Entry', icon: BookHeart },
                     { to: '/lab/dedication', label: t(lang, 'දායකත්වයක් / පින් අනුමෝදනාවක්', 'New Contribution'), icon: Sparkles },
-                    { to: '/lab/compass', label: t(lang, 'ප්‍රතිපදා අරමුණක්', 'New Practice Intention'), icon: Compass },
                     { to: '/lab/collections', label: t(lang, 'නව අධ්‍යයන එකතුවක්', 'New Collection'), icon: FolderKanban }
                   ].map(item => {
                     const Icon = item.icon;
@@ -822,7 +886,7 @@ export default function LabLayout() {
                     className="km-lab-input"
                     value={globalQuery}
                     onChange={(e) => setGlobalQuery(e.target.value)}
-                    placeholder={t(lang, 'සූත්‍ර, සටහන්, සිතියම්, පින් පොත හෝ එකතු සොයන්න...', 'Search suttas, notes, map nodes, collections, or Pin Potha...')}
+                    placeholder={t(lang, 'සූත්‍ර, සටහන්, සිතියම්, Merit Book හෝ එකතු සොයන්න...', 'Search suttas, notes, map nodes, collections, or Merit Book...')}
                   />
                   <button
                     onClick={() => setShowGlobalSearch(false)}
@@ -905,7 +969,7 @@ export default function LabLayout() {
                     {wsResults.pinPotha.length > 0 && (
                       <div>
                         <div style={{ fontSize: '0.74rem', fontWeight: '700', color: '#059669', marginBottom: '6px' }}>
-                          {t(lang, 'පින් පොත (පෞද්ගලික)', 'Pin Potha (Private)')} ({wsResults.pinPotha.length})
+                          Merit Book (Private) ({wsResults.pinPotha.length})
                         </div>
                         {wsResults.pinPotha.slice(0, 5).map(p => (
                           <button

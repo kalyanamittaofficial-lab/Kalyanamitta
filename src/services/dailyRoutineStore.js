@@ -3,14 +3,51 @@ import { upsertLabRow, deleteLabRow, fetchUserLabRows } from './labSyncService';
 const HABITS_KEY = 'km_lab_routine_habits_v1';
 const LOGS_KEY = 'km_lab_routine_logs_v1';
 const CATEGORIES_KEY = 'km_lab_routine_categories_v1';
+const ACTIVE_TIMER_KEY = 'km_lab_routine_active_timer_v1';
+const DELETED_DEFAULT_CATS_KEY = 'km_lab_routine_deleted_default_cats_v1';
+const DELETED_DEFAULT_HABITS_KEY = 'km_lab_routine_deleted_default_habits_v1';
+
+function getDeletedDefaultCatIds() {
+  try {
+    const raw = localStorage.getItem(DELETED_DEFAULT_CATS_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function getDeletedDefaultHabitIds() {
+  try {
+    const raw = localStorage.getItem(DELETED_DEFAULT_HABITS_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
 
 export const DEFAULT_ROUTINE_CATEGORIES = [
-  { id: 'dhamma', label: 'ධර්ම කටයුතු', color: '#5F6E43' },
-  { id: 'education', label: 'අධ්‍යාපනය (පාසල / විශ්වවිද්‍යාලය)', color: '#C06C47' },
-  { id: 'job', label: 'රැකියාව', color: '#98A27A' },
-  { id: 'family', label: 'පවුල', color: '#D8C3B0' },
-  { id: 'friends', label: 'මිතුරන් හා සම්බන්ධතා', color: '#B0B0AC' }
+  { id: 'dhamma', label: 'Dhamma Practice', color: '#5F6E43' },
+  { id: 'education', label: 'Education (School / University)', color: '#C06C47' },
+  { id: 'job', label: 'Work & Career', color: '#98A27A' },
+  { id: 'family', label: 'Family', color: '#D8C3B0' },
+  { id: 'friends', label: 'Friends & Community', color: '#B0B0AC' }
 ];
+
+const LEGACY_CATEGORY_LABELS_TO_EN = {
+  'ධර්ම කටයුතු': 'Dhamma Practice',
+  'අධ්‍යාපනය (පාසල / විශ්වවිද්‍යාලය)': 'Education (School / University)',
+  'රැකියාව': 'Work & Career',
+  'පවුල': 'Family',
+  'මිතුරන් හා සම්බන්ධතා': 'Friends & Community'
+};
+
+function translateLegacyCategory(cat) {
+  if (!cat || typeof cat !== 'object') return cat;
+  const translated = LEGACY_CATEGORY_LABELS_TO_EN[cat.label];
+  return translated ? { ...cat, label: translated } : cat;
+}
 
 export const ROUTINE_CATEGORIES = DEFAULT_ROUTINE_CATEGORIES;
 
@@ -22,7 +59,19 @@ export function getRoutineCategories() {
       return DEFAULT_ROUTINE_CATEGORIES;
     }
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_ROUTINE_CATEGORIES;
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      return DEFAULT_ROUTINE_CATEGORIES;
+    }
+    let changed = false;
+    const normalized = parsed.map(c => {
+      const next = translateLegacyCategory(c);
+      if (next !== c) changed = true;
+      return next;
+    });
+    if (changed) {
+      localStorage.setItem(CATEGORIES_KEY, JSON.stringify(normalized));
+    }
+    return normalized;
   } catch {
     return DEFAULT_ROUTINE_CATEGORIES;
   }
@@ -66,8 +115,16 @@ export function updateRoutineCategory(id, { label, color }) {
 
 export function deleteRoutineCategory(id) {
   const all = getRoutineCategories();
-  if (all.length <= 1) return all;
-  const next = all.filter(c => c.id !== id);
+  if (DEFAULT_ROUTINE_CATEGORIES.some(d => d.id === id)) {
+    const deleted = new Set(getDeletedDefaultCatIds());
+    deleted.add(id);
+    localStorage.setItem(DELETED_DEFAULT_CATS_KEY, JSON.stringify([...deleted]));
+  }
+  let next = all.filter(c => c.id !== id);
+  if (next.length === 0) {
+    localStorage.removeItem(DELETED_DEFAULT_CATS_KEY);
+    next = [...DEFAULT_ROUTINE_CATEGORIES];
+  }
   const fallbackId = next[0].id;
   localStorage.setItem(CATEGORIES_KEY, JSON.stringify(next));
   deleteLabRow('lab_routine_categories', { id });
@@ -88,6 +145,17 @@ export function deleteRoutineCategory(id) {
     return reassigned;
   });
   localStorage.setItem(HABITS_KEY, JSON.stringify(updatedHabits));
+  window.dispatchEvent(new CustomEvent('labRoutineUpdated'));
+  return next;
+}
+
+export function restoreDefaultRoutineCategories() {
+  localStorage.removeItem(DELETED_DEFAULT_CATS_KEY);
+  const current = getRoutineCategories();
+  const existingIds = new Set(current.map(c => c.id));
+  const missingDefaults = DEFAULT_ROUTINE_CATEGORIES.filter(d => !existingIds.has(d.id));
+  const next = [...missingDefaults, ...current];
+  localStorage.setItem(CATEGORIES_KEY, JSON.stringify(next));
   window.dispatchEvent(new CustomEvent('labRoutineUpdated'));
   return next;
 }
@@ -172,11 +240,32 @@ export function updateRoutineHabit(id, { title, description, category, minutes }
 }
 
 export function deleteRoutineHabit(id) {
+  if (DEFAULT_HABITS.some(d => d.id === id)) {
+    const deleted = new Set(getDeletedDefaultHabitIds());
+    deleted.add(id);
+    localStorage.setItem(DELETED_DEFAULT_HABITS_KEY, JSON.stringify([...deleted]));
+  }
   const next = getRoutineHabits().filter(h => h.id !== id);
   localStorage.setItem(HABITS_KEY, JSON.stringify(next));
   deleteLabRow('lab_routine_habits', { id });
   window.dispatchEvent(new CustomEvent('labRoutineUpdated'));
   return next;
+}
+
+export function restoreDefaultRoutineHabits() {
+  localStorage.removeItem(DELETED_DEFAULT_HABITS_KEY);
+  const current = getRoutineHabits();
+  const existingIds = new Set(current.map(h => h.id));
+  const missingDefaults = DEFAULT_HABITS.filter(d => !existingIds.has(d.id));
+  const next = [...missingDefaults, ...current];
+  localStorage.setItem(HABITS_KEY, JSON.stringify(next));
+  window.dispatchEvent(new CustomEvent('labRoutineUpdated'));
+  return next;
+}
+
+export function hasMissingDefaultHabits() {
+  const existingIds = new Set(getRoutineHabits().map(h => h.id));
+  return DEFAULT_HABITS.some(d => !existingIds.has(d.id));
 }
 
 export function getAllRoutineLogs() {
@@ -190,12 +279,20 @@ export function getAllRoutineLogs() {
 
 export function getRoutineLogForDate(dateStr) {
   const all = getAllRoutineLogs();
-  return all[dateStr] || { date: dateStr, wakeTime: '', sleepTime: '', checkedIds: [] };
+  const entry = all[dateStr];
+  if (!entry) {
+    return { date: dateStr, wakeTime: '', sleepTime: '', checkedIds: [], taskLogs: {} };
+  }
+  return {
+    ...entry,
+    checkedIds: Array.isArray(entry.checkedIds) ? entry.checkedIds : [],
+    taskLogs: entry.taskLogs && typeof entry.taskLogs === 'object' ? entry.taskLogs : {}
+  };
 }
 
 export function saveRoutineWakeSleep(dateStr, { wakeTime, sleepTime }) {
   const all = getAllRoutineLogs();
-  const prev = all[dateStr] || { date: dateStr, wakeTime: '', sleepTime: '', checkedIds: [] };
+  const prev = all[dateStr] || { date: dateStr, wakeTime: '', sleepTime: '', checkedIds: [], taskLogs: {} };
   all[dateStr] = {
     ...prev,
     wakeTime: wakeTime !== undefined ? wakeTime : prev.wakeTime,
@@ -218,17 +315,36 @@ export function saveRoutineWakeSleep(dateStr, { wakeTime, sleepTime }) {
   return all[dateStr];
 }
 
-export function toggleRoutineHabit(dateStr, habitId) {
+export function getHabitStatusForDay(dayLog, habitId) {
+  if (dayLog?.checkedIds?.includes(habitId)) return 'completed';
+  const s = dayLog?.taskLogs?.[habitId]?.status;
+  if (s === 'ongoing' || s === 'completed' || s === 'pending') return s;
+  return 'pending';
+}
+
+export function setRoutineTaskStatus(dateStr, habitId, status) {
+  const validStatus = status === 'completed' || status === 'ongoing' ? status : 'pending';
   const all = getAllRoutineLogs();
-  const prev = all[dateStr] || { date: dateStr, wakeTime: '', sleepTime: '', checkedIds: [] };
-  const exists = prev.checkedIds.includes(habitId);
-  const nextIds = exists
-    ? prev.checkedIds.filter(id => id !== habitId)
-    : [...prev.checkedIds, habitId];
+  const prev = all[dateStr] || { date: dateStr, wakeTime: '', sleepTime: '', checkedIds: [], taskLogs: {} };
+  const prevChecked = Array.isArray(prev.checkedIds) ? prev.checkedIds : [];
+  const nextIds = validStatus === 'completed'
+    ? (prevChecked.includes(habitId) ? prevChecked : [...prevChecked, habitId])
+    : prevChecked.filter(id => id !== habitId);
+
+  const prevTaskLog = (prev.taskLogs && typeof prev.taskLogs === 'object' ? prev.taskLogs[habitId] : null) || {};
+  const nextTaskLogs = {
+    ...(prev.taskLogs && typeof prev.taskLogs === 'object' ? prev.taskLogs : {}),
+    [habitId]: {
+      ...prevTaskLog,
+      status: validStatus,
+      updatedAt: new Date().toISOString()
+    }
+  };
 
   all[dateStr] = {
     ...prev,
     checkedIds: nextIds,
+    taskLogs: nextTaskLogs,
     updatedAt: new Date().toISOString()
   };
   localStorage.setItem(LOGS_KEY, JSON.stringify(all));
@@ -248,6 +364,201 @@ export function toggleRoutineHabit(dateStr, habitId) {
   return all[dateStr];
 }
 
+export function saveRoutineTaskLog(dateStr, habitId, { minutes, completedAt, completed = true, status }) {
+  const all = getAllRoutineLogs();
+  const prev = all[dateStr] || { date: dateStr, wakeTime: '', sleepTime: '', checkedIds: [], taskLogs: {} };
+  const prevChecked = Array.isArray(prev.checkedIds) ? prev.checkedIds : [];
+  const nextStatus = status || (completed ? 'completed' : 'ongoing');
+  const nextIds = nextStatus === 'completed'
+    ? (prevChecked.includes(habitId) ? prevChecked : [...prevChecked, habitId])
+    : prevChecked.filter(id => id !== habitId);
+
+  const prevTaskLog = (prev.taskLogs && typeof prev.taskLogs === 'object' ? prev.taskLogs[habitId] : null) || {};
+  const nextTaskLogs = {
+    ...(prev.taskLogs && typeof prev.taskLogs === 'object' ? prev.taskLogs : {}),
+    [habitId]: {
+      ...prevTaskLog,
+      status: nextStatus,
+      minutes: Math.max(1, Number(minutes || 15)),
+      completedAt: completedAt || '',
+      updatedAt: new Date().toISOString()
+    }
+  };
+
+  all[dateStr] = {
+    ...prev,
+    checkedIds: nextIds,
+    taskLogs: nextTaskLogs,
+    updatedAt: new Date().toISOString()
+  };
+  localStorage.setItem(LOGS_KEY, JSON.stringify(all));
+  upsertLabRow(
+    'lab_routine_logs',
+    {
+      log_date: dateStr,
+      wake_time: all[dateStr].wakeTime || '',
+      sleep_time: all[dateStr].sleepTime || '',
+      checked_ids: all[dateStr].checkedIds,
+      updated_at: all[dateStr].updatedAt
+    },
+    'user_id,log_date'
+  );
+  window.dispatchEvent(new CustomEvent('labRoutineUpdated'));
+  window.dispatchEvent(new CustomEvent('labCittaLogsUpdated'));
+  return all[dateStr];
+}
+
+export function toggleRoutineHabit(dateStr, habitId) {
+  const all = getAllRoutineLogs();
+  const prev = all[dateStr] || { date: dateStr, wakeTime: '', sleepTime: '', checkedIds: [], taskLogs: {} };
+  const exists = prev.checkedIds.includes(habitId);
+  const nextIds = exists
+    ? prev.checkedIds.filter(id => id !== habitId)
+    : [...prev.checkedIds, habitId];
+
+  const prevTaskLog = (prev.taskLogs && typeof prev.taskLogs === 'object' ? prev.taskLogs[habitId] : null) || {};
+  const nextTaskLogs = {
+    ...(prev.taskLogs && typeof prev.taskLogs === 'object' ? prev.taskLogs : {}),
+    [habitId]: {
+      ...prevTaskLog,
+      status: exists ? 'pending' : 'completed',
+      updatedAt: new Date().toISOString()
+    }
+  };
+
+  all[dateStr] = {
+    ...prev,
+    checkedIds: nextIds,
+    taskLogs: nextTaskLogs,
+    updatedAt: new Date().toISOString()
+  };
+  localStorage.setItem(LOGS_KEY, JSON.stringify(all));
+  upsertLabRow(
+    'lab_routine_logs',
+    {
+      log_date: dateStr,
+      wake_time: all[dateStr].wakeTime || '',
+      sleep_time: all[dateStr].sleepTime || '',
+      checked_ids: all[dateStr].checkedIds,
+      updated_at: all[dateStr].updatedAt
+    },
+    'user_id,log_date'
+  );
+  window.dispatchEvent(new CustomEvent('labRoutineUpdated'));
+  window.dispatchEvent(new CustomEvent('labCittaLogsUpdated'));
+  return all[dateStr];
+}
+
+export function addRoutineTaskSession(dateStr, habitId, { minutes, loggedAt } = {}) {
+  const mins = Math.max(1, Number(minutes || 5));
+  const now = new Date();
+  const hhmm = loggedAt || `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const all = getAllRoutineLogs();
+  const prev = all[dateStr] || { date: dateStr, wakeTime: '', sleepTime: '', checkedIds: [], taskLogs: {} };
+  const prevChecked = Array.isArray(prev.checkedIds) ? prev.checkedIds : [];
+  const prevTaskLog = (prev.taskLogs && typeof prev.taskLogs === 'object' ? prev.taskLogs[habitId] : null) || {};
+  const existingSessions = Array.isArray(prevTaskLog.sessions)
+    ? prevTaskLog.sessions
+    : (prevTaskLog.minutes ? [{ id: `s-init-${Date.now()}`, minutes: prevTaskLog.minutes, loggedAt: prevTaskLog.completedAt || '' }] : []);
+
+  const nextSessions = [
+    ...existingSessions,
+    { id: `s-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`, minutes: mins, loggedAt: hhmm }
+  ];
+  const totalMinutes = nextSessions.reduce((acc, s) => acc + Math.max(1, Number(s.minutes || 0)), 0);
+  const nextStatus = prevChecked.includes(habitId) ? 'completed' : 'ongoing';
+
+  const nextTaskLogs = {
+    ...(prev.taskLogs && typeof prev.taskLogs === 'object' ? prev.taskLogs : {}),
+    [habitId]: {
+      ...prevTaskLog,
+      status: nextStatus,
+      sessions: nextSessions,
+      minutes: totalMinutes,
+      completedAt: hhmm,
+      updatedAt: now.toISOString()
+    }
+  };
+
+  all[dateStr] = {
+    ...prev,
+    checkedIds: prevChecked,
+    taskLogs: nextTaskLogs,
+    updatedAt: now.toISOString()
+  };
+  localStorage.setItem(LOGS_KEY, JSON.stringify(all));
+  upsertLabRow(
+    'lab_routine_logs',
+    {
+      log_date: dateStr,
+      wake_time: all[dateStr].wakeTime || '',
+      sleep_time: all[dateStr].sleepTime || '',
+      checked_ids: all[dateStr].checkedIds,
+      updated_at: all[dateStr].updatedAt
+    },
+    'user_id,log_date'
+  );
+  window.dispatchEvent(new CustomEvent('labRoutineUpdated'));
+  window.dispatchEvent(new CustomEvent('labCittaLogsUpdated'));
+  return all[dateStr];
+}
+
+export function removeRoutineTaskSession(dateStr, habitId, sessionId) {
+  const all = getAllRoutineLogs();
+  const prev = all[dateStr];
+  if (!prev || !prev.taskLogs?.[habitId]) return prev;
+  const prevTaskLog = prev.taskLogs[habitId];
+  const nextSessions = (Array.isArray(prevTaskLog.sessions) ? prevTaskLog.sessions : []).filter(s => s.id !== sessionId);
+  const totalMinutes = nextSessions.reduce((acc, s) => acc + Math.max(1, Number(s.minutes || 0)), 0);
+
+  const nextTaskLogs = {
+    ...prev.taskLogs,
+    [habitId]: {
+      ...prevTaskLog,
+      sessions: nextSessions,
+      minutes: totalMinutes > 0 ? totalMinutes : undefined,
+      updatedAt: new Date().toISOString()
+    }
+  };
+
+  all[dateStr] = {
+    ...prev,
+    taskLogs: nextTaskLogs,
+    updatedAt: new Date().toISOString()
+  };
+  localStorage.setItem(LOGS_KEY, JSON.stringify(all));
+  window.dispatchEvent(new CustomEvent('labRoutineUpdated'));
+  window.dispatchEvent(new CustomEvent('labCittaLogsUpdated'));
+  return all[dateStr];
+}
+
+export function getActiveRoutineTimer() {
+  try {
+    const raw = localStorage.getItem(ACTIVE_TIMER_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    return parsed && parsed.habitId && parsed.startedAt ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+export function startRoutineTimer(dateStr, habitId) {
+  const timer = { dateStr, habitId, startedAt: Date.now() };
+  localStorage.setItem(ACTIVE_TIMER_KEY, JSON.stringify(timer));
+  setRoutineTaskStatus(dateStr, habitId, 'ongoing');
+  window.dispatchEvent(new CustomEvent('labRoutineUpdated'));
+  return timer;
+}
+
+export function stopRoutineTimer() {
+  const timer = getActiveRoutineTimer();
+  localStorage.removeItem(ACTIVE_TIMER_KEY);
+  if (!timer) return null;
+  const elapsedMins = Math.max(1, Math.round((Date.now() - timer.startedAt) / 60000));
+  addRoutineTaskSession(timer.dateStr, timer.habitId, { minutes: elapsedMins });
+  return { ...timer, elapsedMins };
+}
+
 export async function hydrateRoutineFromCloud() {
   const [catRows, habitRows, logRows] = await Promise.all([
     fetchUserLabRows('lab_routine_categories', 'created_at', true),
@@ -256,25 +567,40 @@ export async function hydrateRoutineFromCloud() {
   ]);
 
   if (catRows && catRows.length > 0) {
-    localStorage.setItem(CATEGORIES_KEY, JSON.stringify(catRows.map(r => ({
+    const cloudCats = catRows.map(r => translateLegacyCategory({
       id: r.id,
       label: r.label,
       color: r.color || '#5F6E43'
-    }))));
+    }));
+    const cloudIds = new Set(cloudCats.map(c => c.id));
+    const deletedDefaults = new Set(getDeletedDefaultCatIds());
+    const missingDefaults = DEFAULT_ROUTINE_CATEGORIES.filter(
+      d => !cloudIds.has(d.id) && !deletedDefaults.has(d.id)
+    );
+    const merged = [...missingDefaults, ...cloudCats];
+    localStorage.setItem(CATEGORIES_KEY, JSON.stringify(merged.length > 0 ? merged : DEFAULT_ROUTINE_CATEGORIES));
   }
 
   if (habitRows && habitRows.length > 0) {
-    localStorage.setItem(HABITS_KEY, JSON.stringify(habitRows.map(r => ({
+    const cloudHabits = habitRows.map(r => ({
       id: r.id,
       category: r.category_id || 'dhamma',
       title: r.title,
       description: r.description || '',
       minutes: r.minutes || 15,
       cittaType: r.citta_type || 'kusala'
-    }))));
+    }));
+    const cloudIds = new Set(cloudHabits.map(h => h.id));
+    const deletedDefaults = new Set(getDeletedDefaultHabitIds());
+    const missingDefaults = DEFAULT_HABITS.filter(
+      d => !cloudIds.has(d.id) && !deletedDefaults.has(d.id)
+    );
+    const merged = [...missingDefaults, ...cloudHabits];
+    localStorage.setItem(HABITS_KEY, JSON.stringify(merged.length > 0 ? merged : DEFAULT_HABITS));
   }
 
   if (logRows && logRows.length > 0) {
+    const existingLocal = getAllRoutineLogs();
     const map = {};
     for (const r of logRows) {
       map[r.log_date] = {
@@ -282,6 +608,9 @@ export async function hydrateRoutineFromCloud() {
         wakeTime: r.wake_time || '',
         sleepTime: r.sleep_time || '',
         checkedIds: Array.isArray(r.checked_ids) ? r.checked_ids : [],
+        taskLogs: r.task_logs && typeof r.task_logs === 'object'
+          ? r.task_logs
+          : (existingLocal[r.log_date]?.taskLogs || {}),
         updatedAt: r.updated_at
       };
     }
@@ -304,7 +633,10 @@ export function getRoutineCategoryBreakdown(dateStr, mode = 'auto') {
   const totals = new Map(categories.map(c => [c.id, 0]));
   for (const h of activeHabits) {
     const cat = totals.has(h.category) ? h.category : fallbackId;
-    totals.set(cat, totals.get(cat) + Math.max(1, Number(h.minutes || 15)));
+    const mins = useChecked && log.taskLogs?.[h.id]?.minutes
+      ? log.taskLogs[h.id].minutes
+      : h.minutes;
+    totals.set(cat, totals.get(cat) + Math.max(1, Number(mins || 15)));
   }
 
   return {
@@ -354,7 +686,7 @@ export function getRoutineCategorySeries(rangeDays = 14) {
         const habit = habitById.get(hid);
         if (!habit) continue;
         const cat = Object.prototype.hasOwnProperty.call(row, habit.category) ? habit.category : fallbackId;
-        const mins = Math.max(1, Number(habit.minutes || 15));
+        const mins = Math.max(1, Number(log.taskLogs?.[hid]?.minutes ?? habit.minutes ?? 15));
         row[cat] += mins;
         row.totalMinutes += mins;
       }

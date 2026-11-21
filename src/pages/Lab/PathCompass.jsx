@@ -168,7 +168,7 @@ export default function PathCompass() {
               Reflections on {activeFactorObj.pali} ({factorReflections.length})
             </h3>
             <Link to="/lab/pin-potha" style={{ fontSize: '0.78rem', color: 'var(--lab-accent)', textDecoration: 'none', fontWeight: '600' }}>
-              Open Pin Potha →
+              Open Merit Book →
             </Link>
           </div>
 
@@ -208,7 +208,7 @@ export default function PathCompass() {
                       style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', border: 'none', background: 'transparent', color: '#059669', fontWeight: '600', cursor: 'pointer', padding: 0 }}
                     >
                       <HeartHandshake size={12} />
-                      <span>Log in Pin Potha</span>
+                      <span>Log in Merit Book</span>
                       <ArrowRight size={11} />
                     </button>
                   </div>

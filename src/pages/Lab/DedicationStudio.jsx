@@ -71,15 +71,15 @@ export default function DedicationStudio() {
   const pinEntryMap = Object.fromEntries(pinEntries.map(p => [p.id, p]));
 
   return (
-    <div className="km-lab-page" style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '10px', paddingBottom: '10px' }}>
-      {/* Terracotta Hero Header */}
+    <div className="km-lab-page" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      {/* PATH/OS Hero Header */}
       <div
         style={{
-          borderRadius: '12px',
-          padding: '10px 16px',
-          background: 'linear-gradient(135deg, #A35B3D 0%, #B86F4E 100%)',
-          color: '#FAF8F5',
-          boxShadow: '0 6px 20px rgba(163, 91, 61, 0.16)',
+          borderRadius: '16px',
+          padding: '12px 16px',
+          background: 'linear-gradient(135deg, #0F1115 0%, #0B3BFA 145%)',
+          color: '#F8FAFC',
+          boxShadow: '0 8px 24px rgba(15, 17, 21, 0.16)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -116,7 +116,7 @@ export default function DedicationStudio() {
             }}
           >
             <BookHeart size={13} />
-            <span>පින් පොතට</span>
+            <span>Merit Book</span>
           </button>
           <button
             type="button"
@@ -183,13 +183,13 @@ export default function DedicationStudio() {
             />
 
             <select
-              aria-label="සම්බන්ධ පින් පොත සටහන"
+              aria-label="Linked Merit Book entry"
               value={linkedPinPothaId}
               onChange={(e) => setLinkedPinPothaId(e.target.value)}
               className="km-lab-input"
-              style={{ padding: '6px 9px', fontSize: '0.78rem', fontFamily: 'var(--font-sinhala)' }}
+              style={{ padding: '6px 9px', fontSize: '0.78rem' }}
             >
-              <option value="">— පින් පොතේ සටහනක් සම්බන්ධ කරන්න (විකල්ප) —</option>
+              <option value="">— Link a Merit Book entry (optional) —</option>
               {pinEntries.map(p => (
                 <option key={p.id} value={p.id}>{p.entryDate} · {p.title}</option>
               ))}

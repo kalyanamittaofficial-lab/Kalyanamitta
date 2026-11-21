@@ -196,7 +196,7 @@ export default function ExploreCommunity() {
             Privacy & Public Profile Controls
           </h2>
           <p style={{ fontSize: '0.84rem', color: 'var(--lab-text-muted)', margin: '0 0 16px 0', lineHeight: 1.55 }}>
-            Your personal notes, highlights, and Pin Potha are always private by default. Enabling a public profile only shares your chosen display name, study focus, and bio below.
+            Your personal notes, highlights, and Merit Book are always private by default. Enabling a public profile only shares your chosen display name, study focus, and bio below.
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

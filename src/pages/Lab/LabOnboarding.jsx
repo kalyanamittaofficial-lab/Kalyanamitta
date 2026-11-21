@@ -73,8 +73,8 @@ export default function LabOnboarding() {
             <p className="km-lab-subtitle" style={{ marginBottom: '18px' }}>
               {t(
                 lang,
-                'මෙය හුදු ඩිජිටල් පොත් පුස්තකාලයක් නොවේ. ත්‍රිපිටක සූත්‍ර කියවීම, පෞද්ගලික අවබෝධය සිතියම්ගත කිරීම, එදිනෙදා ප්‍රතිපදාව හා පින් පොත සමඟ සම්බන්ධ කරන සජීවී ධර්ම අධ්‍යයන පරිසරයකි.',
-                'This is more than a digital sutta library. It is a connected ecosystem linking Pāli & Sinhala sutta study, personal knowledge mapping, daily-life practice, and your private Pin Potha.'
+                'මෙය හුදු ඩිජිටල් පොත් පුස්තකාලයක් නොවේ. ත්‍රිපිටක සූත්‍ර කියවීම, පෞද්ගලික අවබෝධය සිතියම්ගත කිරීම, එදිනෙදා ප්‍රතිපදාව හා Merit Book සමඟ සම්බන්ධ කරන සජීවී ධර්ම අධ්‍යයන පරිසරයකි.',
+                'This is more than a digital sutta library. It is a connected ecosystem linking Pāli & Sinhala sutta study, personal knowledge mapping, daily-life practice, and your private Merit Book.'
               )}
             </p>
           </div>
@@ -214,7 +214,7 @@ export default function LabOnboarding() {
               {[
                 { icon: BookOpen, title: t(lang, 'සූත්‍ර කියවනය', 'Sutta Reader'), desc: t(lang, 'පාලි සහ සිංහල ත්‍රිපිටකය කියවන්න, සටහන් තබන්න.', 'Read Pāli & Sinhala suttas, highlight, and annotate.') },
                 { icon: Network, title: t(lang, 'මගේ සිතියම', 'My Map & Path'), desc: t(lang, 'අවබෝධය, සූත්‍ර සහ ප්‍රතිපදාව සම්බන්ධ කරන්න.', 'Connect Path Compass and Knowledge Map nodes.') },
-                { icon: BookHeart, title: t(lang, 'පින් පොත', 'Pin Potha'), desc: t(lang, 'දාන, සීල, භාවනා, පුරුදු සහ දායකත්වයන් සටහන් කරන්න.', 'Record generosity, practice, habits, and contributions.') },
+                { icon: BookHeart, title: 'Merit Book', desc: t(lang, 'දාන, සීල, භාවනා, පුරුදු සහ දායකත්වයන් සටහන් කරන්න.', 'Record generosity, practice, habits, and contributions.') },
                 { icon: Compass, title: t(lang, 'ප්‍රජා ගවේෂණය', 'Explore Maps'), desc: t(lang, 'අන් අය බෙදාගත් සිතියම් ගවේෂණය කරන්න.', 'Explore shared maps while preserving sources.') }
               ].map(card => {
                 const Icon = card.icon;

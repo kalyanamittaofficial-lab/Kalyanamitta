@@ -34,7 +34,6 @@ import LabHome from './pages/Lab/LabHome';
 import SuttaStudy from './pages/SuttaStudy';
 import PersonalRoadmap from './pages/PersonalRoadmap';
 import KnowledgeMap from './pages/Lab/KnowledgeMap';
-import PathCompass from './pages/Lab/PathCompass';
 import PinPotha from './pages/Lab/PinPotha';
 import DedicationStudio from './pages/Lab/DedicationStudio';
 import ExploreCommunity from './pages/Lab/ExploreCommunity';
@@ -42,6 +41,7 @@ import PublicMapView from './pages/Lab/PublicMapView';
 import Collections from './pages/Lab/Collections';
 import LabOnboarding from './pages/Lab/LabOnboarding';
 import DailyRoutine from './pages/Lab/DailyRoutine';
+import ReflectionPage from './pages/Lab/ReflectionPage';
 
 const AdminLayout = React.lazy(() => import('./pages/Admin/AdminLayout'));
 const AdminDashboard = React.lazy(() => import('./pages/Admin/AdminDashboard'));
@@ -120,7 +120,6 @@ function App() {
             <Route path="sutta" element={<SuttaStudy />} />
             <Route path="sutta/:suttaId" element={<SuttaStudy />} />
             <Route path="map" element={<KnowledgeMap />} />
-            <Route path="compass" element={<PathCompass />} />
             <Route path="pin-potha" element={<PinPotha />} />
             <Route path="dedication" element={<DedicationStudio />} />
             <Route path="explore" element={<ExploreCommunity />} />
@@ -128,6 +127,7 @@ function App() {
             <Route path="collections" element={<Collections />} />
             <Route path="onboarding" element={<LabOnboarding />} />
             <Route path="daily-routine" element={<DailyRoutine />} />
+            <Route path="reflection" element={<ReflectionPage />} />
           </Route>
 
           {/* MAIN PUBLIC WEBSITE */}

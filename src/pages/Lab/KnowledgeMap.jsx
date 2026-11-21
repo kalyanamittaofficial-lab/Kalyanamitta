@@ -12,7 +12,16 @@ import {
   BookHeart,
   Network,
   Compass,
-  ListTree
+  ListTree,
+  MapPin,
+  Lightbulb,
+  Calendar,
+  Check,
+  Play,
+  ArrowRight,
+  TrendingUp,
+  Settings2,
+  ChevronsRight
 } from 'lucide-react';
 import {
   getKnowledgeMaps,
@@ -29,7 +38,123 @@ import {
   EDGE_RELATIONS
 } from '../../services/knowledgeMapStore';
 import { getRoadmapItems, getAnnotationSummary } from '../../services/studyRoadmapStore';
+import { getPathReflections } from '../../services/practiceEcosystemStore';
+import { getRoutineHabits, getRoutineLogForDate, getRoutineCategorySeries } from '../../services/dailyRoutineStore';
+import { getTodayKey } from '../../services/cittaLogStore';
 import PaginationBar from '../../components/Lab/PaginationBar';
+
+const JOURNEY_STAGES = [
+  {
+    id: '01',
+    title: 'Notice',
+    focus: 'Recognize bodily sensations, thoughts, and reactions as they arise in daily experience.',
+    progressPct: 100,
+    completed: 5,
+    inProgress: 0,
+    notStarted: 0,
+    nextActionTitle: 'Complete: Mindful Noting',
+    nextActionSub: 'Observe three daily triggers without reacting.',
+    subpaths: [
+      { id: 'study', label: 'Study Path', desc: 'Foundational suttas', done: 6, total: 6, to: '/lab/sutta', tint: 'rgba(11, 59, 250, 0.06)', iconBg: 'rgba(11, 59, 250, 0.12)', iconColor: '#0B3BFA' },
+      { id: 'conduct', label: 'Conduct Path', desc: 'Virtue & restraint', done: 5, total: 5, to: '/lab/pin-potha', tint: 'rgba(245, 158, 11, 0.08)', iconBg: 'rgba(245, 158, 11, 0.16)', iconColor: '#B45309' },
+      { id: 'routine', label: 'Routine Path', desc: 'Daily habits', done: 6, total: 6, to: '/lab/daily-routine', tint: 'rgba(59, 130, 246, 0.06)', iconBg: 'rgba(59, 130, 246, 0.14)', iconColor: '#2563EB' },
+      { id: 'reflection', label: 'Reflection Path', desc: 'Self-observation', done: 4, total: 4, to: '/lab/reflection', tint: 'rgba(16, 185, 129, 0.07)', iconBg: 'rgba(16, 185, 129, 0.15)', iconColor: '#059669' }
+    ]
+  },
+  {
+    id: '02',
+    title: 'Understand',
+    focus: 'See clearly how experience works — its causes, conditions, and results.',
+    progressPct: 68,
+    completed: 4,
+    inProgress: 2,
+    notStarted: 0,
+    nextActionTitle: 'Complete: Causes & Conditions',
+    nextActionSub: 'Understand conditionality and how experience arises.',
+    subpaths: [
+      { id: 'study', label: 'Study Path', desc: 'Sutta inquiry & mapping', done: 3, total: 6, to: '/lab/sutta', tint: 'rgba(11, 59, 250, 0.06)', iconBg: 'rgba(11, 59, 250, 0.12)', iconColor: '#0B3BFA' },
+      { id: 'conduct', label: 'Conduct Path', desc: 'Merit & wholesome action', done: 2, total: 5, to: '/lab/pin-potha', tint: 'rgba(245, 158, 11, 0.08)', iconBg: 'rgba(245, 158, 11, 0.16)', iconColor: '#B45309' },
+      { id: 'routine', label: 'Routine Path', desc: 'Daily Dhamma rhythm', done: 4, total: 6, to: '/lab/daily-routine', tint: 'rgba(59, 130, 246, 0.06)', iconBg: 'rgba(59, 130, 246, 0.14)', iconColor: '#2563EB' },
+      { id: 'reflection', label: 'Reflection Path', desc: 'Pattern investigation', done: 2, total: 4, to: '/lab/reflection', tint: 'rgba(16, 185, 129, 0.07)', iconBg: 'rgba(16, 185, 129, 0.15)', iconColor: '#059669' }
+    ]
+  },
+  {
+    id: '03',
+    title: 'Practice',
+    focus: 'Translate understanding into repeated, deliberate training in meditation and conduct.',
+    progressPct: 35,
+    completed: 2,
+    inProgress: 2,
+    notStarted: 2,
+    nextActionTitle: 'Practice: Breath & Posture',
+    nextActionSub: 'Commit to 20 minutes of steady Ānāpānasati.',
+    subpaths: [
+      { id: 'study', label: 'Study Path', desc: 'Satipaṭṭhāna practice', done: 2, total: 6, to: '/lab/sutta', tint: 'rgba(11, 59, 250, 0.06)', iconBg: 'rgba(11, 59, 250, 0.12)', iconColor: '#0B3BFA' },
+      { id: 'conduct', label: 'Conduct Path', desc: 'Right speech & action', done: 2, total: 5, to: '/lab/pin-potha', tint: 'rgba(245, 158, 11, 0.08)', iconBg: 'rgba(245, 158, 11, 0.16)', iconColor: '#B45309' },
+      { id: 'routine', label: 'Routine Path', desc: 'Consistent sessions', done: 3, total: 6, to: '/lab/daily-routine', tint: 'rgba(59, 130, 246, 0.06)', iconBg: 'rgba(59, 130, 246, 0.14)', iconColor: '#2563EB' },
+      { id: 'reflection', label: 'Reflection Path', desc: 'Evening review', done: 1, total: 4, to: '/lab/reflection', tint: 'rgba(16, 185, 129, 0.07)', iconBg: 'rgba(16, 185, 129, 0.15)', iconColor: '#059669' }
+    ]
+  },
+  {
+    id: '04',
+    title: 'Stabilize',
+    focus: 'Build continuity of mindfulness and emotional steadiness across changing conditions.',
+    progressPct: 15,
+    completed: 1,
+    inProgress: 1,
+    notStarted: 4,
+    nextActionTitle: 'Stabilize: Daily Rhythm',
+    nextActionSub: 'Keep morning and evening anchors uninterrupted.',
+    subpaths: [
+      { id: 'study', label: 'Study Path', desc: 'Samādhi discourses', done: 1, total: 6, to: '/lab/sutta', tint: 'rgba(11, 59, 250, 0.06)', iconBg: 'rgba(11, 59, 250, 0.12)', iconColor: '#0B3BFA' },
+      { id: 'conduct', label: 'Conduct Path', desc: 'Sense restraint', done: 1, total: 5, to: '/lab/pin-potha', tint: 'rgba(245, 158, 11, 0.08)', iconBg: 'rgba(245, 158, 11, 0.16)', iconColor: '#B45309' },
+      { id: 'routine', label: 'Routine Path', desc: '7-day continuity', done: 1, total: 6, to: '/lab/daily-routine', tint: 'rgba(59, 130, 246, 0.06)', iconBg: 'rgba(59, 130, 246, 0.14)', iconColor: '#2563EB' },
+      { id: 'reflection', label: 'Reflection Path', desc: 'Equanimity notes', done: 0, total: 4, to: '/lab/reflection', tint: 'rgba(16, 185, 129, 0.07)', iconBg: 'rgba(16, 185, 129, 0.15)', iconColor: '#059669' }
+    ]
+  },
+  {
+    id: '05',
+    title: 'Serve',
+    focus: 'Express clarity and compassion through generosity, merit sharing, and service.',
+    progressPct: 10,
+    completed: 0,
+    inProgress: 1,
+    notStarted: 5,
+    nextActionTitle: 'Serve: Merit & Generosity',
+    nextActionSub: 'Log an intentional act of dāna or service.',
+    subpaths: [
+      { id: 'study', label: 'Study Path', desc: 'Brahmavihāra suttas', done: 1, total: 6, to: '/lab/sutta', tint: 'rgba(11, 59, 250, 0.06)', iconBg: 'rgba(11, 59, 250, 0.12)', iconColor: '#0B3BFA' },
+      { id: 'conduct', label: 'Conduct Path', desc: 'Dāna & dedication', done: 1, total: 5, to: '/lab/dedication', tint: 'rgba(245, 158, 11, 0.08)', iconBg: 'rgba(245, 158, 11, 0.16)', iconColor: '#B45309' },
+      { id: 'routine', label: 'Routine Path', desc: 'Care & kindness', done: 0, total: 6, to: '/lab/daily-routine', tint: 'rgba(59, 130, 246, 0.06)', iconBg: 'rgba(59, 130, 246, 0.14)', iconColor: '#2563EB' },
+      { id: 'reflection', label: 'Reflection Path', desc: 'Non-self in action', done: 0, total: 4, to: '/lab/reflection', tint: 'rgba(16, 185, 129, 0.07)', iconBg: 'rgba(16, 185, 129, 0.15)', iconColor: '#059669' }
+    ]
+  },
+  {
+    id: '06',
+    title: 'Integrate',
+    focus: 'Live with Dhamma naturally woven into every decision, relationship, and quiet moment.',
+    progressPct: 0,
+    completed: 0,
+    inProgress: 0,
+    notStarted: 6,
+    nextActionTitle: 'Integrate: Whole-Life View',
+    nextActionSub: 'Connect study, practice, and everyday life.',
+    subpaths: [
+      { id: 'study', label: 'Study Path', desc: 'Synthesis & maps', done: 0, total: 6, to: '/lab/sutta', tint: 'rgba(11, 59, 250, 0.06)', iconBg: 'rgba(11, 59, 250, 0.12)', iconColor: '#0B3BFA' },
+      { id: 'conduct', label: 'Conduct Path', desc: 'Natural virtue', done: 0, total: 5, to: '/lab/pin-potha', tint: 'rgba(245, 158, 11, 0.08)', iconBg: 'rgba(245, 158, 11, 0.16)', iconColor: '#B45309' },
+      { id: 'routine', label: 'Routine Path', desc: 'Effortless rhythm', done: 0, total: 6, to: '/lab/daily-routine', tint: 'rgba(59, 130, 246, 0.06)', iconBg: 'rgba(59, 130, 246, 0.14)', iconColor: '#2563EB' },
+      { id: 'reflection', label: 'Reflection Path', desc: 'Clear seeing', done: 0, total: 4, to: '/lab/reflection', tint: 'rgba(16, 185, 129, 0.07)', iconBg: 'rgba(16, 185, 129, 0.15)', iconColor: '#059669' }
+    ]
+  }
+];
+
+function formatDurationCompact(mins) {
+  const h = Math.floor(mins / 60);
+  const m = Math.round(mins % 60);
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
+}
 
 export default function KnowledgeMap() {
   const navigate = useNavigate();
@@ -165,15 +290,15 @@ export default function KnowledgeMap() {
   const pagedOutlineNodes = nodes.slice((safeOutlinePage - 1) * OUTLINE_PER_PAGE, safeOutlinePage * OUTLINE_PER_PAGE);
 
   return (
-    <div className="km-lab-page" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+    <div className="km-lab-page" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       {/* Terracotta Hero & Tab Bar */}
       <div
         style={{
-          borderRadius: '14px',
+          borderRadius: '16px',
           padding: '12px 16px',
-          background: 'linear-gradient(135deg, #A35B3D 0%, #B86F4E 100%)',
-          color: '#FAF8F5',
-          boxShadow: '0 6px 20px rgba(163, 91, 61, 0.16)',
+          background: 'linear-gradient(135deg, #0F1115 0%, #0B3BFA 145%)',
+          color: '#F8FAFC',
+          boxShadow: '0 8px 24px rgba(15, 17, 21, 0.16)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -377,11 +502,11 @@ export default function KnowledgeMap() {
                 </p>
               </div>
               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                <button onClick={() => navigate('/lab/compass')} className="km-lab-btn" style={{ padding: '5px 10px', fontSize: '0.73rem' }}>
-                  අද ප්‍රතිපදාව සටහන් කරන්න
+                <button onClick={() => navigate('/lab/daily-routine')} className="km-lab-btn" style={{ padding: '5px 10px', fontSize: '0.73rem' }}>
+                  Daily Routine
                 </button>
                 <button onClick={() => navigate('/lab/pin-potha')} className="km-lab-btn" style={{ padding: '5px 10px', fontSize: '0.73rem' }}>
-                  පින් පොත හා ආවර්ජන
+                  Merit Book
                 </button>
               </div>
             </div>
@@ -543,7 +668,7 @@ export default function KnowledgeMap() {
                     )}
                     <button onClick={() => navigate(`/lab/pin-potha?title=${encodeURIComponent(selectedNode.label)}`)} className="km-lab-btn">
                       <BookHeart size={13} />
-                      <span>පින් පොතේ සටහනක් තබන්න</span>
+                      <span>Log in Merit Book</span>
                     </button>
 
                     <div style={{ display: 'flex', gap: '6px' }}>
