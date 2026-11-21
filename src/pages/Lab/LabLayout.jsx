@@ -263,7 +263,7 @@ export default function LabLayout() {
               background: isSelected ? 'var(--lab-sidebar-active-bg)' : 'transparent',
               color: isSelected ? 'var(--lab-sidebar-active-text)' : 'var(--lab-sidebar-text)',
               fontWeight: isSelected ? '700' : '500',
-              fontSize: depth === 0 ? '0.82rem' : '0.78rem',
+              fontSize: depth === 0 ? '0.95rem' : '0.89rem',
               fontFamily: 'var(--font-sinhala)',
               textAlign: 'left',
               cursor: 'pointer'
@@ -460,13 +460,13 @@ export default function LabLayout() {
                             color: active ? 'var(--lab-sidebar-active-text)' : 'var(--lab-sidebar-text)',
                             background: active ? 'var(--lab-sidebar-active-bg)' : 'transparent',
                             fontWeight: active ? 600 : 500,
-                            fontSize: '0.87rem',
+                            fontSize: item.sinhalaLabel ? '0.96rem' : '0.91rem',
                             transition: 'all 0.15s ease'
                           }}
                         >
                           <Icon size={17} color={active ? 'var(--lab-sidebar-active-text)' : 'var(--lab-sidebar-muted)'} />
                           {!isSidebarCollapsed && (
-                            <span style={{ fontSize: '0.87rem', lineHeight: 1.25 }}>
+                            <span style={{ fontSize: item.sinhalaLabel ? '0.96rem' : '0.91rem', lineHeight: 1.3 }}>
                               {displayLabel}
                             </span>
                           )}

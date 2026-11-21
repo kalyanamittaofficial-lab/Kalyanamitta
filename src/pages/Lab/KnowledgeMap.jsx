@@ -4,8 +4,6 @@ import {
   Plus,
   Link2,
   Trash2,
-  Lock,
-  Globe,
   BookOpen,
   FileText,
   X,
@@ -160,11 +158,16 @@ export default function KnowledgeMap() {
   const navigate = useNavigate();
   const canvasRef = useRef(null);
   const [activeTab, setActiveTab] = useState('path'); // 'path' | 'graph' | 'outline'
+  const [activeStageId, setActiveStageId] = useState('02');
   const [maps, setMaps] = useState(() => getKnowledgeMaps());
-  const [activeMapId, setActiveMapId] = useState(() => getKnowledgeMaps()[0]?.id || '');
+  const [activeMapId] = useState(() => getKnowledgeMaps()[0]?.id || '');
   const [nodes, setNodes] = useState(() => getMapNodes(getKnowledgeMaps()[0]?.id));
   const [edges, setEdges] = useState(() => getMapEdges(getKnowledgeMaps()[0]?.id));
   const [annotations, setAnnotations] = useState(() => getRoadmapItems());
+  const [reflections, setReflections] = useState(() => getPathReflections());
+  const [habits, setHabits] = useState(() => getRoutineHabits());
+  const [todayLog, setTodayLog] = useState(() => getRoutineLogForDate(getTodayKey()));
+  const [weekSeries, setWeekSeries] = useState(() => getRoutineCategorySeries(7));
 
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [connectSourceId, setConnectSourceId] = useState(null);
@@ -195,23 +198,24 @@ export default function KnowledgeMap() {
       setEdges(getMapEdges(targetId));
     };
     const refreshNotes = () => setAnnotations(getRoadmapItems());
+    const refreshPractice = () => setReflections(getPathReflections());
+    const refreshRoutine = () => {
+      setHabits(getRoutineHabits());
+      setTodayLog(getRoutineLogForDate(getTodayKey()));
+      setWeekSeries(getRoutineCategorySeries(7));
+    };
 
     window.addEventListener('labKnowledgeMapUpdated', refresh);
     window.addEventListener('studyRoadmapUpdated', refreshNotes);
+    window.addEventListener('labPracticeUpdated', refreshPractice);
+    window.addEventListener('labRoutineUpdated', refreshRoutine);
     return () => {
       window.removeEventListener('labKnowledgeMapUpdated', refresh);
       window.removeEventListener('studyRoadmapUpdated', refreshNotes);
+      window.removeEventListener('labPracticeUpdated', refreshPractice);
+      window.removeEventListener('labRoutineUpdated', refreshRoutine);
     };
   }, [activeMapId]);
-
-  const handleSelectMap = (id) => {
-    setActiveMapId(id);
-    setNodes(getMapNodes(id));
-    setEdges(getMapEdges(id));
-    setSelectedNodeId(null);
-    setConnectSourceId(null);
-    setOutlinePage(1);
-  };
 
   const handleConfirmPublish = () => {
     if (!activeMap) return;
@@ -289,259 +293,411 @@ export default function KnowledgeMap() {
   const safeOutlinePage = Math.min(outlinePage, outlineTotalPages);
   const pagedOutlineNodes = nodes.slice((safeOutlinePage - 1) * OUTLINE_PER_PAGE, safeOutlinePage * OUTLINE_PER_PAGE);
 
+  const activeStage = JOURNEY_STAGES.find(s => s.id === activeStageId) || JOURNEY_STAGES[1];
+  const overallJourneyPct = Math.round(
+    JOURNEY_STAGES.reduce((acc, s) => acc + s.progressPct, 0) / JOURNEY_STAGES.length
+  );
+  const checkedHabitsCount = todayLog?.checkedIds?.length || 0;
+  const todayTotalMins = habits
+    .filter(h => (todayLog?.checkedIds || []).includes(h.id))
+    .reduce((acc, h) => acc + (todayLog?.taskLogs?.[h.id]?.minutes ?? h.minutes ?? 15), 0);
+  const activeWeekDays = weekSeries.filter(d => (d.totalMinutes || 0) > 0).length;
+
+  const recentInsightsList = reflections.length > 0
+    ? reflections.slice(0, 3).map(r => ({
+        id: r.id,
+        text: r.intention,
+        time: (r.createdAt || '').slice(5, 10) || 'Recent'
+      }))
+    : [
+        { id: 'i1', text: 'Experience arises through causes and conditions.', time: '2h ago' },
+        { id: 'i2', text: 'Noticing early softens impulsive reactions.', time: '1d ago' },
+        { id: 'i3', text: 'Saw how habits and thought patterns reinforce each other.', time: '2d ago' }
+      ];
+
+  const overallRingR = 20;
+  const overallRingC = 2 * Math.PI * overallRingR;
+  const currentPosR = 34;
+  const currentPosC = 2 * Math.PI * currentPosR;
+  const stageRingR = 22;
+  const stageRingC = 2 * Math.PI * stageRingR;
+
   return (
     <div className="km-lab-page" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-      {/* Terracotta Hero & Tab Bar */}
-      <div
-        style={{
-          borderRadius: '16px',
-          padding: '12px 16px',
-          background: 'linear-gradient(135deg, #0F1115 0%, #0B3BFA 145%)',
-          color: '#F8FAFC',
-          boxShadow: '0 8px 24px rgba(15, 17, 21, 0.16)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '12px'
-        }}
-      >
-        <div>
-          <h1 style={{ fontSize: '1.2rem', fontWeight: '800', margin: '0 0 3px 0', fontFamily: 'var(--font-sinhala)' }}>
-            මගේ ධර්ම සිතියම
-          </h1>
-          <div style={{ fontSize: '0.78rem', color: 'rgba(250, 248, 245, 0.88)', fontFamily: 'var(--font-sinhala)' }}>
-            ත්‍රිපිටක සූත්‍ර, අධ්‍යයන සටහන් හා ප්‍රතිපදාව එකට ගළපන පෞද්ගලික සිතියම
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'minmax(0, 1.82fr) minmax(270px, 1fr)',
+        gap: '12px',
+        alignItems: 'stretch'
+      }}>
+        {/* LEFT MAIN COLUMN */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '9px', minWidth: 0 }}>
+          {/* Hero */}
+          <div className="po-hero-left" style={{ padding: '2px 6px 2px 2px', position: 'relative', overflow: 'hidden' }}>
+            <div className="po-hero-shape" aria-hidden="true" style={{ right: '8px', top: '-18px' }}>
+              <div className="po-hero-stripe" />
+              <div className="po-hero-arc" style={{ width: '150px', height: '150px', left: '14px', top: '40px' }} />
+              <div className="po-hero-arc" style={{ width: '110px', height: '110px', left: '34px', top: '60px' }} />
+            </div>
+            <div style={{ fontSize: '0.68rem', fontWeight: '900', letterSpacing: '0.08em', color: 'var(--lab-text-muted)', marginBottom: '2px', position: 'relative', zIndex: 1 }}>
+              MY MAP
+            </div>
+            <h1 style={{
+              position: 'relative',
+              zIndex: 1,
+              fontSize: 'clamp(1.45rem, 2.2vw, 1.95rem)',
+              fontWeight: '900',
+              letterSpacing: '-0.04em',
+              lineHeight: 1.04,
+              margin: '0 0 4px 0',
+              color: 'var(--lab-text)'
+            }}>
+              My Dhamma <span style={{ color: 'var(--po-blue, #0B3BFA)' }}>Journey</span><span style={{ color: '#c6ff24' }}>.</span>
+            </h1>
+            <p style={{ position: 'relative', zIndex: 1, margin: 0, fontSize: '0.78rem', color: 'var(--lab-text-muted)', lineHeight: 1.38, maxWidth: '470px' }}>
+              From understanding, through practice and steadiness, to living the Dhamma every day.
+            </p>
           </div>
-        </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          <div style={{ display: 'inline-flex', background: 'rgba(255,255,255,0.16)', borderRadius: '9px', padding: '3px', gap: '3px' }}>
+          {/* Summary Stats Strip */}
+          <div className="km-po-card" style={{
+            borderRadius: '18px',
+            padding: '7px 12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '10px',
+            flexWrap: 'wrap'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ position: 'relative', width: '42px', height: '42px', flexShrink: 0 }}>
+                <svg viewBox="0 0 50 50" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
+                  <circle cx="25" cy="25" r={overallRingR} fill="none" stroke="var(--po-track)" strokeWidth="5" />
+                  <circle
+                    cx="25"
+                    cy="25"
+                    r={overallRingR}
+                    fill="none"
+                    stroke="#c6ff24"
+                    strokeWidth="5"
+                    strokeDasharray={`${(overallJourneyPct / 100) * overallRingC} ${overallRingC}`}
+                  />
+                </svg>
+                <span style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', fontSize: '0.68rem', fontWeight: '900', color: 'var(--lab-text)' }}>
+                  {overallJourneyPct}%
+                </span>
+              </div>
+              <div>
+                <div style={{ fontSize: '0.77rem', fontWeight: '800', color: 'var(--lab-text)' }}>Overall Journey</div>
+                <div style={{ fontSize: '0.65rem', color: 'var(--lab-text-muted)' }}>6-stage path view</div>
+              </div>
+            </div>
+
+            <div style={{ height: '26px', width: '1px', background: 'var(--po-card-border)' }} />
+
             {[
-              { id: 'path', label: 'මගේ මාර්ගය', icon: Compass },
-              { id: 'graph', label: 'ධර්ම සිතියම', icon: Network },
-              { id: 'outline', label: 'සැකිල්ල', icon: ListTree }
-            ].map(tab => {
-              const active = activeTab === tab.id;
-              const TabIcon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setActiveTab(tab.id)}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    padding: '5px 10px',
-                    borderRadius: '7px',
-                    border: 'none',
-                    background: active ? '#FAF8F5' : 'transparent',
-                    color: active ? '#231F1B' : '#FAF8F5',
-                    fontSize: '0.76rem',
-                    fontWeight: active ? '700' : '600',
-                    fontFamily: 'var(--font-sinhala)',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <TabIcon size={13} />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          <select
-            aria-label="සිතියම තෝරන්න"
-            value={activeMap?.id || ''}
-            onChange={(e) => handleSelectMap(e.target.value)}
-            style={{
-              padding: '6px 10px',
-              borderRadius: '8px',
-              border: 'none',
-              background: '#FAF8F5',
-              color: '#231F1B',
-              fontSize: '0.78rem',
-              fontWeight: '600',
-              fontFamily: 'var(--font-sinhala)',
-              outline: 'none'
-            }}
-          >
-            {maps.map(m => (
-              <option key={m.id} value={m.id}>{m.title}</option>
+              { value: '6', label: 'Stages' },
+              { value: '4', label: 'Subpaths' },
+              { value: '18', label: 'Practice Areas' }
+            ].map(stat => (
+              <div key={stat.label} style={{ textAlign: 'center', padding: '0 4px' }}>
+                <div style={{ fontSize: '1rem', fontWeight: '900', color: 'var(--lab-text)', lineHeight: 1.05 }}>{stat.value}</div>
+                <div style={{ fontSize: '0.64rem', color: 'var(--lab-text-muted)', fontWeight: '600' }}>{stat.label}</div>
+              </div>
             ))}
-          </select>
 
-          <button
-            type="button"
-            onClick={() => setShowPubPreview(true)}
-            style={{
+            <div style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '5px',
+              gap: '7px',
               padding: '6px 11px',
-              borderRadius: '8px',
-              border: '1px solid rgba(255,255,255,0.28)',
-              background: 'rgba(255,255,255,0.14)',
-              color: '#FAF8F5',
-              fontSize: '0.76rem',
-              fontWeight: '600',
-              fontFamily: 'var(--font-sinhala)',
-              cursor: 'pointer'
-            }}
-          >
-            {activeMap?.visibility === 'public' ? <Globe size={13} /> : <Lock size={13} />}
-            <span>ප්‍රකාශන පෙරදසුන</span>
-          </button>
-        </div>
-      </div>
-
-      {/* TAB 1: MY PATH */}
-      {activeTab === 'path' && (
-        <div className="km-lab-card" style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-            <div style={{ fontWeight: '700', fontSize: '0.96rem', color: 'var(--lab-text)' }}>
-              පෞද්ගලික මාර්ග දිශානතිය
-            </div>
-            <span style={{ fontSize: '0.72rem', color: 'var(--lab-text-muted)' }}>
-              අධ්‍යයනය, ප්‍රතිපත්තිය සහ අභ්‍යන්තර ආවර්ජනය අතර සම්බන්ධතාව
-            </span>
-          </div>
-
-          {/* 1. Ultimate Direction: Nibbana */}
-          <div style={{
-            maxWidth: '480px',
-            width: '100%',
-            margin: '0 auto',
-            padding: '10px 16px',
-            border: '1.5px solid #A35B3D',
-            borderRadius: '12px',
-            background: 'rgba(163, 91, 61, 0.08)',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '0.68rem', fontWeight: '700', color: '#A35B3D', marginBottom: '2px' }}>
-              පරම දිශානතිය
-            </div>
-            <div style={{ fontSize: '1.18rem', fontWeight: '800', color: 'var(--lab-text)' }}>
-              නිවන
-            </div>
-          </div>
-
-          {/* 2. Pativedha — Non-evaluated horizon */}
-          <div style={{
-            maxWidth: '560px',
-            width: '100%',
-            margin: '0 auto',
-            padding: '9px 14px',
-            border: '1px dashed rgba(95, 110, 67, 0.45)',
-            borderRadius: '10px',
-            background: 'rgba(95, 110, 67, 0.06)',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '0.82rem', fontWeight: '700', color: '#5F6E43', marginBottom: '2px' }}>
-              පටිවේධ — ප්‍රත්යක්ෂ අවබෝධය
-            </div>
-            <div style={{ fontSize: '0.73rem', color: 'var(--lab-text-muted)', lineHeight: 1.45 }}>
-              ධර්ම සත්‍යය ප්‍රත්‍යක්ෂව අවබෝධ කිරීම — පුද්ගල සටහන් හෝ යෙදුමේ දත්ත මඟින් තීරණය නොකරයි.
-            </div>
-          </div>
-
-          {/* 3. Mutually Nourishing Cycle: Pariyatti <-> Patipatti */}
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '10px',
-            alignItems: 'stretch'
-          }}>
-            {/* Pariyatti */}
-            <div className="km-lab-card" style={{ flex: '1 1 240px', padding: '12px 14px', background: 'var(--lab-bg-subtle)', borderTop: '3px solid #5F6E43', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '8px' }}>
-              <div>
-                <div style={{ fontWeight: '800', fontSize: '0.9rem', color: '#5F6E43', marginBottom: '2px' }}>
-                  පරියත්ති
-                </div>
-                <div style={{ fontWeight: '600', fontSize: '0.78rem', color: 'var(--lab-text)', marginBottom: '4px' }}>
-                  ධර්මය ඉගෙනීම හා විමසීම
-                </div>
-                <p style={{ fontSize: '0.74rem', color: 'var(--lab-text-muted)', margin: 0, lineHeight: 1.45 }}>
-                  සූත්‍ර, අර්ථකථන, ප්‍රශ්න සහ සම්බන්ධතා
-                </p>
-              </div>
-              <button onClick={() => navigate('/lab/sutta')} className="km-lab-btn" style={{ padding: '5px 11px', fontSize: '0.74rem', alignSelf: 'flex-start' }}>
-                ධර්ම අධ්‍යයනය ආරම්භ කරන්න
-              </button>
-            </div>
-
-            {/* Mutual Nourishment Indicator */}
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '6px 8px',
-              textAlign: 'center',
-              color: '#A35B3D',
-              minWidth: '110px'
+              borderRadius: '12px',
+              background: 'rgba(198, 255, 36, 0.28)',
+              color: '#181A1F'
             }}>
-              <div style={{ fontSize: '1.15rem', fontWeight: '800', lineHeight: 1 }}>↔</div>
-              <div style={{ fontSize: '0.69rem', fontWeight: '700', color: 'var(--lab-text-muted)', marginTop: '4px', lineHeight: 1.4 }}>
-                ඉගෙනීම ↔ ප්‍රතිපත්තිය ↔ ආවර්ජනය
-              </div>
-            </div>
-
-            {/* Patipatti */}
-            <div className="km-lab-card" style={{ flex: '1 1 240px', padding: '12px 14px', background: 'var(--lab-bg-subtle)', borderTop: '3px solid #A35B3D', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '8px' }}>
+              <TrendingUp size={15} color="#181A1F" />
               <div>
-                <div style={{ fontWeight: '800', fontSize: '0.9rem', color: '#A35B3D', marginBottom: '2px' }}>
-                  පටිපත්ති
-                </div>
-                <div style={{ fontWeight: '600', fontSize: '0.78rem', color: 'var(--lab-text)', marginBottom: '4px' }}>
-                  ධර්මය ජීවිතයට එක් කිරීම
-                </div>
-                <p style={{ fontSize: '0.74rem', color: 'var(--lab-text-muted)', margin: 0, lineHeight: 1.45 }}>
-                  සීලය, සමාධිය, ප්‍රඥාව, ජීවන පුරුදු සහ ප්‍රතිපත්ති ආවර්ජන
-                </p>
-              </div>
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                <button onClick={() => navigate('/lab/daily-routine')} className="km-lab-btn" style={{ padding: '5px 10px', fontSize: '0.73rem' }}>
-                  Daily Routine
-                </button>
-                <button onClick={() => navigate('/lab/pin-potha')} className="km-lab-btn" style={{ padding: '5px 10px', fontSize: '0.73rem' }}>
-                  Merit Book
-                </button>
+                <div style={{ fontSize: '0.82rem', fontWeight: '900', lineHeight: 1 }}>+12%</div>
+                <div style={{ fontSize: '0.62rem', fontWeight: '700' }}>Progress (30d)</div>
               </div>
             </div>
           </div>
 
-          {/* 4. Current Self-Reflection & Map Connection */}
-          <div style={{ padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--lab-border)', background: 'var(--lab-bg-subtle)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
-              <span style={{ fontSize: '0.78rem', fontWeight: '700', color: 'var(--lab-text)' }}>
-                මගේ වත්මන් ස්වයං ආවර්ජනය
-              </span>
-              <button
-                type="button"
-                onClick={() => setActiveTab('graph')}
-                className="km-lab-btn-primary"
-                style={{ padding: '4px 11px', fontSize: '0.73rem' }}
-              >
-                ධර්ම සිතියමේ සම්බන්ධතා විමසන්න →
-              </button>
+          {/* THE PATH JOURNEY MAP CARD */}
+          <div className="km-po-card" style={{ borderRadius: '20px', padding: '12px 15px', display: 'flex', flexDirection: 'column', gap: '10px', flex: 1 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Network size={17} color="var(--po-blue, #0B3BFA)" />
+                <div>
+                  <h2 style={{ fontSize: '0.92rem', fontWeight: '850', margin: 0, color: 'var(--lab-text)' }}>
+                    The Path Journey Map
+                  </h2>
+                  <div style={{ fontSize: '0.69rem', color: 'var(--lab-text-muted)' }}>
+                    A structured journey from awareness to integration.
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap' }}>
+                {[
+                  { id: 'path', label: 'Journey Map', icon: Compass },
+                  { id: 'graph', label: 'Knowledge Graph', icon: Network },
+                  { id: 'outline', label: 'Outline', icon: ListTree }
+                ].map(tab => {
+                  const active = activeTab === tab.id;
+                  const TabIcon = tab.icon;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setActiveTab(tab.id)}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '4px 10px',
+                        borderRadius: '999px',
+                        border: `1px solid ${active ? 'transparent' : 'var(--po-card-border)'}`,
+                        background: active ? 'var(--po-blue, #0B3BFA)' : 'var(--po-card-subtle)',
+                        color: active ? '#FFFFFF' : 'var(--lab-text)',
+                        fontSize: '0.7rem',
+                        fontWeight: '700',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <TabIcon size={11} />
+                      <span>{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            <div style={{
-              padding: '8px 12px',
-              borderRadius: '8px',
-              background: '#FAF8F5',
-              borderLeft: '3px solid #A35B3D',
-              fontSize: '0.78rem',
-              color: 'var(--lab-text)',
-              lineHeight: 1.5
-            }}>
-              මට දැන් පැහැදිලි දේ, තවම ගැටලු ඇති දේ සහ වෙනස් කිරීමට අවශ්‍ය දේ
-            </div>
-          </div>
-        </div>
-      )}
+            {/* TAB 1: JOURNEY MAP */}
+            {activeTab === 'path' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {/* 6-Stage Horizontal Stepper */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', gap: '7px', alignItems: 'stretch' }}>
+                  {JOURNEY_STAGES.map((stage, idx) => {
+                    const isSelected = stage.id === activeStage.id;
+                    const isDone = stage.progressPct === 100;
+                    return (
+                      <button
+                        key={stage.id}
+                        type="button"
+                        onClick={() => setActiveStageId(stage.id)}
+                        style={{
+                          position: 'relative',
+                          textAlign: 'left',
+                          padding: '7px 8px 6px',
+                          borderRadius: '12px',
+                          border: `1px solid ${isSelected ? 'var(--po-blue, #0B3BFA)' : 'var(--po-card-border)'}`,
+                          background: isSelected ? 'var(--po-blue, #0B3BFA)' : 'var(--po-card-subtle)',
+                          color: isSelected ? '#FFFFFF' : 'var(--lab-text)',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        {isDone && (
+                          <span style={{
+                            position: 'absolute',
+                            top: '-5px',
+                            right: '5px',
+                            width: '16px',
+                            height: '16px',
+                            borderRadius: '50%',
+                            background: '#c6ff24',
+                            color: '#101214',
+                            display: 'grid',
+                            placeItems: 'center',
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.12)'
+                          }}>
+                            <Check size={10} strokeWidth={3} />
+                          </span>
+                        )}
+                        <div style={{ fontSize: '0.67rem', fontWeight: '800', opacity: isSelected ? 0.9 : 0.65, marginBottom: '1px' }}>
+                          {stage.id}
+                        </div>
+                        <div style={{ fontSize: '0.78rem', fontWeight: '800', lineHeight: 1.15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {stage.title}
+                        </div>
+                        <div style={{ fontSize: '0.61rem', opacity: isSelected ? 0.85 : 0.65, marginTop: '1px' }}>
+                          {idx === 0 ? 'Completed' : isSelected ? 'Active Stage' : `${stage.progressPct}%`}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* 4 Subpaths Tree */}
+                <div style={{
+                  position: 'relative',
+                  paddingLeft: '20px',
+                  marginLeft: '12px',
+                  borderLeft: '2px solid var(--po-blue, #0B3BFA)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px'
+                }}>
+                  {activeStage.subpaths.map(sub => {
+                    const pct = Math.round((sub.done / Math.max(1, sub.total)) * 100);
+                    return (
+                      <div
+                        key={sub.id}
+                        onClick={() => navigate(sub.to)}
+                        style={{
+                          position: 'relative',
+                          display: 'grid',
+                          gridTemplateColumns: 'minmax(160px, 1.3fr) minmax(90px, 1fr) auto auto',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '6px 10px',
+                          borderRadius: '12px',
+                          background: sub.tint,
+                          border: '1px solid var(--po-card-border)',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <span aria-hidden="true" style={{
+                          position: 'absolute',
+                          left: '-20px',
+                          top: '50%',
+                          width: '20px',
+                          height: '2px',
+                          background: 'var(--po-blue, #0B3BFA)'
+                        }} />
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                          <div style={{
+                            width: '24px',
+                            height: '24px',
+                            borderRadius: '7px',
+                            background: sub.iconBg,
+                            color: sub.iconColor,
+                            display: 'grid',
+                            placeItems: 'center',
+                            flexShrink: 0
+                          }}>
+                            <BookOpen size={12} />
+                          </div>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: '0.76rem', fontWeight: '800', color: 'var(--lab-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {sub.label}
+                            </div>
+                            <div style={{ fontSize: '0.64rem', color: 'var(--lab-text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {sub.desc}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ height: '6px', borderRadius: '999px', background: 'var(--po-track)', overflow: 'hidden' }}>
+                          <div style={{ width: `${pct}%`, height: '100%', borderRadius: '999px', background: '#c6ff24' }} />
+                        </div>
+
+                        <span style={{ fontSize: '0.7rem', fontWeight: '800', color: 'var(--lab-text)', fontVariantNumeric: 'tabular-nums' }}>
+                          {sub.done} / {sub.total}
+                        </span>
+
+                        <span style={{
+                          width: '22px',
+                          height: '22px',
+                          borderRadius: '50%',
+                          background: 'var(--po-card-bg)',
+                          border: '1px solid var(--po-card-border)',
+                          display: 'grid',
+                          placeItems: 'center',
+                          color: 'var(--lab-text)'
+                        }}>
+                          <Play size={9} fill="currentColor" />
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Bottom Current Stage Card */}
+                <div style={{
+                  borderRadius: '16px',
+                  border: '1px solid var(--po-card-border)',
+                  background: 'var(--po-card-subtle)',
+                  overflow: 'hidden',
+                  display: 'grid',
+                  gridTemplateColumns: 'minmax(160px, 0.9fr) minmax(200px, 1.35fr) minmax(165px, 0.95fr)',
+                  alignItems: 'stretch'
+                }}>
+                  <div style={{
+                    background: 'var(--po-blue, #0B3BFA)',
+                    color: '#FFFFFF',
+                    padding: '10px 14px',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center'
+                  }}>
+                    <div aria-hidden="true" style={{
+                      position: 'absolute',
+                      right: '-18px',
+                      bottom: '-18px',
+                      width: '54px',
+                      height: '54px',
+                      borderTop: '4px solid #c6ff24',
+                      borderLeft: '4px solid #c6ff24',
+                      transform: 'rotate(-20deg)'
+                    }} />
+                    <div style={{ fontSize: '0.68rem', fontWeight: '700', opacity: 0.85, marginBottom: '1px' }}>Current Stage</div>
+                    <div style={{ fontSize: '1.05rem', fontWeight: '900', letterSpacing: '-0.02em' }}>
+                      {activeStage.id}. {activeStage.title}
+                    </div>
+                  </div>
+
+                  <div style={{ padding: '9px 14px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '3px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.78rem', fontWeight: '800', color: 'var(--lab-text)' }}>
+                      <Settings2 size={13} color="var(--po-blue, #0B3BFA)" />
+                      <span>Stage Focus</span>
+                    </div>
+                    <div style={{ fontSize: '0.69rem', color: 'var(--lab-text-muted)', lineHeight: 1.35 }}>
+                      {activeStage.focus}
+                    </div>
+                  </div>
+
+                  <div style={{ padding: '9px 12px', borderLeft: '1px solid var(--po-card-border)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ position: 'relative', width: '46px', height: '46px', flexShrink: 0 }}>
+                      <svg viewBox="0 0 54 54" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
+                        <circle cx="27" cy="27" r={stageRingR} fill="none" stroke="var(--po-track)" strokeWidth="5.5" />
+                        <circle
+                          cx="27"
+                          cy="27"
+                          r={stageRingR}
+                          fill="none"
+                          stroke="#c6ff24"
+                          strokeWidth="5.5"
+                          strokeDasharray={`${(activeStage.progressPct / 100) * stageRingC} ${stageRingC}`}
+                        />
+                      </svg>
+                      <span style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', fontSize: '0.68rem', fontWeight: '900', color: 'var(--lab-text)' }}>
+                        {activeStage.progressPct}%
+                      </span>
+                    </div>
+
+                    <div style={{ flex: 1, display: 'grid', gap: '2px', fontSize: '0.66rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--lab-text-muted)' }}>
+                        <span>Completed</span>
+                        <strong style={{ color: 'var(--lab-text)' }}>{activeStage.completed}</strong>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--lab-text-muted)' }}>
+                        <span>In Progress</span>
+                        <strong style={{ color: 'var(--lab-text)' }}>{activeStage.inProgress}</strong>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--lab-text-muted)' }}>
+                        <span>Not Started</span>
+                        <strong style={{ color: 'var(--lab-text)' }}>{activeStage.notStarted}</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
       {/* TAB 2: KNOWLEDGE GRAPH */}
       {activeTab === 'graph' && (
@@ -757,6 +913,259 @@ export default function KnowledgeMap() {
           <PaginationBar page={safeOutlinePage} totalPages={outlineTotalPages} onPageChange={setOutlinePage} compact />
         </div>
       )}
+          </div>
+        </div>
+
+        {/* RIGHT SIDEBAR COLUMN */}
+        <aside style={{ display: 'flex', flexDirection: 'column', gap: '9px', minWidth: 0 }}>
+          {/* Current Position (Dark Obsidian Card) */}
+          <article style={{
+            background: '#101216',
+            color: '#FFFFFF',
+            borderRadius: '20px',
+            padding: '11px 14px',
+            border: '1px solid #262930',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '7px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+              <MapPin size={15} color="#FFFFFF" />
+              <span style={{ fontSize: '0.88rem', fontWeight: '800' }}>Current Position</span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div style={{ position: 'relative', width: '68px', height: '68px', flexShrink: 0 }}>
+                <svg viewBox="0 0 84 84" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
+                  <circle cx="42" cy="42" r={currentPosR} fill="none" stroke="#2D3139" strokeWidth="8.5" />
+                  <circle
+                    cx="42"
+                    cy="42"
+                    r={currentPosR}
+                    fill="none"
+                    stroke="#c6ff24"
+                    strokeWidth="8.5"
+                    strokeDasharray={`${(overallJourneyPct / 100) * currentPosC} ${currentPosC}`}
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <span style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', fontSize: '1rem', fontWeight: '900', color: '#FFFFFF' }}>
+                  {overallJourneyPct}%
+                </span>
+              </div>
+
+              <div>
+                <div style={{ fontSize: '0.68rem', fontWeight: '700', color: '#c6ff24', marginBottom: '1px' }}>
+                  Stage {activeStage.id} / 06
+                </div>
+                <div style={{ fontSize: '1.12rem', fontWeight: '900', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+                  {activeStage.title}
+                </div>
+              </div>
+            </div>
+          </article>
+
+          {/* Next Step (Lime Card) */}
+          <article style={{
+            background: '#c6ff24',
+            color: '#101214',
+            borderRadius: '18px',
+            padding: '9px 12px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.82rem', fontWeight: '900' }}>
+              <ChevronsRight size={15} />
+              <span>Next Step</span>
+            </div>
+
+            <div style={{
+              background: '#FFFFFF',
+              color: '#0F1115',
+              borderRadius: '12px',
+              padding: '8px 10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '8px'
+            }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: '0.76rem', fontWeight: '800', marginBottom: '1px' }}>
+                  {activeStage.nextActionTitle}
+                </div>
+                <div style={{ fontSize: '0.66rem', color: '#5B6474', lineHeight: 1.3 }}>
+                  {activeStage.nextActionSub}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => navigate('/lab/sutta')}
+                aria-label="Open next step"
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  border: 'none',
+                  background: '#0B3BFA',
+                  color: '#FFFFFF',
+                  display: 'grid',
+                  placeItems: 'center',
+                  cursor: 'pointer',
+                  flexShrink: 0
+                }}
+              >
+                <ArrowRight size={13} />
+              </button>
+            </div>
+          </article>
+
+          {/* Recent Insights */}
+          <article className="km-po-card" style={{ borderRadius: '18px', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: '7px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.84rem', fontWeight: '800', color: 'var(--lab-text)' }}>
+                <Lightbulb size={15} color="var(--lab-text)" />
+                <span>Recent Insights</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate('/lab/reflection')}
+                style={{
+                  padding: '3px 9px',
+                  borderRadius: '999px',
+                  border: '1px solid var(--po-card-border)',
+                  background: 'var(--po-card-subtle)',
+                  color: 'var(--lab-text)',
+                  fontSize: '0.65rem',
+                  fontWeight: '700',
+                  cursor: 'pointer'
+                }}
+              >
+                View All ({reflections.length || 3}) →
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              {recentInsightsList.map(ins => (
+                <div key={ins.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '7px', fontSize: '0.71rem' }}>
+                  <span style={{
+                    width: '16px',
+                    height: '16px',
+                    borderRadius: '50%',
+                    background: '#c6ff24',
+                    color: '#101214',
+                    display: 'grid',
+                    placeItems: 'center',
+                    flexShrink: 0,
+                    marginTop: '1px'
+                  }}>
+                    <Check size={9} strokeWidth={3} />
+                  </span>
+                  <span style={{ flex: 1, color: 'var(--lab-text)', fontWeight: '600', lineHeight: 1.28 }}>
+                    {ins.text}
+                  </span>
+                  <span style={{ fontSize: '0.63rem', color: 'var(--lab-text-muted)', whiteSpace: 'nowrap' }}>
+                    {ins.time}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          {/* Linked Daily Routine */}
+          <article className="km-po-card" style={{ borderRadius: '18px', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: '7px', flex: 1, justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.84rem', fontWeight: '800', color: 'var(--lab-text)' }}>
+                <Calendar size={15} color="var(--po-blue, #0B3BFA)" />
+                <span>Linked Daily Routine</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate('/lab/daily-routine')}
+                style={{
+                  padding: '3px 9px',
+                  borderRadius: '999px',
+                  border: '1px solid var(--po-card-border)',
+                  background: 'var(--po-card-subtle)',
+                  color: 'var(--lab-text)',
+                  fontSize: '0.65rem',
+                  fontWeight: '700',
+                  cursor: 'pointer'
+                }}
+              >
+                Open Routine →
+              </button>
+            </div>
+
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '8px',
+              padding: '6px 9px',
+              borderRadius: '10px',
+              background: 'var(--po-card-subtle)',
+              border: '1px solid var(--po-card-border)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.7rem', minWidth: 0 }}>
+                <span style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#c6ff24', color: '#101214', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                  <Check size={9} strokeWidth={3} />
+                </span>
+                <span style={{ color: 'var(--lab-text)', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  Today: {formatDurationCompact(todayTotalMins)} ({checkedHabitsCount}/{habits.length} tasks)
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate('/lab/daily-routine')}
+                style={{
+                  padding: '2px 7px',
+                  borderRadius: '999px',
+                  border: '1px solid var(--po-card-border)',
+                  background: 'var(--po-card-bg)',
+                  color: 'var(--lab-text)',
+                  fontSize: '0.62rem',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  flexShrink: 0
+                }}
+              >
+                View Tasks
+              </button>
+            </div>
+
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.69rem', marginBottom: '5px' }}>
+                <span style={{ fontWeight: '700', color: 'var(--lab-text)' }}>Weekly Practice Rhythm</span>
+                <span style={{ color: 'var(--lab-text-muted)', fontWeight: '700' }}>{activeWeekDays} / 7 days</span>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '6px', alignItems: 'end', height: '42px' }}>
+                {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((lbl, idx) => {
+                  const dayItem = weekSeries[idx];
+                  const mins = dayItem?.totalMinutes || 0;
+                  const hPct = mins > 0 ? Math.max(30, Math.min(100, Math.round((mins / 90) * 100))) : 28;
+                  const isActive = mins > 0 || idx < 4;
+                  return (
+                    <div key={`${lbl}-${idx}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', height: '100%' }}>
+                      <div style={{ flex: 1, width: '100%', maxWidth: '18px', display: 'flex', alignItems: 'flex-end' }}>
+                        <div style={{
+                          width: '100%',
+                          height: `${isActive ? Math.max(45, hPct) : 28}%`,
+                          borderRadius: '5px',
+                          background: isActive ? '#c6ff24' : 'var(--po-track)'
+                        }} />
+                      </div>
+                      <span style={{ fontSize: '0.62rem', fontWeight: '700', color: 'var(--lab-text-muted)' }}>{lbl}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </article>
+        </aside>
+      </div>
 
       {/* Add Node Modal */}
       {showAddNode && (

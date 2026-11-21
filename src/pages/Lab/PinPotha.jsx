@@ -1,6 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { BookHeart, Plus, Trash2, Sparkles, BookOpen, ArrowRight, History, Repeat, FileUp, X, Check } from 'lucide-react';
+import {
+  BookHeart,
+  Plus,
+  Trash2,
+  Sparkles,
+  BookOpen,
+  History,
+  Repeat,
+  FileUp,
+  X,
+  Check,
+  Layers,
+  Calendar,
+  Tag,
+  Flame,
+  Pencil,
+  Link2,
+  Clock
+} from 'lucide-react';
 import {
   PIN_POTHA_TYPES,
   getPinPothaEntries,
@@ -291,6 +309,61 @@ export default function PinPotha() {
   const safeHistoryPage = Math.min(historyPage, historyTotalPages);
   const pagedHistoryRows = historyRows.slice((safeHistoryPage - 1) * PIN_ITEMS_PER_PAGE, safeHistoryPage * PIN_ITEMS_PER_PAGE);
 
+  const { thisWeekCount, weekPct, mostActiveCategory, streakDays } = useMemo(() => {
+    const now = new Date();
+    const sevenDaysAgo = new Date(now);
+    sevenDaysAgo.setDate(now.getDate() - 7);
+    const prevWeekStart = new Date(now);
+    prevWeekStart.setDate(now.getDate() - 14);
+    const sevenStr = sevenDaysAgo.toISOString().slice(0, 10);
+    const prevStr = prevWeekStart.toISOString().slice(0, 10);
+
+    let weekActs = 0;
+    let prevActs = 0;
+    const catCounts = {};
+    const dateSet = new Set();
+
+    entries.forEach(item => {
+      const d = item.entryDate || '';
+      if (d) dateSet.add(d);
+      if (d >= sevenStr) weekActs += 1;
+      else if (d >= prevStr && d < sevenStr) prevActs += 1;
+      const key = item.entryType || 'sila';
+      catCounts[key] = (catCounts[key] || 0) + 1;
+    });
+
+    const topKey = Object.entries(catCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+    const topLabel = topKey ? (PIN_POTHA_TYPES[topKey]?.label || topKey) : '—';
+    const pct = prevActs > 0
+      ? Math.round(((weekActs - prevActs) / prevActs) * 100)
+      : (weekActs > 0 ? 100 : 0);
+
+    // Consecutive or recent active days streak
+    const sortedDates = Array.from(dateSet).sort((a, b) => b.localeCompare(a));
+    let streak = 0;
+    if (sortedDates.length > 0) {
+      streak = 1;
+      for (let i = 1; i < sortedDates.length; i++) {
+        const prevD = new Date(sortedDates[i - 1]);
+        const currD = new Date(sortedDates[i]);
+        const diffDays = Math.round((prevD - currD) / 86400000);
+        if (diffDays === 1) streak += 1;
+        else break;
+      }
+      // If entries exist but aren't consecutive, show active days count if > 1 only when consecutive; otherwise 1-day or total unique days
+      if (streak === 1 && sortedDates.length > 1) {
+        streak = sortedDates.length;
+      }
+    }
+
+    return {
+      thisWeekCount: weekActs,
+      weekPct: pct,
+      mostActiveCategory: topLabel,
+      streakDays: streak
+    };
+  }, [entries]);
+
   const pinTabs = [
     { id: 'overview', label: 'Overview' },
     { id: 'amisa', label: 'Āmisa & Dāna' },
@@ -302,32 +375,81 @@ export default function PinPotha() {
 
   return (
     <div className="km-lab-page" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-      {/* PATH/OS Hero & Tab Bar */}
-      <div
-        style={{
-          borderRadius: '16px',
-          padding: '12px 16px',
-          background: 'linear-gradient(135deg, #0F1115 0%, #0B3BFA 145%)',
-          color: '#F8FAFC',
-          boxShadow: '0 8px 24px rgba(15, 17, 21, 0.16)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '8px'
-        }}
-      >
-        <div>
-          <h1 style={{ fontSize: '1.1rem', fontWeight: '800', margin: '0 0 2px 0' }}>
-            My Merit Book ({entries.length})
-          </h1>
-          <div style={{ fontSize: '0.73rem', color: 'rgba(250, 248, 245, 0.88)' }}>
-            Personal wholesome deeds, Buddha Pūjā, and Dhamma study journal
+      {/* PATH/OS Hero Header */}
+      <div style={{
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+        padding: '4px 2px 2px',
+        overflow: 'hidden'
+      }}>
+        {/* Subtle geometric decorative shapes */}
+        <div aria-hidden="true" style={{
+          position: 'absolute',
+          right: '140px',
+          top: '-6px',
+          width: '74px',
+          height: '36px',
+          borderRadius: '10px',
+          background: 'rgba(235, 224, 206, 0.55)',
+          transform: 'skewX(-28deg)',
+          pointerEvents: 'none'
+        }} />
+        <div aria-hidden="true" style={{
+          position: 'absolute',
+          right: '38px',
+          top: '-4px',
+          width: '92px',
+          height: '40px',
+          borderRadius: '10px',
+          background: 'rgba(198, 255, 36, 0.72)',
+          transform: 'skewX(-28deg)',
+          pointerEvents: 'none'
+        }} />
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', position: 'relative', zIndex: 1 }}>
+          <span style={{
+            width: '4px',
+            height: '30px',
+            borderRadius: '999px',
+            background: 'var(--po-lime, #c6ff24)',
+            flexShrink: 0
+          }} />
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <h1 style={{ fontSize: '1.55rem', fontWeight: '900', letterSpacing: '-0.03em', margin: 0, color: 'var(--lab-text)' }}>
+                My Merit Book
+              </h1>
+              <span style={{
+                padding: '2px 9px',
+                borderRadius: '999px',
+                background: 'rgba(198, 255, 36, 0.45)',
+                color: '#1b1d20',
+                fontSize: '0.82rem',
+                fontWeight: '800'
+              }}>
+                ({entries.length})
+              </span>
+            </div>
+            <p style={{ margin: '2px 0 0 0', fontSize: '0.82rem', color: 'var(--lab-text-muted)' }}>
+              Personal wholesome deeds, Buddha Pūjā, and Dhamma study journal.
+            </p>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          <div style={{ display: 'inline-flex', background: 'rgba(255,255,255,0.16)', borderRadius: '9px', padding: '3px', gap: '3px', flexWrap: 'wrap' }}>
+        {/* Tab Bar & Import Row */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '4px',
+            borderRadius: '999px',
+            background: 'var(--po-card-bg)',
+            border: '1px solid var(--po-card-border)',
+            flexWrap: 'wrap'
+          }}>
             {pinTabs.map(tab => {
               const active = activeTab === tab.id;
               return (
@@ -343,14 +465,15 @@ export default function PinPotha() {
                     if (tab.id === 'dedication') setEntryType('buddha_vandana');
                   }}
                   style={{
-                    padding: '5px 10px',
-                    borderRadius: '7px',
+                    padding: '6px 13px',
+                    borderRadius: '999px',
                     border: 'none',
-                    background: active ? '#FAF8F5' : 'transparent',
-                    color: active ? '#231F1B' : '#FAF8F5',
-                    fontSize: '0.75rem',
+                    background: active ? 'var(--po-blue, #0B3BFA)' : 'transparent',
+                    color: active ? '#FFFFFF' : 'var(--lab-text-muted)',
+                    fontSize: '0.78rem',
                     fontWeight: active ? '700' : '600',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
                   }}
                 >
                   {tab.label}
@@ -362,63 +485,130 @@ export default function PinPotha() {
           <button
             type="button"
             onClick={() => setShowBulkModal(true)}
+            className="km-po-card"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '5px',
-              padding: '6px 11px',
-              borderRadius: '8px',
-              border: '1px solid rgba(255,255,255,0.28)',
-              background: 'rgba(255,255,255,0.14)',
-              color: '#FAF8F5',
-              fontSize: '0.75rem',
-              fontWeight: '600',
+              gap: '6px',
+              padding: '7px 14px',
+              borderRadius: '999px',
+              color: 'var(--lab-text)',
+              fontSize: '0.78rem',
+              fontWeight: '700',
               cursor: 'pointer'
             }}
           >
-            <FileUp size={13} />
+            <FileUp size={14} />
             <span>Import from Text</span>
           </button>
         </div>
       </div>
 
-      {entries.length > 0 && (
-        <div className="km-lab-card" style={{ padding: '6px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-          <div style={{ fontSize: '0.77rem', color: 'var(--lab-text-muted)' }}>
-            <Repeat size={12} style={{ verticalAlign: 'middle', marginRight: '6px' }} />
-            For full merit dedications and Dhamma Dāna management:
+      {/* 4 KPI Summary Cards */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+        gap: '10px'
+      }}>
+        <div className="km-po-card" style={{ borderRadius: '18px', padding: '11px 14px', display: 'flex', alignItems: 'center', gap: '11px' }}>
+          <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'rgba(11, 59, 250, 0.1)', color: 'var(--po-blue, #0B3BFA)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+            <Layers size={16} />
           </div>
-          <button className="km-lab-btn-primary" onClick={() => navigate('/lab/dedication')} style={{ padding: '4px 10px', fontSize: '0.73rem' }}>
-            <Sparkles size={12} />
-            <span>Dedication Page</span>
-          </button>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: '1.05rem', fontWeight: '850', color: 'var(--lab-text)', lineHeight: 1.1 }}>{entries.length}</div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--lab-text-muted)', marginTop: '2px' }}>Total Entries</div>
+          </div>
         </div>
-      )}
+
+        <div className="km-po-card" style={{ borderRadius: '18px', padding: '11px 14px', display: 'flex', alignItems: 'center', gap: '11px' }}>
+          <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'rgba(22, 163, 74, 0.1)', color: '#16a34a', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+            <Calendar size={16} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '1.05rem', fontWeight: '850', color: 'var(--lab-text)', lineHeight: 1.1 }}>{thisWeekCount}</span>
+              {weekPct !== 0 && (
+                <span style={{ padding: '2px 7px', borderRadius: '999px', background: 'rgba(198, 255, 36, 0.45)', color: '#166534', fontSize: '0.68rem', fontWeight: '800' }}>
+                  {weekPct > 0 ? `+${weekPct}%` : `${weekPct}%`}
+                </span>
+              )}
+            </div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--lab-text-muted)', marginTop: '2px' }}>This Week&apos;s Acts</div>
+          </div>
+        </div>
+
+        <div className="km-po-card" style={{ borderRadius: '18px', padding: '11px 14px', display: 'flex', alignItems: 'center', gap: '11px' }}>
+          <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'rgba(124, 58, 237, 0.1)', color: '#7c3aed', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+            <Tag size={16} />
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: '0.92rem', fontWeight: '850', color: 'var(--lab-text)', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {mostActiveCategory}
+            </div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--lab-text-muted)', marginTop: '2px' }}>Most Active Category</div>
+          </div>
+        </div>
+
+        <div className="km-po-card" style={{ borderRadius: '18px', padding: '11px 14px', display: 'flex', alignItems: 'center', gap: '11px' }}>
+          <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'rgba(5, 150, 105, 0.1)', color: '#059669', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+            <Flame size={16} />
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: '1rem', fontWeight: '850', color: 'var(--lab-text)', lineHeight: 1.1 }}>{streakDays}-Day Streak</div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--lab-text-muted)', marginTop: '2px' }}>Consistency</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Dedication Strip */}
+      <div className="km-po-card" style={{
+        borderRadius: '14px',
+        padding: '8px 14px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '8px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.78rem', color: 'var(--lab-text-muted)' }}>
+          <Repeat size={13} color="var(--lab-text-muted)" />
+          <span>For full merit dedications and Dhamma Dāna management:</span>
+        </div>
+        <button
+          type="button"
+          className="km-lab-btn-primary"
+          onClick={() => navigate('/lab/dedication')}
+          style={{ padding: '6px 14px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: '700' }}
+        >
+          <Sparkles size={13} />
+          <span>Dedication Page</span>
+        </button>
+      </div>
 
       {activeTab === 'history' ? (
-        <div className="km-lab-card" style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div className="km-po-card" style={{ borderRadius: '22px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <History size={16} color="#A35B3D" />
-            <h2 style={{ fontSize: '0.94rem', fontWeight: '700', margin: 0 }}>
+            <History size={16} color="var(--po-blue, #0B3BFA)" />
+            <h2 style={{ fontSize: '0.96rem', fontWeight: '800', margin: 0 }}>
               Chronological Reflection History ({historyRows.length})
             </h2>
           </div>
           {historyRows.length === 0 ? (
-            <p style={{ color: 'var(--lab-text-muted)', fontSize: '0.82rem', margin: 0 }}>
+            <p style={{ color: 'var(--lab-text-muted)', fontSize: '0.84rem', margin: 0 }}>
               No reflection history yet.
             </p>
           ) : (
             <>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
                 {pagedHistoryRows.map(row => (
-                  <div key={row.id} style={{ padding: '6px 10px', borderRadius: '8px', background: 'var(--lab-bg-subtle)', border: '1px solid var(--lab-border)', borderLeft: '3px solid #5F6E43' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: 'var(--lab-text-muted)', marginBottom: '2px' }}>
+                  <div key={row.id} style={{ padding: '9px 12px', borderRadius: '12px', background: 'var(--po-card-subtle)', border: '1px solid var(--po-card-border)', borderLeft: '4px solid #5F6E43' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--lab-text-muted)', marginBottom: '2px' }}>
                       <span style={{ fontWeight: '700', color: '#5F6E43' }}>{row.kind}</span>
                       <span style={{ fontFamily: 'monospace' }}>{row.date}</span>
                     </div>
-                    <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '1.2rem', lineHeight: 1.35 }}>
+                    <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '1rem', lineHeight: 1.4, fontFamily: 'var(--font-sinhala)' }}>
                       <span style={{ fontWeight: '700', color: 'var(--lab-text)' }}>{row.title}</span>
-                      {row.body && <span style={{ fontSize: '1rem', color: 'var(--lab-text-muted)' }}> — {row.body}</span>}
+                      {row.body && <span style={{ fontSize: '0.92rem', color: 'var(--lab-text-muted)' }}> — {row.body}</span>}
                     </div>
                   </div>
                 ))}
@@ -428,53 +618,82 @@ export default function PinPotha() {
           )}
         </div>
       ) : (
-      <>
-      <div className="km-lab-routine-grid">
-        {/* Left: New Merit Book Entry Form */}
-        <form onSubmit={handleSubmit} className="km-lab-card" style={{ padding: '12px 14px' }}>
-          <h2 style={{ fontSize: '0.92rem', fontWeight: '700', margin: '0 0 8px 0', color: 'var(--lab-text)' }}>
-            Add New Merit Entry
-          </h2>
+      <div className="km-lab-routine-grid" style={{ gap: '14px', alignItems: 'start' }}>
+        {/* Left: Add New Merit Entry Form */}
+        <form onSubmit={handleSubmit} className="km-po-card" style={{ borderRadius: '22px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '11px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '34px', height: '34px', borderRadius: '11px', background: 'rgba(11, 59, 250, 0.1)', color: 'var(--po-blue, #0B3BFA)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+              <Pencil size={15} />
+            </div>
+            <div>
+              <h2 style={{ fontSize: '0.96rem', fontWeight: '850', margin: 0, color: 'var(--lab-text)' }}>
+                Add New Merit Entry
+              </h2>
+              <p style={{ margin: '1px 0 0 0', fontSize: '0.72rem', color: 'var(--lab-text-muted)' }}>
+                Record a wholesome action, offering, practice, study or reflection.
+              </p>
+            </div>
+          </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 130px', gap: '6px' }}>
-              <select
-                value={entryType}
-                onChange={(e) => setEntryType(e.target.value)}
-                className="km-lab-input"
-                style={{ padding: '6px 8px', fontSize: '0.8rem' }}
-              >
-                {Object.values(PIN_POTHA_TYPES).map(tp => (
-                  <option key={tp.id} value={tp.id}>{tp.label}</option>
-                ))}
-              </select>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 132px', gap: '8px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: '700', color: 'var(--lab-text)', marginBottom: '4px' }}>
+                  Category
+                </label>
+                <select
+                  value={entryType}
+                  onChange={(e) => setEntryType(e.target.value)}
+                  className="km-lab-input"
+                  style={{ padding: '7px 9px', fontSize: '0.8rem', borderRadius: '10px' }}
+                >
+                  {Object.values(PIN_POTHA_TYPES).map(tp => (
+                    <option key={tp.id} value={tp.id}>{tp.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: '700', color: 'var(--lab-text)', marginBottom: '4px' }}>
+                  Date
+                </label>
+                <input
+                  type="date"
+                  value={entryDate}
+                  onChange={(e) => setEntryDate(e.target.value)}
+                  className="km-lab-input"
+                  style={{ padding: '7px 8px', fontSize: '0.78rem', borderRadius: '10px' }}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: '700', color: 'var(--lab-text)', marginBottom: '4px' }}>
+                Title (optional)
+              </label>
               <input
-                type="date"
-                value={entryDate}
-                onChange={(e) => setEntryDate(e.target.value)}
+                type="text"
+                required
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g., Offering Dāna / Buddha Pūjā"
                 className="km-lab-input"
-                style={{ padding: '6px 6px', fontSize: '0.78rem' }}
+                style={{ padding: '8px 10px', fontSize: '0.88rem', fontFamily: 'var(--font-sinhala)', borderRadius: '10px' }}
               />
             </div>
 
-            <input
-              type="text"
-              required
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g., Offering Dāna / Buddha Pūjā"
-              className="km-lab-input"
-              style={{ padding: '7px 10px', fontSize: '1.12rem', fontFamily: 'var(--font-sinhala)' }}
-            />
-
-            <textarea
-              rows={2}
-              value={reflection}
-              onChange={(e) => setReflection(e.target.value)}
-              placeholder="Clarity of mind & practice reflection..."
-              className="km-lab-input"
-              style={{ padding: '7px 10px', fontSize: '1.05rem', fontFamily: 'var(--font-sinhala)', resize: 'vertical' }}
-            />
+            <div>
+              <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: '700', color: 'var(--lab-text)', marginBottom: '4px' }}>
+                Reflection
+              </label>
+              <textarea
+                rows={2}
+                value={reflection}
+                onChange={(e) => setReflection(e.target.value)}
+                placeholder="Clarity of mind & practice reflection..."
+                className="km-lab-input"
+                style={{ padding: '8px 10px', fontSize: '0.86rem', fontFamily: 'var(--font-sinhala)', resize: 'vertical', borderRadius: '10px' }}
+              />
+            </div>
 
             {renderTimeModeFields({
               mode: timeMode,
@@ -492,37 +711,67 @@ export default function PinPotha() {
               onMinutesChange: setDurationMinutes
             })}
 
-            <input
-              type="text"
-              value={linkedSuttaKey}
-              onChange={(e) => setLinkedSuttaKey(e.target.value)}
-              placeholder="Linked Sutta Key (optional)"
-              className="km-lab-input"
-              style={{ padding: '6px 9px', fontSize: '0.78rem' }}
-            />
+            <div>
+              <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: '700', color: 'var(--lab-text)', marginBottom: '4px' }}>
+                Linked Sutta Key (optional)
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Link2 size={13} color="var(--lab-text-muted)" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+                <input
+                  type="text"
+                  value={linkedSuttaKey}
+                  onChange={(e) => setLinkedSuttaKey(e.target.value)}
+                  placeholder="e.g., Dhammacakkappavattana Sutta (SN 56.11)"
+                  className="km-lab-input"
+                  style={{ padding: '7px 10px 7px 30px', fontSize: '0.78rem', borderRadius: '10px' }}
+                />
+              </div>
+            </div>
 
             <button
               type="submit"
               className="km-lab-btn-primary"
-              style={{ justifyContent: 'center', padding: '7px', borderRadius: '9px', fontSize: '0.8rem' }}
+              style={{ justifyContent: 'center', padding: '9px 12px', borderRadius: '12px', fontSize: '0.82rem', fontWeight: '700', marginTop: '2px' }}
             >
-              <Plus size={14} />
+              <Plus size={15} />
               <span>Save to Merit Book</span>
             </button>
           </div>
         </form>
 
-        {/* Right: Merit Book Entries Feed */}
-        <div className="km-lab-card" style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '8px', minWidth: 0, overflow: 'hidden' }}>
-          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+        {/* Right: Merit Entries Feed */}
+        <div className="km-po-card" style={{ borderRadius: '22px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '11px', minWidth: 0, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '34px', height: '34px', borderRadius: '11px', background: 'var(--po-card-subtle)', color: 'var(--lab-text)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+              <Layers size={15} />
+            </div>
+            <div>
+              <h2 style={{ fontSize: '0.96rem', fontWeight: '850', margin: 0, color: 'var(--lab-text)' }}>
+                Merit Entries
+              </h2>
+              <p style={{ margin: '1px 0 0 0', fontSize: '0.72rem', color: 'var(--lab-text-muted)' }}>
+                Your recorded wholesome deeds, practice, study and offerings.
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
             <button
               type="button"
               onClick={() => {
                 setFilterType('all');
                 setPinPage(1);
               }}
-              className={filterType === 'all' ? 'km-lab-btn-primary' : 'km-lab-btn'}
-              style={{ padding: '3px 8px', fontSize: '0.7rem' }}
+              style={{
+                padding: '4px 11px',
+                borderRadius: '999px',
+                border: filterType === 'all' ? '1px solid var(--po-blue, #0B3BFA)' : '1px solid var(--po-card-border)',
+                background: filterType === 'all' ? 'var(--po-blue, #0B3BFA)' : 'var(--po-card-subtle)',
+                color: filterType === 'all' ? '#FFFFFF' : 'var(--lab-text-muted)',
+                fontSize: '0.71rem',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
             >
               All ({entries.length})
             </button>
@@ -536,10 +785,21 @@ export default function PinPotha() {
                     setFilterType(active ? 'all' : tp.id);
                     setPinPage(1);
                   }}
-                  className={active ? 'km-lab-btn-primary' : 'km-lab-btn'}
-                  style={{ padding: '3px 8px', fontSize: '0.7rem', gap: '4px' }}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '4px 10px',
+                    borderRadius: '999px',
+                    border: `1px solid ${active ? 'var(--po-blue, #0B3BFA)' : 'var(--po-card-border)'}`,
+                    background: active ? 'var(--po-blue, #0B3BFA)' : 'var(--po-card-subtle)',
+                    color: active ? '#FFFFFF' : 'var(--lab-text-muted)',
+                    fontSize: '0.71rem',
+                    fontWeight: '700',
+                    cursor: 'pointer'
+                  }}
                 >
-                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: active ? '#FAF8F5' : tp.color }} />
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: active ? '#FFFFFF' : tp.color }} />
                   <span>{tp.label}</span>
                 </button>
               );
@@ -547,55 +807,65 @@ export default function PinPotha() {
           </div>
 
           {pagedPinEntries.length === 0 ? (
-            <div style={{ padding: '22px 14px', textAlign: 'center', color: 'var(--lab-text-muted)', background: 'var(--lab-bg-subtle)', borderRadius: '10px' }}>
-              <BookHeart size={22} style={{ opacity: 0.45, marginBottom: '4px' }} />
-              <div style={{ fontSize: '0.82rem' }}>No entries in your Merit Book yet.</div>
+            <div style={{ padding: '26px 14px', textAlign: 'center', color: 'var(--lab-text-muted)', background: 'var(--po-card-subtle)', borderRadius: '14px' }}>
+              <BookHeart size={24} style={{ opacity: 0.45, marginBottom: '6px' }} />
+              <div style={{ fontSize: '0.84rem' }}>No entries in your Merit Book yet.</div>
             </div>
           ) : (
             <>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {pagedPinEntries.map(item => {
                   const typeCfg = PIN_POTHA_TYPES[item.entryType] || PIN_POTHA_TYPES.sila;
+                  const openEdit = () => setEditingEntry({
+                    id: item.id,
+                    entryType: item.entryType || 'sila',
+                    entryDate: item.entryDate || new Date().toISOString().slice(0, 10),
+                    title: item.title || '',
+                    reflection: item.reflection || '',
+                    durationMinutes: String(item.durationMinutes || 30),
+                    linkedSuttaKey: item.linkedSuttaKey || '',
+                    ...deriveTimeModeState(item)
+                  });
                   return (
                     <div
                       key={item.id}
-                      onClick={() => setEditingEntry({
-                        id: item.id,
-                        entryType: item.entryType || 'sila',
-                        entryDate: item.entryDate || new Date().toISOString().slice(0, 10),
-                        title: item.title || '',
-                        reflection: item.reflection || '',
-                        durationMinutes: String(item.durationMinutes || 30),
-                        linkedSuttaKey: item.linkedSuttaKey || '',
-                        ...deriveTimeModeState(item)
-                      })}
-                      className="km-lab-card-interactive"
+                      onClick={openEdit}
                       style={{
-                        padding: '6px 10px',
-                        borderRadius: '8px',
-                        background: 'var(--lab-bg-subtle)',
-                        border: '1px solid var(--lab-border)',
+                        padding: '10px 13px',
+                        borderRadius: '14px',
+                        background: 'var(--po-card-bg)',
+                        border: '1px solid var(--po-card-border)',
                         borderLeft: `4px solid ${typeCfg.color}`,
+                        boxShadow: '0 2px 8px rgba(15, 17, 21, 0.04)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '12px',
                         cursor: 'pointer'
                       }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', minWidth: 0, flexWrap: 'wrap' }}>
-                          <span style={{ fontSize: '0.67rem', fontWeight: '700', color: typeCfg.color, background: `${typeCfg.color}18`, padding: '1px 7px', borderRadius: '999px' }}>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' }}>
+                          <span style={{ fontSize: '0.69rem', fontWeight: '700', color: typeCfg.color, background: `${typeCfg.color}18`, padding: '2px 8px', borderRadius: '999px' }}>
                             {typeCfg.label}
                           </span>
-                          {item.scheduleType && item.scheduleType !== 'once' && (
-                            <span className="km-lab-tag" style={{ fontSize: '0.66rem', padding: '1px 6px' }}>
-                              {item.scheduleType === 'daily' && 'Daily'}
-                              {item.scheduleType === 'poya' && 'Poya Days'}
-                              {item.scheduleType === 'range' && (item.endDate ? `${item.entryDate} → ${item.endDate}` : `${item.durationDays || 7} days`)}
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', color: 'var(--lab-text-muted)', fontFamily: 'monospace' }}>
+                            <Calendar size={11} />
+                            {item.scheduleType === 'range' && item.endDate
+                              ? `${item.entryDate} → ${item.endDate}`
+                              : item.entryDate}
+                          </span>
+                          {item.scheduleType && item.scheduleType !== 'once' && item.scheduleType !== 'range' && (
+                            <span className="km-lab-tag" style={{ fontSize: '0.67rem', padding: '1px 7px' }}>
+                              {item.scheduleType === 'daily' ? 'Daily' : 'Poya Days'}
                             </span>
                           )}
-                          <span style={{ fontSize: '0.68rem', color: 'var(--lab-text-muted)', fontFamily: 'monospace' }}>
-                            {item.entryDate}
-                          </span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                          {(item.durationMinutes || 30) > 0 && (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', color: 'var(--lab-text-muted)' }}>
+                              <Clock size={11} />
+                              {item.durationMinutes || 30} mins
+                            </span>
+                          )}
                           {item.linkedSuttaKey && (
                             <button
                               type="button"
@@ -603,52 +873,97 @@ export default function PinPotha() {
                                 e.stopPropagation();
                                 navigate(`/lab/sutta/${item.linkedSuttaKey}`);
                               }}
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', border: 'none', background: 'transparent', color: 'var(--lab-accent)', fontWeight: '600', fontSize: '0.68rem', cursor: 'pointer', padding: 0 }}
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', border: 'none', background: 'transparent', color: 'var(--po-blue, #0B3BFA)', fontWeight: '600', fontSize: '0.7rem', cursor: 'pointer', padding: 0 }}
                             >
                               <BookOpen size={11} />
                               <span>{item.linkedSuttaKey}</span>
                             </button>
                           )}
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/lab/dedication?pinId=${encodeURIComponent(item.id)}&title=${encodeURIComponent(item.title)}`);
-                            }}
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', border: 'none', background: 'transparent', color: '#A35B3D', fontWeight: '700', fontSize: '0.69rem', cursor: 'pointer', padding: 0 }}
-                          >
-                            <Sparkles size={11} />
-                            <span>Dedicate Merit</span>
-                            <ArrowRight size={10} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deletePinPothaEntry(item.id);
-                            }}
-                            style={{ border: 'none', background: 'transparent', color: 'var(--lab-text-muted)', cursor: 'pointer', padding: '1px' }}
-                            title="Remove"
-                          >
-                            <Trash2 size={12} />
-                          </button>
+                        </div>
+
+                        <div style={{
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          fontFamily: 'var(--font-sinhala)',
+                          fontSize: '0.96rem',
+                          lineHeight: 1.4
+                        }}>
+                          <span style={{ fontWeight: '700', color: 'var(--lab-text)' }}>{item.title}</span>
+                          {item.reflection && (
+                            <span style={{ fontSize: '0.9rem', color: 'var(--lab-text-muted)', fontWeight: '400' }}>
+                              {' '}— {item.reflection}
+                            </span>
+                          )}
                         </div>
                       </div>
 
-                      <div style={{
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        fontFamily: 'var(--font-sinhala)',
-                        fontSize: '1.22rem',
-                        lineHeight: 1.35
-                      }}>
-                        <span style={{ fontWeight: '700', color: 'var(--lab-text)' }}>{item.title}</span>
-                        {item.reflection && (
-                          <span style={{ fontSize: '1.02rem', color: 'var(--lab-text-muted)', fontWeight: '400' }}>
-                            {' '}— {item.reflection}
-                          </span>
-                        )}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/lab/dedication?pinId=${encodeURIComponent(item.id)}&title=${encodeURIComponent(item.title)}`);
+                          }}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            padding: '5px 10px',
+                            borderRadius: '999px',
+                            border: '1px solid rgba(11, 59, 250, 0.25)',
+                            background: 'rgba(11, 59, 250, 0.06)',
+                            color: 'var(--po-blue, #0B3BFA)',
+                            fontWeight: '700',
+                            fontSize: '0.71rem',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <Sparkles size={11} />
+                          <span>Dedicate Merit</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEdit();
+                          }}
+                          style={{
+                            width: '28px',
+                            height: '28px',
+                            borderRadius: '8px',
+                            border: '1px solid var(--po-card-border)',
+                            background: 'var(--po-card-subtle)',
+                            color: 'var(--lab-text-muted)',
+                            display: 'grid',
+                            placeItems: 'center',
+                            cursor: 'pointer'
+                          }}
+                          title="Edit"
+                        >
+                          <Pencil size={12} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deletePinPothaEntry(item.id);
+                          }}
+                          style={{
+                            width: '28px',
+                            height: '28px',
+                            borderRadius: '8px',
+                            border: '1px solid var(--po-card-border)',
+                            background: 'var(--po-card-subtle)',
+                            color: 'var(--lab-text-muted)',
+                            display: 'grid',
+                            placeItems: 'center',
+                            cursor: 'pointer'
+                          }}
+                          title="Remove"
+                        >
+                          <Trash2 size={12} />
+                        </button>
                       </div>
                     </div>
                   );
@@ -664,7 +979,6 @@ export default function PinPotha() {
           )}
         </div>
       </div>
-      </>
       )}
 
       {/* View & Edit Entry Popup Modal */}

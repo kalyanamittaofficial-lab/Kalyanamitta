@@ -287,24 +287,24 @@ export default function ReflectionPage() {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ position: 'relative', width: '90px', height: '90px', flexShrink: 0 }}>
+              <div style={{ position: 'relative', width: '92px', height: '92px', flexShrink: 0 }}>
                 <svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
-                  <circle cx="50" cy="50" r={ringRadius} fill="none" stroke="var(--po-track)" strokeWidth="10" />
+                  <circle cx="50" cy="50" r={ringRadius} fill="none" stroke="var(--po-track)" strokeWidth="8.5" />
                   <circle
                     cx="50"
                     cy="50"
                     r={ringRadius}
                     fill="none"
                     stroke="var(--po-blue, #153cff)"
-                    strokeWidth="10"
+                    strokeWidth="8.5"
                     strokeDasharray={ringDash}
                   />
                 </svg>
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                  <strong style={{ fontSize: '1.22rem', fontWeight: '900', letterSpacing: '-0.05em', lineHeight: 1, color: 'var(--lab-text)' }}>
+                <div style={{ position: 'absolute', inset: '14px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+                  <strong style={{ fontSize: '0.96rem', fontWeight: '900', letterSpacing: '-0.04em', lineHeight: 1, color: 'var(--lab-text)' }}>
                     {overallStatePct}%
                   </strong>
-                  <small style={{ fontSize: '0.56rem', fontWeight: '800', letterSpacing: '0.03em', color: 'var(--lab-text-muted)', marginTop: '2px' }}>
+                  <small style={{ fontSize: '0.43rem', fontWeight: '800', letterSpacing: '0.02em', color: 'var(--lab-text-muted)', marginTop: '3px', lineHeight: 1 }}>
                     SELF-CHECK
                   </small>
                 </div>
