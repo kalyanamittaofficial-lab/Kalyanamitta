@@ -44,6 +44,7 @@ import { getAllHighlights, removeHighlight } from '../services/highlightStore';
 import { getCollections } from '../services/collectionsStore';
 import { getRoutineHabits } from '../services/dailyRoutineStore';
 import { getPathReflections } from '../services/practiceEcosystemStore';
+import ContextualActionModal from '../components/Lab/ContextualActionModal';
 
 const NOTE_GROUPS = [
   { id: 'all', label: 'Dhamma Study', categoryMatch: ['reflection', 'resource', 'comparison'] },
@@ -77,6 +78,7 @@ export default function PersonalRoadmap() {
   const [mapNodes, setMapNodes] = useState(() => getMapNodes(getKnowledgeMaps()[0]?.id));
   const [routineHabits, setRoutineHabits] = useState(() => getRoutineHabits());
   const [insights, setInsights] = useState(() => getPathReflections());
+  const [practiceContext, setPracticeContext] = useState(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGroup, setSelectedGroup] = useState('all');
@@ -923,6 +925,26 @@ export default function PersonalRoadmap() {
                 <Network size={12} />
                 <span>Link to Map</span>
               </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!selectedNote) return;
+                  setPracticeContext({
+                    sourceType: 'note',
+                    sourceId: selectedNote.id,
+                    sourceTitle: selectedNote.target?.suttaTitleSinhala || 'My Notes',
+                    sourceUrl: '/lab/roadmap',
+                    excerpt: selectedNote.note || '',
+                    suggestedTitle: (selectedNote.note || 'Apply note in daily life').slice(0, 60),
+                    suggestedCategory: 'dhamma'
+                  });
+                }}
+                className="km-lab-btn"
+                style={{ padding: '5px 11px', fontSize: '0.73rem', color: 'var(--po-blue, #0B3BFA)' }}
+              >
+                <Sparkles size={12} />
+                <span>Take into Daily Life</span>
+              </button>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -1116,6 +1138,11 @@ export default function PersonalRoadmap() {
           </div>
         </aside>
       </div>
+      <ContextualActionModal
+        open={Boolean(practiceContext)}
+        onClose={() => setPracticeContext(null)}
+        sourceContext={practiceContext}
+      />
     </div>
   );
 }

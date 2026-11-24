@@ -30,6 +30,7 @@ import {
 } from '../../services/practiceEcosystemStore';
 import { EasyDurationSelector } from '../../components/Lab/TimeSelectors';
 import PaginationBar from '../../components/Lab/PaginationBar';
+import { addIntention } from '../../services/lifeActivityStore';
 
 function parseBulkPinPothaText(rawText, fallbackDate) {
   const text = String(rawText || '').trim();
@@ -899,6 +900,40 @@ export default function PinPotha() {
                       </div>
 
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addIntention({
+                              title: item.title,
+                              category: 'dhamma',
+                              minutes: item.durationMinutes || 15,
+                              sourceType: 'merit',
+                              sourceId: item.id,
+                              sourceTitle: 'Merit Book',
+                              sourceUrl: '/lab/pin-potha',
+                              excerpt: item.reflection || ''
+                            });
+                            navigate('/lab/daily-routine?tab=intentions');
+                          }}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            padding: '5px 10px',
+                            borderRadius: '999px',
+                            border: '1px solid var(--po-card-border)',
+                            background: 'var(--po-card-subtle)',
+                            color: 'var(--lab-text)',
+                            fontWeight: '700',
+                            fontSize: '0.71rem',
+                            cursor: 'pointer'
+                          }}
+                          title="Repeat as an intention in Daily Routine"
+                        >
+                          <Repeat size={11} />
+                          <span>Repeat</span>
+                        </button>
                         <button
                           type="button"
                           onClick={(e) => {

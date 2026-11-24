@@ -31,6 +31,7 @@ import {
   Globe
 } from 'lucide-react';
 import PaginationBar from '../components/Lab/PaginationBar';
+import ContextualActionModal from '../components/Lab/ContextualActionModal';
 import {
   loadPopularSuttas,
   getTreeChildren,
@@ -117,6 +118,7 @@ export default function SuttaStudy() {
   const [newTagInput, setNewTagInput] = useState('');
   const [showAddTagInput, setShowAddTagInput] = useState(false);
   const [drawerSavedMsg, setDrawerSavedMsg] = useState('');
+  const [practiceContext, setPracticeContext] = useState(null);
 
   useEffect(() => {
     loadPopularSuttas().then(list => setPopularSuttas(list.slice(0, 12)));
@@ -1850,6 +1852,25 @@ export default function SuttaStudy() {
                     >
                       <Sparkles size={12} /> Reflection
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const existing = activeDrawerEntry ? suttaAnnotations[activeDrawerEntry.segmentId] : null;
+                        setPracticeContext({
+                          sourceType: 'sutta',
+                          sourceId: loadedSutta?.key || suttaId || '',
+                          sourceTitle: loadedSutta?.sinhalaName || loadedSutta?.paliName || 'Sutta Study',
+                          sourceUrl: `/lab/sutta/${encodeURIComponent(loadedSutta?.key || suttaId || '')}`,
+                          excerpt: existing?.note || activeDrawerEntry?.text || '',
+                          suggestedTitle: existing?.note ? existing.note.slice(0, 60) : `Practise: ${loadedSutta?.sinhalaName || 'Sutta Teaching'}`,
+                          suggestedCategory: 'dhamma'
+                        });
+                      }}
+                      className="km-lab-btn-primary"
+                      style={{ padding: '5px 11px', fontSize: '0.8rem' }}
+                    >
+                      <Play size={11} /> Take into Daily Life
+                    </button>
                   </div>
                 </div>
 
@@ -1987,6 +2008,11 @@ export default function SuttaStudy() {
           )}
         </div>
       )}
+      <ContextualActionModal
+        open={Boolean(practiceContext)}
+        onClose={() => setPracticeContext(null)}
+        sourceContext={practiceContext}
+      />
     </div>
   );
 }

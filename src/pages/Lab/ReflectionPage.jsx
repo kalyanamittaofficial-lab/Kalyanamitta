@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Activity,
   Layers,
@@ -18,6 +19,7 @@ import {
 } from '../../services/practiceEcosystemStore';
 import { getRoutineHabits, getRoutineLogForDate } from '../../services/dailyRoutineStore';
 import { getTodayKey } from '../../services/cittaLogStore';
+import { addIntention } from '../../services/lifeActivityStore';
 
 const CHECKIN_STORAGE_KEY = 'km_lab_reflection_checkin_v1';
 
@@ -70,9 +72,13 @@ function formatInsightDate(iso) {
 }
 
 export default function ReflectionPage() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const sourceTitleParam = searchParams.get('sourceTitle') || '';
   const textareaRef = useRef(null);
   const [reflections, setReflections] = useState(() => getPathReflections());
-  const [text, setText] = useState('');
+  const [text, setText] = useState(() => (sourceTitleParam ? `Reflecting on: ${sourceTitleParam}\n` : ''));
+  const [lastSavedTitle, setLastSavedTitle] = useState('');
   const [selectedTag, setSelectedTag] = useState('samma_sati');
   const [showTagPicker, setShowTagPicker] = useState(false);
   const [savedToast, setSavedToast] = useState(false);
@@ -111,10 +117,11 @@ export default function ReflectionPage() {
       intention: title || 'Today’s reflection',
       observation: body === title ? '' : body
     });
+    setLastSavedTitle(title || 'Today’s reflection');
     setText('');
     setInsightPage(0);
     setSavedToast(true);
-    setTimeout(() => setSavedToast(false), 2400);
+    setTimeout(() => setSavedToast(false), 6000);
   };
 
   const handleSaveCheckin = (e) => {
@@ -558,6 +565,49 @@ export default function ReflectionPage() {
                 <ArrowRight size={14} />
               </button>
             </div>
+
+            {savedToast && lastSavedTitle && (
+              <div style={{
+                padding: '8px 10px',
+                borderRadius: '10px',
+                background: 'var(--po-blue-soft)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '8px',
+                flexWrap: 'wrap',
+                fontSize: '0.73rem'
+              }}>
+                <span style={{ fontWeight: '700' }}>Next step (optional):</span>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      addIntention({
+                        title: `Apply: ${lastSavedTitle}`,
+                        category: 'dhamma',
+                        minutes: 10,
+                        sourceType: 'reflection',
+                        sourceTitle: 'Reflection',
+                        sourceUrl: '/lab/reflection'
+                      });
+                      navigate('/lab/daily-routine?tab=intentions');
+                    }}
+                    style={{ padding: '4px 10px', borderRadius: '999px', border: 'none', background: 'var(--po-blue, #153cff)', color: '#fff', fontSize: '0.7rem', fontWeight: '700', cursor: 'pointer' }}
+                  >
+                    Turn into Intention
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/lab/sutta')}
+                    className="km-lab-btn"
+                    style={{ padding: '4px 10px', borderRadius: '999px', fontSize: '0.7rem' }}
+                  >
+                    Explore Sutta
+                  </button>
+                </div>
+              </div>
+            )}
           </form>
         </article>
 
@@ -784,6 +834,49 @@ export default function ReflectionPage() {
                 Save check-in
               </button>
             </div>
+
+            {savedToast && lastSavedTitle && (
+              <div style={{
+                padding: '8px 10px',
+                borderRadius: '10px',
+                background: 'var(--po-blue-soft)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '8px',
+                flexWrap: 'wrap',
+                fontSize: '0.73rem'
+              }}>
+                <span style={{ fontWeight: '700' }}>Next step (optional):</span>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      addIntention({
+                        title: `Apply: ${lastSavedTitle}`,
+                        category: 'dhamma',
+                        minutes: 10,
+                        sourceType: 'reflection',
+                        sourceTitle: 'Reflection',
+                        sourceUrl: '/lab/reflection'
+                      });
+                      navigate('/lab/daily-routine?tab=intentions');
+                    }}
+                    style={{ padding: '4px 10px', borderRadius: '999px', border: 'none', background: 'var(--po-blue, #153cff)', color: '#fff', fontSize: '0.7rem', fontWeight: '700', cursor: 'pointer' }}
+                  >
+                    Turn into Intention
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/lab/sutta')}
+                    className="km-lab-btn"
+                    style={{ padding: '4px 10px', borderRadius: '999px', fontSize: '0.7rem' }}
+                  >
+                    Explore Sutta
+                  </button>
+                </div>
+              </div>
+            )}
           </form>
         </div>
       )}

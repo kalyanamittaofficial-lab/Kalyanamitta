@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Sun,
   Moon,
@@ -19,7 +20,12 @@ import {
   Pencil,
   SlidersHorizontal,
   BookHeart,
-  ChevronRight
+  ChevronRight,
+  Inbox,
+  Lightbulb,
+  BookOpen,
+  Sparkles,
+  History
 } from 'lucide-react';
 import {
   getRoutineCategories,
@@ -51,6 +57,23 @@ import { addPinPothaEntry } from '../../services/practiceEcosystemStore';
 import { getTodayKey } from '../../services/cittaLogStore';
 import { EasyTimeSelector, EasyDurationSelector } from '../../components/Lab/TimeSelectors';
 import PaginationBar from '../../components/Lab/PaginationBar';
+import RoutineHistoryCharts from '../../components/Lab/RoutineHistoryCharts';
+import {
+  getIntentionInbox,
+  addIntention,
+  removeIntention,
+  promoteIntentionToRoutine,
+  getAllActivityLinks,
+  recordUnexpectedActivity,
+  getTomorrowKey,
+  getTomorrowPlan,
+  addTomorrowPlanItem,
+  removeTomorrowPlanItem,
+  getVisitContext,
+  markLabVisit,
+  getNextActionSuggestions,
+  dismissSuggestion
+} from '../../services/lifeActivityStore';
 
 const CATEGORY_SWATCHES = ['#173aff', '#84cc16', '#7c3aed', '#0ea5e9', '#f59e0b', '#10b981', '#ec4899', '#64748b'];
 
@@ -129,12 +152,33 @@ function getWeekBars(todayDate, totalHabits) {
 }
 
 export default function DailyRoutine() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const todayDate = getTodayKey();
-  const [activeTab, setActiveTab] = useState('tasks'); // 'tasks' | 'schedule' | 'sessions'
+  const tomorrowDate = getTomorrowKey();
+  const [activeTab, setActiveTab] = useState(() => {
+    const t = searchParams.get('tab');
+    return t === 'intentions' || t === 'schedule' || t === 'sessions' ? t : 'tasks';
+  }); // 'tasks' | 'intentions' | 'schedule' | 'sessions'
 
   const [categories, setCategories] = useState(() => getRoutineCategories());
   const [habits, setHabits] = useState(() => getRoutineHabits());
   const [dayLog, setDayLog] = useState(() => getRoutineLogForDate(todayDate));
+  const [inbox, setInbox] = useState(() => getIntentionInbox());
+  const [activityLinks, setActivityLinks] = useState(() => getAllActivityLinks());
+  const [tomorrowPlan, setTomorrowPlan] = useState(() => getTomorrowPlan(tomorrowDate));
+  const [visitCtx, setVisitCtx] = useState(() => getVisitContext());
+
+  // Record Unexpected Activity Modal & Intention/Tomorrow drafts
+  const [showRecordDeed, setShowRecordDeed] = useState(() => searchParams.get('record') === '1');
+  const [deedTitle, setDeedTitle] = useState('');
+  const [deedCategory, setDeedCategory] = useState('dhamma');
+  const [deedMinutes, setDeedMinutes] = useState('15');
+  const [deedDate, setDeedDate] = useState(todayDate);
+  const [deedNotes, setDeedNotes] = useState('');
+  const [deedAddMerit, setDeedAddMerit] = useState(true);
+  const [newIntentionTitle, setNewIntentionTitle] = useState('');
+  const [tomorrowTitle, setTomorrowTitle] = useState('');
 
   // Filter, Donut & Pagination state
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('all');
@@ -142,7 +186,13 @@ export default function DailyRoutine() {
   const [donutPage, setDonutPage] = useState(1);
   const [taskPage, setTaskPage] = useState(1);
   const [sessionPage, setSessionPage] = useState(1);
-  const [catModalPage, setCatModalPage] = useState(1);
+
+  // Inline quick-add & modal helper state
+  const [quickTitle, setQuickTitle] = useState('');
+  const [quickMins, setQuickMins] = useState('15');
+  const [showInlineNewCat, setShowInlineNewCat] = useState(false);
+  const [inlineCatName, setInlineCatName] = useState('');
+  const [inlineCatColor, setInlineCatColor] = useState(CATEGORY_SWATCHES[0]);
 
   // Category manager state
   const [showCatManager, setShowCatManager] = useState(false);
@@ -194,11 +244,20 @@ export default function DailyRoutine() {
       setHabits(getRoutineHabits());
       setDayLog(getRoutineLogForDate(todayDate));
       setActiveTimer(getActiveRoutineTimer());
+      setInbox(getIntentionInbox());
+      setActivityLinks(getAllActivityLinks());
+      setTomorrowPlan(getTomorrowPlan(tomorrowDate));
+      setVisitCtx(getVisitContext());
       setNewCategory(prev => (nextCats.some(c => c.id === prev) ? prev : (nextCats[0]?.id || 'dhamma')));
     };
+    markLabVisit();
     window.addEventListener('labRoutineUpdated', refresh);
-    return () => window.removeEventListener('labRoutineUpdated', refresh);
-  }, [todayDate]);
+    window.addEventListener('labLifeActivityUpdated', refresh);
+    return () => {
+      window.removeEventListener('labRoutineUpdated', refresh);
+      window.removeEventListener('labLifeActivityUpdated', refresh);
+    };
+  }, [todayDate, tomorrowDate]);
 
   const showToast = (msg) => {
     setSavedMsg(msg);
@@ -240,11 +299,37 @@ export default function DailyRoutine() {
     setEditingHabitId(null);
   };
 
+  const handleQuickAddHabit = (e) => {
+    e.preventDefault();
+    if (!quickTitle.trim()) return;
+    const targetCat = selectedCategoryFilter !== 'all' ? selectedCategoryFilter : (categories[0]?.id || 'dhamma');
+    addRoutineHabit({
+      title: quickTitle.trim(),
+      description: '',
+      category: targetCat,
+      minutes: Number(quickMins || 15),
+      cittaType: 'kusala'
+    });
+    setQuickTitle('');
+    showToast('Task added to your routine.');
+  };
+
+  const handleInlineCreateCategory = () => {
+    if (!inlineCatName.trim()) return;
+    const updated = addRoutineCategory({ label: inlineCatName.trim(), color: inlineCatColor });
+    const created = updated[updated.length - 1];
+    if (created?.id) setNewCategory(created.id);
+    setInlineCatName('');
+    setShowInlineNewCat(false);
+    showToast('Category created.');
+  };
+
   const handleAddCategory = (e) => {
     e.preventDefault();
     if (!newCatLabel.trim()) return;
     addRoutineCategory({ label: newCatLabel.trim(), color: newCatColor });
     setNewCatLabel('');
+    showToast('Category added.');
   };
 
   const openSessionModal = (habit) => {
@@ -344,19 +429,39 @@ export default function DailyRoutine() {
   const safeSessionPage = Math.min(sessionPage, sessionTotalPages);
   const pagedSessionHabits = sessionHabits.slice((safeSessionPage - 1) * ITEMS_PER_PAGE, safeSessionPage * ITEMS_PER_PAGE);
 
-  const CAT_MODAL_PER_PAGE = 4;
-  const catModalTotalPages = Math.max(1, Math.ceil(categories.length / CAT_MODAL_PER_PAGE));
-  const safeCatModalPage = Math.min(catModalPage, catModalTotalPages);
-  const pagedModalCategories = categories.slice((safeCatModalPage - 1) * CAT_MODAL_PER_PAGE, safeCatModalPage * CAT_MODAL_PER_PAGE);
-
   const weekBars = getWeekBars(todayDate, habits.length);
   const activeTimerHabit = activeTimer ? habits.find(h => h.id === activeTimer.habitId) : null;
   const nextRightHabit = activeTimerHabit || habits.find(h => getHabitStatusForDay(dayLog, h.id) !== 'completed') || habits[0] || null;
   const sessionModalHabit = sessionModalHabitId ? habits.find(h => h.id === sessionModalHabitId) : null;
   const sessionModalLog = sessionModalHabit ? dayLog.taskLogs?.[sessionModalHabit.id] : null;
 
+  const nextSuggestions = getNextActionSuggestions({
+    checkedCount,
+    inboxCount: inbox.length,
+    totalHabits: habits.length
+  });
+
+  const handleRecordDeedSubmit = (e) => {
+    e.preventDefault();
+    if (!deedTitle.trim()) return;
+    recordUnexpectedActivity({
+      title: deedTitle.trim(),
+      category: deedCategory,
+      minutes: Number(deedMinutes || 15),
+      date: deedDate || todayDate,
+      notes: deedNotes.trim(),
+      alsoAddMeritBook: deedAddMerit
+    });
+    markLabVisit({ completedAction: true, dismissFirstVisit: true });
+    setDeedTitle('');
+    setDeedNotes('');
+    setShowRecordDeed(false);
+    showToast(deedAddMerit ? 'Recorded & added to Merit Book.' : 'Activity recorded.');
+  };
+
   const routineTabs = [
-    { id: 'tasks', label: "Today's Tasks" },
+    { id: 'tasks', label: "Now & Tasks" },
+    { id: 'intentions', label: `Intentions${inbox.length > 0 ? ` (${inbox.length})` : ''}` },
     { id: 'schedule', label: 'Time Allocation' },
     { id: 'sessions', label: 'Sessions & History' }
   ];
@@ -404,6 +509,20 @@ export default function DailyRoutine() {
           </div>
           <button
             type="button"
+            onClick={() => setShowRecordDeed(true)}
+            className="km-lab-btn"
+            style={{
+              padding: '7px 12px',
+              borderRadius: '14px',
+              fontSize: '0.74rem',
+              fontWeight: '700'
+            }}
+          >
+            <History size={13} color="var(--po-blue, #173aff)" />
+            <span>Record What I Did</span>
+          </button>
+          <button
+            type="button"
             onClick={() => {
               if (selectedCategoryFilter !== 'all') setNewCategory(selectedCategoryFilter);
               setShowAddTask(true);
@@ -427,6 +546,202 @@ export default function DailyRoutine() {
           </button>
         </div>
       </div>
+
+      {/* FIRST-VISIT / WELCOME BACK / NEXT ACTION CONTEXTUAL BANNERS */}
+      {visitCtx.isReturningAfterAbsence && (
+        <section
+          className="km-po-card"
+          style={{
+            padding: '14px 18px',
+            background: 'var(--po-blue-soft)',
+            border: '1px solid var(--po-blue, #173aff)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '10px'
+          }}
+        >
+          <div>
+            <div style={{ fontSize: '0.92rem', fontWeight: '800' }}>Welcome back.</div>
+            <div style={{ fontSize: '0.76rem', color: 'var(--lab-text-muted)' }}>
+              It has been {visitCtx.daysSinceLastVisit} days. You can continue where you left off or begin with a fresh day — nothing is lost.
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <button
+              type="button"
+              onClick={() => markLabVisit({ dismissWelcomeBack: true })}
+              style={{ padding: '6px 12px', borderRadius: '999px', border: 'none', background: 'var(--po-blue, #173aff)', color: '#fff', fontSize: '0.74rem', fontWeight: '700', cursor: 'pointer' }}
+            >
+              Start Fresh Today
+            </button>
+          </div>
+        </section>
+      )}
+
+      {visitCtx.isFirstVisit && (
+        <section
+          className="km-po-card"
+          style={{
+            padding: '16px 18px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+            borderLeft: '4px solid #c6ff24'
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+            <div>
+              <div style={{ fontSize: '0.68rem', fontWeight: '800', color: 'var(--po-blue, #173aff)', letterSpacing: '0.06em' }}>
+                BEGIN WHERE YOU ARE
+              </div>
+              <h2 style={{ margin: '2px 0 0', fontSize: '1.05rem', fontWeight: '800' }}>
+                Where would you like to begin?
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={() => markLabVisit({ dismissFirstVisit: true })}
+              style={{ border: 'none', background: 'transparent', color: 'var(--lab-text-muted)', cursor: 'pointer', padding: '4px' }}
+              title="Dismiss"
+            >
+              <X size={15} />
+            </button>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '8px' }}>
+            {[
+              {
+                label: 'Explore a Sutta (10m)',
+                sub: 'Start with a short reading',
+                icon: BookOpen,
+                onClick: () => {
+                  markLabVisit({ dismissFirstVisit: true });
+                  navigate('/lab/sutta');
+                }
+              },
+              {
+                label: 'Start a Practice Now',
+                sub: 'Begin 15m mindful breathing',
+                icon: Play,
+                onClick: () => {
+                  markLabVisit({ dismissFirstVisit: true, completedAction: true });
+                  if (habits[0]) startRoutineTimer(todayDate, habits[0].id);
+                }
+              },
+              {
+                label: 'Plan Today or Tomorrow',
+                sub: 'Open Intentions & Tomorrow',
+                icon: Calendar,
+                onClick: () => {
+                  markLabVisit({ dismissFirstVisit: true });
+                  setActiveTab('intentions');
+                }
+              },
+              {
+                label: 'Record What I Already Did',
+                sub: 'Capture an unexpected deed',
+                icon: Sparkles,
+                onClick: () => {
+                  markLabVisit({ dismissFirstVisit: true });
+                  setShowRecordDeed(true);
+                }
+              }
+            ].map(choice => {
+              const Icon = choice.icon;
+              return (
+                <button
+                  key={choice.label}
+                  type="button"
+                  onClick={choice.onClick}
+                  style={{
+                    textAlign: 'left',
+                    padding: '10px 12px',
+                    borderRadius: '12px',
+                    border: '1px solid var(--po-card-border)',
+                    background: 'var(--po-card-subtle)',
+                    color: 'var(--lab-text)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '9px'
+                  }}
+                >
+                  <span style={{
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '8px',
+                    background: 'var(--po-blue-soft)',
+                    color: 'var(--po-blue, #173aff)',
+                    display: 'grid',
+                    placeItems: 'center',
+                    flexShrink: 0
+                  }}>
+                    <Icon size={14} />
+                  </span>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: '0.78rem', fontWeight: '800' }}>{choice.label}</div>
+                    <div style={{ fontSize: '0.67rem', color: 'var(--lab-text-muted)' }}>{choice.sub}</div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {!visitCtx.isFirstVisit && nextSuggestions.length > 0 && (
+        <div
+          className="km-po-card"
+          style={{
+            padding: '10px 14px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '8px'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+            <Lightbulb size={15} color="var(--po-blue, #173aff)" />
+            <div style={{ fontSize: '0.78rem' }}>
+              <strong>{nextSuggestions[0].title}</strong>{' '}
+              <span style={{ color: 'var(--lab-text-muted)' }}>— {nextSuggestions[0].reason}</span>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <button
+              type="button"
+              onClick={() => {
+                const s = nextSuggestions[0];
+                if (s.tab) setActiveTab(s.tab);
+                else if (s.to) navigate(s.to);
+              }}
+              style={{
+                padding: '4px 10px',
+                borderRadius: '999px',
+                border: 'none',
+                background: 'var(--po-blue, #173aff)',
+                color: '#fff',
+                fontSize: '0.71rem',
+                fontWeight: '700',
+                cursor: 'pointer'
+              }}
+            >
+              {nextSuggestions[0].actionLabel}
+            </button>
+            <button
+              type="button"
+              onClick={() => dismissSuggestion(nextSuggestions[0].id)}
+              style={{ border: 'none', background: 'transparent', color: 'var(--lab-text-muted)', cursor: 'pointer', padding: '2px' }}
+              title="Dismiss suggestion"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* HERO GRID: TRAIN THE RESPONSE + DISCIPLINE METER */}
       <section className="po-hero-grid" aria-label="Overview">
@@ -537,8 +852,8 @@ export default function DailyRoutine() {
               </span>
             </div>
 
-            {/* Category Chips */}
-            <div style={{ display: 'flex', gap: '5px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '2px' }}>
+            {/* Category Chips + Manage Button */}
+            <div style={{ display: 'flex', gap: '5px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '2px', alignItems: 'center' }}>
               <button
                 type="button"
                 onClick={() => {
@@ -564,54 +879,132 @@ export default function DailyRoutine() {
                 const count = habits.filter(h => (h.category || categories[0]?.id) === cat.id).length;
                 const active = selectedCategoryFilter === cat.id;
                 return (
-                  <div
+                  <button
                     key={cat.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedCategoryFilter(active ? 'all' : cat.id);
+                      setTaskPage(1);
+                    }}
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
-                      flexShrink: 0,
+                      gap: '5px',
+                      whiteSpace: 'nowrap',
+                      padding: '6px 11px',
                       borderRadius: '999px',
+                      border: 'none',
                       background: active ? 'var(--po-blue, #173aff)' : 'var(--po-card-subtle)',
                       color: active ? '#ffffff' : 'var(--lab-text)',
-                      overflow: 'hidden'
+                      fontSize: '0.72rem',
+                      fontWeight: '800',
+                      cursor: 'pointer',
+                      flexShrink: 0
                     }}
                   >
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedCategoryFilter(active ? 'all' : cat.id);
-                        setTaskPage(1);
-                      }}
-                      style={{
-                        whiteSpace: 'nowrap',
-                        padding: '6px 7px 6px 10px',
-                        border: 'none',
-                        background: 'transparent',
-                        color: 'inherit',
-                        fontSize: '0.72rem',
-                        fontWeight: '800',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {cat.label} ({count})
-                    </button>
-                    {categories.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (selectedCategoryFilter === cat.id) setSelectedCategoryFilter('all');
-                          deleteRoutineCategory(cat.id);
-                        }}
-                        title="Delete category"
-                        style={{ display: 'inline-flex', alignItems: 'center', padding: '6px 7px 6px 1px', border: 'none', background: 'transparent', color: 'inherit', opacity: 0.7, cursor: 'pointer' }}
-                      >
-                        <X size={10} />
-                      </button>
-                    )}
-                  </div>
+                    <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: active ? '#c6ff24' : cat.color, flexShrink: 0 }} />
+                    <span>{cat.label} ({count})</span>
+                  </button>
                 );
               })}
+              <button
+                type="button"
+                onClick={() => setShowCatManager(true)}
+                title="Add, rename, or color-code categories"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  whiteSpace: 'nowrap',
+                  padding: '5px 10px',
+                  borderRadius: '999px',
+                  border: '1px dashed var(--po-card-border)',
+                  background: 'transparent',
+                  color: 'var(--po-blue, #173aff)',
+                  fontSize: '0.71rem',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  flexShrink: 0
+                }}
+              >
+                <SlidersHorizontal size={11} />
+                <span>Manage Categories</span>
+              </button>
             </div>
+
+            {/* Inline Quick-Add Task Bar */}
+            <form
+              onSubmit={handleQuickAddHabit}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 8px',
+                borderRadius: '12px',
+                background: 'var(--po-card-subtle)',
+                border: '1px solid var(--po-card-border)',
+                flexWrap: 'wrap'
+              }}
+            >
+              <input
+                type="text"
+                value={quickTitle}
+                onChange={(e) => setQuickTitle(e.target.value)}
+                placeholder={selectedCategoryFilter === 'all' ? '+ Quick add a daily task...' : `+ Add task to ${categories.find(c => c.id === selectedCategoryFilter)?.label || 'category'}...`}
+                style={{
+                  flex: 1,
+                  minWidth: '150px',
+                  border: 'none',
+                  background: 'transparent',
+                  color: 'var(--lab-text)',
+                  fontSize: '0.82rem',
+                  fontWeight: '600',
+                  outline: 'none',
+                  padding: '4px 6px'
+                }}
+              />
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                {['10', '15', '30'].map(m => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setQuickMins(m)}
+                    style={{
+                      padding: '3px 7px',
+                      borderRadius: '999px',
+                      border: 'none',
+                      background: quickMins === m ? 'var(--po-blue, #173aff)' : 'var(--po-card-bg)',
+                      color: quickMins === m ? '#fff' : 'var(--lab-text-muted)',
+                      fontSize: '0.67rem',
+                      fontWeight: '700',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {m}m
+                  </button>
+                ))}
+              </div>
+              <button
+                type="submit"
+                disabled={!quickTitle.trim()}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '5px 11px',
+                  borderRadius: '999px',
+                  border: 'none',
+                  background: quickTitle.trim() ? '#c6ff24' : 'var(--po-track)',
+                  color: quickTitle.trim() ? '#101010' : 'var(--lab-text-muted)',
+                  fontSize: '0.72rem',
+                  fontWeight: '800',
+                  cursor: quickTitle.trim() ? 'pointer' : 'default'
+                }}
+              >
+                <Plus size={12} />
+                <span>Add</span>
+              </button>
+            </form>
 
             {/* Tasks List */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -685,12 +1078,50 @@ export default function DailyRoutine() {
                     </button>
 
                     <div style={{ minWidth: 0, overflow: 'hidden', textAlign: 'left' }} title={habit.title}>
-                      <div style={{ fontWeight: '700', fontSize: '1.18rem', lineHeight: 1.25, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div style={{ fontWeight: '700', fontSize: '1.12rem', lineHeight: 1.25, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {displayTitle}
                       </div>
-                      <small style={{ display: 'block', color: 'var(--lab-text-muted)', fontSize: '0.82rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {cat?.label}
-                      </small>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                        <small style={{ color: 'var(--lab-text-muted)', fontSize: '0.78rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {cat?.label}
+                        </small>
+                        {activityLinks[habit.id]?.sourceUrl && (
+                          <button
+                            type="button"
+                            onClick={() => navigate(activityLinks[habit.id].sourceUrl)}
+                            style={{
+                              border: 'none',
+                              background: 'var(--po-blue-soft)',
+                              color: 'var(--po-blue, #173aff)',
+                              borderRadius: '999px',
+                              padding: '1px 7px',
+                              fontSize: '0.65rem',
+                              fontWeight: '700',
+                              cursor: 'pointer'
+                            }}
+                            title="Return to linked source"
+                          >
+                            Source: {activityLinks[habit.id].sourceTitle || activityLinks[habit.id].sourceType} →
+                          </button>
+                        )}
+                        {checked && (
+                          <button
+                            type="button"
+                            onClick={() => navigate(`/lab/reflection?sourceTitle=${encodeURIComponent(habit.title)}&sourceUrl=/lab/daily-routine`)}
+                            style={{
+                              border: 'none',
+                              background: 'transparent',
+                              color: 'var(--po-blue, #173aff)',
+                              padding: 0,
+                              fontSize: '0.66rem',
+                              fontWeight: '700',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Reflect →
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
@@ -926,6 +1357,175 @@ export default function DailyRoutine() {
         </section>
       )}
 
+      {/* TAB: INTENTIONS INBOX & TOMORROW PLANNER */}
+      {activeTab === 'intentions' && (
+        <div className="km-po-top-grid">
+          {/* Left: My Intentions (Unscheduled Inbox) */}
+          <article className="km-po-card" style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Inbox size={17} color="var(--po-blue, #173aff)" />
+                <div>
+                  <h2 style={{ margin: 0, fontSize: '1rem', fontWeight: '800' }}>My Intentions ({inbox.length})</h2>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--lab-text-muted)' }}>
+                    Things worth practising or revisiting — no schedule or overdue pressure.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!newIntentionTitle.trim()) return;
+                addIntention({ title: newIntentionTitle.trim(), category: 'dhamma', minutes: 15 });
+                setNewIntentionTitle('');
+                showToast('Saved to Intention Inbox.');
+              }}
+              style={{ display: 'flex', gap: '6px' }}
+            >
+              <input
+                type="text"
+                className="km-lab-input"
+                style={{ padding: '7px 10px', fontSize: '0.82rem' }}
+                placeholder="Save an intention for later (e.g., Speak with kindness)..."
+                value={newIntentionTitle}
+                onChange={(e) => setNewIntentionTitle(e.target.value)}
+              />
+              <button type="submit" style={{ padding: '7px 14px', borderRadius: '10px', border: 'none', background: 'var(--po-blue, #173aff)', color: '#fff', fontSize: '0.76rem', fontWeight: '700', cursor: 'pointer', flexShrink: 0 }}>
+                Save
+              </button>
+            </form>
+
+            {inbox.length === 0 ? (
+              <div style={{ padding: '24px', textAlign: 'center', borderRadius: '12px', background: 'var(--po-card-subtle)', fontSize: '0.8rem', color: 'var(--lab-text-muted)' }}>
+                No saved intentions yet. Save one here or from any Sutta, Note, or Map node.
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {inbox.map(item => (
+                  <div
+                    key={item.id}
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: '12px',
+                      background: 'var(--po-card-subtle)',
+                      border: '1px solid var(--po-card-border)',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: '10px',
+                      flexWrap: 'wrap'
+                    }}
+                  >
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ fontWeight: '700', fontSize: '0.86rem' }}>{item.title}</div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--lab-text-muted)', display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '2px' }}>
+                        <span>{item.minutes}m</span>
+                        {item.sourceTitle && (
+                          <button
+                            type="button"
+                            onClick={() => item.sourceUrl && navigate(item.sourceUrl)}
+                            style={{ border: 'none', background: 'transparent', color: 'var(--po-blue, #173aff)', padding: 0, fontSize: '0.7rem', fontWeight: '700', cursor: 'pointer' }}
+                          >
+                            From: {item.sourceTitle}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          promoteIntentionToRoutine(item.id, 'now');
+                          setActiveTab('tasks');
+                        }}
+                        style={{ padding: '5px 10px', borderRadius: '999px', border: 'none', background: '#c6ff24', color: '#101010', fontSize: '0.7rem', fontWeight: '800', cursor: 'pointer' }}
+                      >
+                        Do Now
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          promoteIntentionToRoutine(item.id, 'plan');
+                          setActiveTab('tasks');
+                        }}
+                        className="km-lab-btn"
+                        style={{ padding: '5px 10px', borderRadius: '999px', fontSize: '0.7rem' }}
+                      >
+                        Plan Today
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeIntention(item.id)}
+                        style={{ border: 'none', background: 'transparent', color: 'var(--lab-text-muted)', cursor: 'pointer', padding: '4px' }}
+                        title="Dismiss"
+                      >
+                        <X size={13} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </article>
+
+          {/* Right: Tomorrow Planner */}
+          <article className="km-po-card" style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: '1rem', fontWeight: '800' }}>Tomorrow&apos;s Intention ({tomorrowDate})</h2>
+              <div style={{ fontSize: '0.72rem', color: 'var(--lab-text-muted)' }}>
+                Pick a gentle focus for tomorrow without cluttering today&apos;s tasks.
+              </div>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!tomorrowTitle.trim()) return;
+                addTomorrowPlanItem({ title: tomorrowTitle.trim(), category: 'dhamma', minutes: 15 }, tomorrowDate);
+                setTomorrowTitle('');
+              }}
+              style={{ display: 'flex', gap: '6px' }}
+            >
+              <input
+                type="text"
+                className="km-lab-input"
+                style={{ padding: '7px 10px', fontSize: '0.82rem' }}
+                placeholder="Plan one thing for tomorrow..."
+                value={tomorrowTitle}
+                onChange={(e) => setTomorrowTitle(e.target.value)}
+              />
+              <button type="submit" style={{ padding: '7px 12px', borderRadius: '10px', border: 'none', background: 'var(--po-blue, #173aff)', color: '#fff', fontSize: '0.76rem', fontWeight: '700', cursor: 'pointer' }}>
+                Add
+              </button>
+            </form>
+
+            {tomorrowPlan.length === 0 ? (
+              <div style={{ padding: '20px', textAlign: 'center', borderRadius: '12px', background: 'var(--po-card-subtle)', fontSize: '0.78rem', color: 'var(--lab-text-muted)' }}>
+                Nothing planned for tomorrow yet.
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {tomorrowPlan.map(item => (
+                  <div key={item.id} style={{ padding: '8px 11px', borderRadius: '10px', background: 'var(--po-card-subtle)', border: '1px solid var(--po-card-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.82rem', fontWeight: '700' }}>{item.title}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeTomorrowPlanItem(item.id, tomorrowDate)}
+                      style={{ border: 'none', background: 'transparent', color: 'var(--lab-text-muted)', cursor: 'pointer' }}
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </article>
+        </div>
+      )}
+
       {/* TAB 2: TIME ALLOCATION */}
       {activeTab === 'schedule' && (
         <div className="km-po-top-grid">
@@ -959,6 +1559,37 @@ export default function DailyRoutine() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.66rem', color: 'var(--lab-text-muted)', marginTop: '4px', fontFamily: 'monospace' }}>
                 <span>12 AM</span><span>6 AM</span><span>12 PM</span><span>6 PM</span><span>12 AM</span>
+              </div>
+            </div>
+
+            {/* Today's Category Allocation Stacked Strip */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.72rem', fontWeight: '700' }}>
+                <span style={{ color: 'var(--lab-text-muted)' }}>Category Split ({donutMode === 'completed' ? 'Completed' : 'Planned'})</span>
+                <span>{formatDurationEn(totalAllocatedMins)}</span>
+              </div>
+              <div style={{
+                height: '16px',
+                borderRadius: '999px',
+                background: 'var(--po-track)',
+                display: 'flex',
+                gap: '2px',
+                overflow: 'hidden',
+                padding: '2px'
+              }}>
+                {legendItems.filter(s => s.value > 0).map(seg => (
+                  <div
+                    key={seg.id}
+                    title={`${seg.label}: ${formatDurationEn(seg.value)} (${seg.pct}%)`}
+                    style={{
+                      width: `${Math.max(3, (seg.value / Math.max(1, totalAllocatedMins)) * 100)}%`,
+                      height: '100%',
+                      background: seg.color,
+                      borderRadius: '999px',
+                      transition: 'width 0.25s ease'
+                    }}
+                  />
+                ))}
               </div>
             </div>
 
@@ -1091,16 +1722,19 @@ export default function DailyRoutine() {
 
       {/* TAB 3: SESSIONS & HISTORY */}
       {activeTab === 'sessions' && (
-        <div className="km-po-card" style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-            <div>
-              <h2 style={{ fontSize: '0.98rem', fontWeight: '800', margin: '0 0 2px 0' }}>Sessions & Activity History ({sessionHabits.length})</h2>
-              <div style={{ fontSize: '0.73rem', color: 'var(--lab-text-muted)' }}>Partial sessions and completed practices for {todayDate}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <RoutineHistoryCharts categories={categories} habits={habits} todayDate={todayDate} />
+
+          <div className="km-po-card" style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+              <div>
+                <h2 style={{ fontSize: '0.98rem', fontWeight: '800', margin: '0 0 2px 0' }}>Today&apos;s Sessions ({sessionHabits.length})</h2>
+                <div style={{ fontSize: '0.73rem', color: 'var(--lab-text-muted)' }}>Partial sessions and completed practices for {todayDate}</div>
+              </div>
+              <button type="button" onClick={() => setActiveTab('tasks')} className="km-lab-btn" style={{ padding: '5px 11px', borderRadius: '999px', fontSize: '0.73rem' }}>
+                Back to Today&apos;s Tasks
+              </button>
             </div>
-            <button type="button" onClick={() => setActiveTab('tasks')} className="km-lab-btn" style={{ padding: '5px 11px', borderRadius: '999px', fontSize: '0.73rem' }}>
-              Back to Today&apos;s Tasks
-            </button>
-          </div>
 
           {pagedSessionHabits.length === 0 ? (
             <div style={{ padding: '28px', textAlign: 'center', background: 'var(--po-card-subtle)', borderRadius: '12px', fontSize: '0.82rem', color: 'var(--lab-text-muted)' }}>
@@ -1149,6 +1783,7 @@ export default function DailyRoutine() {
               <PaginationBar page={safeSessionPage} totalPages={sessionTotalPages} onPageChange={setSessionPage} compact prevLabel="Prev" nextLabel="Next" />
             </>
           )}
+          </div>
         </div>
       )}
 
@@ -1268,11 +1903,14 @@ export default function DailyRoutine() {
       {/* Category Management Popup Modal */}
       {showCatManager && (
         <div onClick={() => setShowCatManager(false)} style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(15, 17, 21, 0.52)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div onClick={(e) => e.stopPropagation()} className="km-po-card" style={{ width: '100%', maxWidth: '480px', maxHeight: '85vh', overflowY: 'auto', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div onClick={(e) => e.stopPropagation()} className="km-po-card" style={{ width: '100%', maxWidth: '500px', maxHeight: '85vh', overflowY: 'auto', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <SlidersHorizontal size={16} color="var(--po-blue, #173aff)" />
-                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '700' }}>Manage Routine Categories</h3>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '800' }}>Manage Categories</h3>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--lab-text-muted)' }}>Create, rename, or color-code your routine categories</div>
+                </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <button type="button" onClick={() => restoreDefaultRoutineCategories()} className="km-lab-btn" style={{ padding: '4px 9px', borderRadius: '999px', fontSize: '0.72rem' }}>Restore Defaults</button>
@@ -1280,54 +1918,60 @@ export default function DailyRoutine() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              {pagedModalCategories.map(cat => (
-                <div key={cat.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '8px 10px', borderRadius: '11px', background: 'var(--po-card-subtle)', border: '1px solid var(--po-card-border)', flexWrap: 'wrap' }}>
-                  {editingCatId === cat.id ? (
-                    <>
-                      <input type="text" className="km-lab-input" style={{ flex: 1, minWidth: '150px', padding: '5px 8px', fontSize: '0.82rem' }} value={editCatLabel} onChange={(e) => setEditCatLabel(e.target.value)} />
-                      <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                        {CATEGORY_SWATCHES.map(sw => (
-                          <button key={sw} type="button" onClick={() => setEditCatColor(sw)} style={{ width: '16px', height: '16px', borderRadius: '50%', background: sw, border: editCatColor === sw ? '2px solid var(--lab-text)' : '1px solid transparent', cursor: 'pointer' }} />
-                        ))}
-                      </div>
-                      <div style={{ display: 'flex', gap: '4px' }}>
-                        <button type="button" onClick={() => { updateRoutineCategory(cat.id, { label: editCatLabel, color: editCatColor }); setEditingCatId(null); }} style={{ padding: '4px 8px', borderRadius: '999px', border: 'none', background: 'var(--po-blue, #173aff)', color: '#fff', fontSize: '0.74rem', cursor: 'pointer' }} title="Save"><Check size={12} /></button>
-                        <button type="button" onClick={() => setEditingCatId(null)} className="km-lab-btn" style={{ padding: '4px 8px', fontSize: '0.74rem' }} title="Cancel"><X size={12} /></button>
-                        <button type="button" onClick={() => { if (selectedCategoryFilter === cat.id) setSelectedCategoryFilter('all'); deleteRoutineCategory(cat.id); setEditingCatId(null); }} className="km-lab-btn" style={{ padding: '4px 8px', fontSize: '0.74rem', color: '#ef4444' }} title="Delete category"><Trash2 size={12} /></button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '0.84rem', fontWeight: '600' }}>
-                        <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: cat.color }} />
-                        <span>{cat.label}</span>
-                      </span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <button type="button" onClick={() => { setEditingCatId(cat.id); setEditCatLabel(cat.label); setEditCatColor(cat.color); }} title="Edit" style={{ border: 'none', background: 'transparent', color: 'var(--lab-text-muted)', cursor: 'pointer', padding: '4px' }}><Pencil size={13} /></button>
-                        <button type="button" onClick={() => { if (selectedCategoryFilter === cat.id) setSelectedCategoryFilter('all'); deleteRoutineCategory(cat.id); }} title="Delete category" style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer', padding: '4px' }}><Trash2 size={14} /></button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            <PaginationBar page={safeCatModalPage} totalPages={catModalTotalPages} onPageChange={setCatModalPage} compact alwaysShow prevLabel="Prev" nextLabel="Next" />
-
-            <form onSubmit={handleAddCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '10px', borderTop: '1px solid var(--po-card-border)' }}>
-              <input type="text" className="km-lab-input" style={{ padding: '7px 10px', fontSize: '0.84rem' }} placeholder="Add new category (e.g., Exercise / Rest)" value={newCatLabel} onChange={(e) => setNewCatLabel(e.target.value)} />
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+            {/* Create New Category Form at Top */}
+            <form onSubmit={handleAddCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px', borderRadius: '12px', background: 'var(--po-card-subtle)', border: '1px solid var(--po-card-border)' }}>
+              <div style={{ fontSize: '0.74rem', fontWeight: '700' }}>Create New Category</div>
+              <input type="text" className="km-lab-input" style={{ padding: '7px 10px', fontSize: '0.84rem' }} placeholder="e.g., Health & Exercise, Mindfulness, Rest..." value={newCatLabel} onChange={(e) => setNewCatLabel(e.target.value)} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
                   {CATEGORY_SWATCHES.map(sw => (
                     <button key={sw} type="button" onClick={() => setNewCatColor(sw)} style={{ width: '18px', height: '18px', borderRadius: '50%', background: sw, border: newCatColor === sw ? '2px solid var(--lab-text)' : '1px solid transparent', cursor: 'pointer' }} />
                   ))}
                 </div>
-                <button type="submit" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '6px 14px', borderRadius: '999px', border: 'none', background: 'var(--po-blue, #173aff)', color: '#fff', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer' }}>
-                  <Plus size={13} /> Add
+                <button type="submit" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '6px 14px', borderRadius: '999px', border: 'none', background: 'var(--po-blue, #173aff)', color: '#fff', fontSize: '0.78rem', fontWeight: '700', cursor: 'pointer' }}>
+                  <Plus size={13} /> Add Category
                 </button>
               </div>
             </form>
+
+            {/* Existing Categories List */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '260px', overflowY: 'auto' }}>
+              {categories.map(cat => {
+                const taskCount = habits.filter(h => (h.category || categories[0]?.id) === cat.id).length;
+                return (
+                  <div key={cat.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '8px 10px', borderRadius: '11px', background: 'var(--po-card-subtle)', border: '1px solid var(--po-card-border)', flexWrap: 'wrap' }}>
+                    {editingCatId === cat.id ? (
+                      <>
+                        <input type="text" className="km-lab-input" style={{ flex: 1, minWidth: '150px', padding: '5px 8px', fontSize: '0.82rem' }} value={editCatLabel} onChange={(e) => setEditCatLabel(e.target.value)} />
+                        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                          {CATEGORY_SWATCHES.map(sw => (
+                            <button key={sw} type="button" onClick={() => setEditCatColor(sw)} style={{ width: '16px', height: '16px', borderRadius: '50%', background: sw, border: editCatColor === sw ? '2px solid var(--lab-text)' : '1px solid transparent', cursor: 'pointer' }} />
+                          ))}
+                        </div>
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                          <button type="button" onClick={() => { updateRoutineCategory(cat.id, { label: editCatLabel, color: editCatColor }); setEditingCatId(null); }} style={{ padding: '4px 8px', borderRadius: '999px', border: 'none', background: 'var(--po-blue, #173aff)', color: '#fff', fontSize: '0.74rem', cursor: 'pointer' }} title="Save"><Check size={12} /></button>
+                          <button type="button" onClick={() => setEditingCatId(null)} className="km-lab-btn" style={{ padding: '4px 8px', fontSize: '0.74rem' }} title="Cancel"><X size={12} /></button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '0.84rem', fontWeight: '600' }}>
+                          <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: cat.color }} />
+                          <span>{cat.label}</span>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--lab-text-muted)', fontWeight: '700' }}>({taskCount} tasks)</span>
+                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <button type="button" onClick={() => { setEditingCatId(cat.id); setEditCatLabel(cat.label); setEditCatColor(cat.color); }} title="Edit" style={{ border: 'none', background: 'transparent', color: 'var(--lab-text-muted)', cursor: 'pointer', padding: '4px' }}><Pencil size={13} /></button>
+                          {categories.length > 1 && (
+                            <button type="button" onClick={() => { if (selectedCategoryFilter === cat.id) setSelectedCategoryFilter('all'); deleteRoutineCategory(cat.id); }} title="Delete category" style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer', padding: '4px' }}><Trash2 size={14} /></button>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
@@ -1335,13 +1979,47 @@ export default function DailyRoutine() {
       {/* Add New Task Popup Modal */}
       {showAddTask && (
         <div onClick={() => setShowAddTask(false)} style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(15, 17, 21, 0.52)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div onClick={(e) => e.stopPropagation()} className="km-po-card" style={{ width: '100%', maxWidth: '500px', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div onClick={(e) => e.stopPropagation()} className="km-po-card" style={{ width: '100%', maxWidth: '520px', maxHeight: '90vh', overflowY: 'auto', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Plus size={16} color="var(--po-blue, #173aff)" />
-                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '700' }}>Add New Daily Task</h3>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '800' }}>Add New Daily Task</h3>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--lab-text-muted)' }}>Pick a starter idea or write your own</div>
+                </div>
               </div>
               <button type="button" onClick={() => setShowAddTask(false)} className="km-lab-btn" style={{ padding: '4px 8px', borderRadius: '999px' }} aria-label="Close"><X size={15} /></button>
+            </div>
+
+            {/* Quick Starter Presets for New Users */}
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+              {[
+                { title: 'Morning Meditation', mins: '15' },
+                { title: 'Sutta Reading', mins: '20' },
+                { title: 'Deep Study / Work', mins: '45' },
+                { title: 'Evening Reflection', mins: '10' }
+              ].map(preset => (
+                <button
+                  key={preset.title}
+                  type="button"
+                  onClick={() => {
+                    setNewTitle(preset.title);
+                    setNewMinutes(preset.mins);
+                  }}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: '999px',
+                    border: '1px solid var(--po-card-border)',
+                    background: 'var(--po-card-subtle)',
+                    color: 'var(--lab-text)',
+                    fontSize: '0.71rem',
+                    fontWeight: '700',
+                    cursor: 'pointer'
+                  }}
+                >
+                  + {preset.title} ({preset.mins}m)
+                </button>
+              ))}
             </div>
 
             <form onSubmit={handleAddHabit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -1353,12 +2031,43 @@ export default function DailyRoutine() {
                 <div style={{ fontSize: '0.76rem', fontWeight: '600', color: 'var(--lab-text-muted)', marginBottom: '4px' }}>Description (optional)</div>
                 <input type="text" className="km-lab-input" placeholder="e.g., Mindful breathing & reflection" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} />
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ flex: 1, minWidth: '170px' }}>
-                  <div style={{ fontSize: '0.76rem', fontWeight: '600', color: 'var(--lab-text-muted)', marginBottom: '4px' }}>Category</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                <div style={{ flex: 1, minWidth: '200px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                    <span style={{ fontSize: '0.76rem', fontWeight: '600', color: 'var(--lab-text-muted)' }}>Category</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowInlineNewCat(v => !v)}
+                      style={{ border: 'none', background: 'transparent', color: 'var(--po-blue, #173aff)', fontSize: '0.71rem', fontWeight: '700', cursor: 'pointer', padding: 0 }}
+                    >
+                      {showInlineNewCat ? 'Cancel' : '+ New Category'}
+                    </button>
+                  </div>
                   <select aria-label="Category" className="km-lab-input" value={newCategory} onChange={(e) => setNewCategory(e.target.value)}>
                     {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.label}</option>)}
                   </select>
+                  {showInlineNewCat && (
+                    <div style={{ marginTop: '6px', padding: '8px', borderRadius: '10px', background: 'var(--po-card-subtle)', border: '1px solid var(--po-card-border)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <input
+                        type="text"
+                        className="km-lab-input"
+                        style={{ padding: '5px 8px', fontSize: '0.8rem' }}
+                        placeholder="New category name..."
+                        value={inlineCatName}
+                        onChange={(e) => setInlineCatName(e.target.value)}
+                      />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px' }}>
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                          {CATEGORY_SWATCHES.slice(0, 6).map(sw => (
+                            <button key={sw} type="button" onClick={() => setInlineCatColor(sw)} style={{ width: '15px', height: '15px', borderRadius: '50%', background: sw, border: inlineCatColor === sw ? '2px solid var(--lab-text)' : '1px solid transparent', cursor: 'pointer' }} />
+                          ))}
+                        </div>
+                        <button type="button" onClick={handleInlineCreateCategory} style={{ padding: '4px 10px', borderRadius: '999px', border: 'none', background: 'var(--po-blue, #173aff)', color: '#fff', fontSize: '0.71rem', fontWeight: '700', cursor: 'pointer' }}>
+                          Create
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <div style={{ fontSize: '0.76rem', fontWeight: '600', color: 'var(--lab-text-muted)', marginBottom: '4px' }}>Duration</div>
@@ -1369,6 +2078,63 @@ export default function DailyRoutine() {
                 <button type="button" onClick={() => setShowAddTask(false)} className="km-lab-btn" style={{ padding: '7px 14px', borderRadius: '999px', fontSize: '0.82rem' }}>Cancel</button>
                 <button type="submit" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '7px 16px', borderRadius: '999px', border: 'none', background: 'var(--po-blue, #173aff)', color: '#fff', fontSize: '0.82rem', fontWeight: '700', cursor: 'pointer' }}>
                   <Plus size={14} /> Add Task
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Record Unexpected / Retrospective Activity Modal */}
+      {showRecordDeed && (
+        <div onClick={() => setShowRecordDeed(false)} style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(15, 17, 21, 0.52)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+          <div onClick={(e) => e.stopPropagation()} className="km-po-card" style={{ width: '100%', maxWidth: '480px', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <History size={16} color="var(--po-blue, #173aff)" />
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '800' }}>Record What I Did</h3>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--lab-text-muted)' }}>Capture a completed action or unexpected good deed</div>
+                </div>
+              </div>
+              <button type="button" onClick={() => setShowRecordDeed(false)} className="km-lab-btn" style={{ padding: '4px 8px', borderRadius: '999px' }}>
+                <X size={15} />
+              </button>
+            </div>
+
+            <form onSubmit={handleRecordDeedSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <input
+                type="text"
+                required
+                className="km-lab-input"
+                placeholder="What did you do? (e.g., Helped a neighbour, 20m meditation)"
+                value={deedTitle}
+                onChange={(e) => setDeedTitle(e.target.value)}
+              />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <select className="km-lab-input" value={deedCategory} onChange={(e) => setDeedCategory(e.target.value)}>
+                  {categories.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                </select>
+                <input type="date" className="km-lab-input" value={deedDate} max={todayDate} onChange={(e) => setDeedDate(e.target.value)} />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '0.76rem', color: 'var(--lab-text-muted)' }}>Approximate duration:</span>
+                <EasyDurationSelector totalMinutes={Number(deedMinutes)} onChange={(mins) => setDeedMinutes(String(mins))} />
+              </div>
+              <input
+                type="text"
+                className="km-lab-input"
+                placeholder="Reflection or context (optional)"
+                value={deedNotes}
+                onChange={(e) => setDeedNotes(e.target.value)}
+              />
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.78rem', fontWeight: '600', cursor: 'pointer' }}>
+                <input type="checkbox" checked={deedAddMerit} onChange={(e) => setDeedAddMerit(e.target.checked)} />
+                <span>Also link to my private Merit Book</span>
+              </label>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                <button type="button" onClick={() => setShowRecordDeed(false)} className="km-lab-btn" style={{ padding: '7px 14px', borderRadius: '999px' }}>Cancel</button>
+                <button type="submit" style={{ padding: '7px 16px', borderRadius: '999px', border: 'none', background: 'var(--po-blue, #173aff)', color: '#fff', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer' }}>
+                  Record Activity
                 </button>
               </div>
             </form>

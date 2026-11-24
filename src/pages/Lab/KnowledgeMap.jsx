@@ -40,6 +40,7 @@ import { getPathReflections } from '../../services/practiceEcosystemStore';
 import { getRoutineHabits, getRoutineLogForDate, getRoutineCategorySeries } from '../../services/dailyRoutineStore';
 import { getTodayKey } from '../../services/cittaLogStore';
 import PaginationBar from '../../components/Lab/PaginationBar';
+import ContextualActionModal from '../../components/Lab/ContextualActionModal';
 
 const JOURNEY_STAGES = [
   {
@@ -170,6 +171,7 @@ export default function KnowledgeMap() {
   const [weekSeries, setWeekSeries] = useState(() => getRoutineCategorySeries(7));
 
   const [selectedNodeId, setSelectedNodeId] = useState(null);
+  const [practiceContext, setPracticeContext] = useState(null);
   const [connectSourceId, setConnectSourceId] = useState(null);
   const [connectRelation, setConnectRelation] = useState(EDGE_RELATIONS[0]);
   const [showAddNode, setShowAddNode] = useState(false);
@@ -826,6 +828,23 @@ export default function KnowledgeMap() {
                       <BookHeart size={13} />
                       <span>Log in Merit Book</span>
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => setPracticeContext({
+                        sourceType: 'map',
+                        sourceId: selectedNode.id,
+                        sourceTitle: selectedNode.label,
+                        sourceUrl: '/lab/map',
+                        excerpt: selectedNode.summary || '',
+                        suggestedTitle: `Practise: ${selectedNode.label}`,
+                        suggestedCategory: 'dhamma'
+                      })}
+                      className="km-lab-btn"
+                      style={{ color: 'var(--po-blue, #0B3BFA)' }}
+                    >
+                      <Play size={13} />
+                      <span>Turn into Practice</span>
+                    </button>
 
                     <div style={{ display: 'flex', gap: '6px' }}>
                       <select className="km-lab-input" style={{ flex: 1, padding: '6px 8px', fontSize: '0.76rem' }} value={connectRelation} onChange={(e) => setConnectRelation(e.target.value)}>
@@ -1258,6 +1277,11 @@ export default function KnowledgeMap() {
           </div>
         </div>
       )}
+      <ContextualActionModal
+        open={Boolean(practiceContext)}
+        onClose={() => setPracticeContext(null)}
+        sourceContext={practiceContext}
+      />
     </div>
   );
 }

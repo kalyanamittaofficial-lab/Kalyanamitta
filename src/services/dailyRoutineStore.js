@@ -677,18 +677,42 @@ export function getRoutineCategorySeries(rangeDays = 14) {
 
   return dates.map(date => {
     const log = allLogs[date];
-    const row = { date, totalMinutes: 0 };
+    const row = {
+      date,
+      totalMinutes: 0,
+      completedCount: Array.isArray(log?.checkedIds) ? log.checkedIds.length : 0,
+      wakeTime: log?.wakeTime || '',
+      sleepTime: log?.sleepTime || ''
+    };
     for (const c of categories) {
       row[c.id] = 0;
     }
-    if (log && Array.isArray(log.checkedIds)) {
-      for (const hid of log.checkedIds) {
-        const habit = habitById.get(hid);
-        if (!habit) continue;
-        const cat = Object.prototype.hasOwnProperty.call(row, habit.category) ? habit.category : fallbackId;
-        const mins = Math.max(1, Number(log.taskLogs?.[hid]?.minutes ?? habit.minutes ?? 15));
-        row[cat] += mins;
-        row.totalMinutes += mins;
+    if (log) {
+      const countedIds = new Set();
+      if (Array.isArray(log.checkedIds)) {
+        for (const hid of log.checkedIds) {
+          const habit = habitById.get(hid);
+          if (!habit) continue;
+          countedIds.add(hid);
+          const cat = Object.prototype.hasOwnProperty.call(row, habit.category) ? habit.category : fallbackId;
+          const mins = Math.max(1, Number(log.taskLogs?.[hid]?.minutes ?? habit.minutes ?? 15));
+          row[cat] += mins;
+          row.totalMinutes += mins;
+        }
+      }
+      if (log.taskLogs && typeof log.taskLogs === 'object') {
+        for (const [hid, tLog] of Object.entries(log.taskLogs)) {
+          if (countedIds.has(hid) || !tLog) continue;
+          const hasSessions = Array.isArray(tLog.sessions) && tLog.sessions.length > 0;
+          if (tLog.status !== 'ongoing' && !hasSessions) continue;
+          const habit = habitById.get(hid);
+          if (!habit) continue;
+          const mins = Number(tLog.minutes || 0);
+          if (mins <= 0) continue;
+          const cat = Object.prototype.hasOwnProperty.call(row, habit.category) ? habit.category : fallbackId;
+          row[cat] += mins;
+          row.totalMinutes += mins;
+        }
       }
     }
     return row;

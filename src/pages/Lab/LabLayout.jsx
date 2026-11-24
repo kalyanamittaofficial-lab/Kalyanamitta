@@ -1,30 +1,35 @@
 import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  FlaskConical,
+  LayoutGrid,
+  BookOpenText,
+  Waypoints,
+  NotebookPen,
+  Layers,
+  Sunrise,
+  HeartHandshake,
+  Compass,
+  Flag,
+  ChevronsLeft,
+  ChevronsRight,
+  ArrowUpRight,
   Highlighter,
   BookOpen,
-  ArrowLeft,
   Sun,
   Moon,
   LogOut,
   Menu,
   X,
-  Home,
-  ChevronLeft,
   ChevronRight,
   ChevronDown,
   Network,
   BookHeart,
   Sparkles,
-  Globe,
   FolderKanban,
   Plus,
   Search,
-  User,
   Shield,
   Leaf,
-  Lightbulb,
   Hourglass
 } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
@@ -53,6 +58,7 @@ export default function LabLayout() {
 
   const [isSidebarOpenMobile, setIsSidebarOpenMobile] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState({});
   const [showQuickCreate, setShowQuickCreate] = useState(false);
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [globalQuery, setGlobalQuery] = useState('');
@@ -190,34 +196,38 @@ export default function LabLayout() {
   const navGroups = [
     {
       titleSi: 'මගේ අධ්‍යයන අවකාශය',
-      titleEn: 'My Study Space',
+      titleEn: 'Study Space',
       items: [
-        { to: '/lab', label: 'Overview', sinhalaLabel: 'Overview', icon: Home, exact: true },
-        { to: '/lab/sutta', label: 'Sutta Library', sinhalaLabel: 'සූත්‍ර පුස්තකාලය', icon: BookOpen },
-        { to: '/lab/map', label: 'My Map', sinhalaLabel: 'මගේ සිතියම', icon: Network },
-        { to: '/lab/roadmap', label: 'My Notes', sinhalaLabel: 'මගේ සටහන්', icon: Highlighter },
-        { to: '/lab/collections', label: 'Collections', sinhalaLabel: 'අධ්‍යයන එකතු', icon: FolderKanban }
+        { to: '/lab', label: 'Overview', sinhalaLabel: 'Overview', icon: LayoutGrid, exact: true },
+        { to: '/lab/sutta', label: 'Sutta Library', sinhalaLabel: 'සූත්‍ර පුස්තකාලය', icon: BookOpenText },
+        { to: '/lab/map', label: 'My Map', sinhalaLabel: 'මගේ සිතියම', icon: Waypoints },
+        { to: '/lab/roadmap', label: 'My Notes', sinhalaLabel: 'මගේ සටහන්', icon: NotebookPen },
+        { to: '/lab/collections', label: 'Collections', sinhalaLabel: 'අධ්‍යයන එකතු', icon: Layers }
       ]
     },
     {
       titleSi: 'මගේ ජීවිතය සහ ප්‍රතිපදාව',
-      titleEn: 'My Life & Practice',
+      titleEn: 'Life & Practice',
       items: [
-        { to: '/lab/daily-routine', label: 'Daily Routine', sinhalaLabel: 'දෛනික දහම් රටාව', icon: Sun },
+        { to: '/lab/daily-routine', label: 'Daily Routine', sinhalaLabel: 'දෛනික දහම් රටාව', icon: Sunrise },
         { to: '/lab/pin-potha', label: 'Merit Book', sinhalaLabel: 'Merit Book', icon: BookHeart },
-        { to: '/lab/reflection', label: 'Reflection', sinhalaLabel: 'Reflection', icon: Lightbulb },
-        { to: '/lab/dedication', label: 'Dedication', sinhalaLabel: 'පුණ්‍යානුමෝදනා', icon: Sparkles }
+        { to: '/lab/reflection', label: 'Reflection', sinhalaLabel: 'Reflection', icon: Sparkles },
+        { to: '/lab/dedication', label: 'Dedication', sinhalaLabel: 'පුණ්‍යානුමෝදනා', icon: HeartHandshake }
       ]
     },
     {
       titleSi: 'ප්‍රජාව',
       titleEn: 'Community',
       items: [
-        { to: '/lab/explore', label: 'Explore Maps', sinhalaLabel: 'සිතියම් ගවේෂණය', icon: Globe },
-        { to: '/lab/onboarding', label: 'Starting Point', sinhalaLabel: 'ආරම්භක සටහන', icon: User }
+        { to: '/lab/explore', label: 'Explore Maps', sinhalaLabel: 'සිතියම් ගවේෂණය', icon: Compass },
+        { to: '/lab/onboarding', label: 'Starting Point', sinhalaLabel: 'ආරම්භක සටහන', icon: Flag }
       ]
     }
   ];
+
+  const toggleGroup = (titleEn) => {
+    setCollapsedGroups(prev => ({ ...prev, [titleEn]: !prev[titleEn] }));
+  };
 
   const handleTreeNodeClick = async (node) => {
     const isBranch = node.hasChildren === undefined ? true : node.hasChildren;
@@ -251,22 +261,11 @@ export default function LabLayout() {
           <button
             type="button"
             onClick={() => handleTreeNodeClick({ ...item, hasChildren: isBranch })}
+            className={`lab-tree-btn${isSelected ? ' selected' : ''}`}
             style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '6px',
-              padding: `6px 10px 6px ${10 + depth * 12}px`,
-              borderRadius: '8px',
-              border: 'none',
-              background: isSelected ? 'var(--lab-sidebar-active-bg)' : 'transparent',
-              color: isSelected ? 'var(--lab-sidebar-active-text)' : 'var(--lab-sidebar-text)',
+              padding: `6px 10px 6px ${8 + depth * 12}px`,
               fontWeight: isSelected ? '700' : '500',
-              fontSize: depth === 0 ? '0.95rem' : '0.89rem',
-              fontFamily: 'var(--font-sinhala)',
-              textAlign: 'left',
-              cursor: 'pointer'
+              fontSize: depth === 0 ? '0.92rem' : '0.86rem'
             }}
           >
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -343,97 +342,106 @@ export default function LabLayout() {
       >
         {/* Brand Header */}
         <div style={{
-          padding: isSidebarCollapsed ? '18px 12px' : '18px 18px',
+          padding: isSidebarCollapsed ? '16px 12px' : '16px 16px 14px',
           borderBottom: '1px solid var(--lab-sidebar-border)',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: isSidebarCollapsed ? 'center' : 'space-between',
-          gap: '8px'
+          flexDirection: 'column',
+          gap: '12px'
         }}>
-          {!isSidebarCollapsed ? (
-            <Link
-              to="/lab"
-              onClick={() => setIsSidebarOpenMobile(false)}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'var(--lab-sidebar-text)' }}
-            >
-              <div style={{
-                width: '34px',
-                height: '34px',
-                borderRadius: '10px',
-                background: 'rgba(200, 255, 0, 0.14)',
-                border: '1px solid rgba(200, 255, 0, 0.55)',
-                color: '#C8FF00',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0
-              }}>
-                <FlaskConical size={17} />
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.15 }}>
-                <span style={{ fontWeight: '800', fontSize: '1.02rem', letterSpacing: '-0.02em', color: 'var(--lab-sidebar-text)' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: isSidebarCollapsed ? 'center' : 'space-between',
+            gap: '8px'
+          }}>
+            {!isSidebarCollapsed && (
+              <Link
+                to="/lab"
+                onClick={() => setIsSidebarOpenMobile(false)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  textDecoration: 'none',
+                  color: 'var(--lab-sidebar-text)'
+                }}
+              >
+                <span style={{
+                  fontWeight: '800',
+                  fontSize: '1.12rem',
+                  letterSpacing: '-0.03em',
+                  color: 'var(--lab-sidebar-text)'
+                }}>
                   PATH<span style={{ color: '#C8FF00' }}>/</span>OS
                 </span>
-                <span style={{ fontSize: '0.67rem', color: 'var(--lab-sidebar-muted)', fontWeight: 500, fontFamily: 'var(--font-sinhala)' }}>
-                  මගේ දහම් මඟ · අත්තදීප
-                </span>
-              </div>
-            </Link>
-          ) : (
-            <Link to="/lab" title="PATH/OS · මගේ දහම් මඟ" style={{ color: '#C8FF00', display: 'flex' }}>
-              <FlaskConical size={22} />
-            </Link>
-          )}
+              </Link>
+            )}
 
+            <button
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              className="desktop-only-btn lab-sidebar-collapse-btn"
+              title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {isSidebarCollapsed ? <ChevronsRight size={15} /> : <ChevronsLeft size={15} />}
+            </button>
+
+            <button
+              onClick={() => setIsSidebarOpenMobile(false)}
+              className="mobile-only-btn"
+              style={{ background: 'none', border: 'none', color: 'var(--lab-sidebar-muted)', cursor: 'pointer', padding: '4px' }}
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Quick Search Trigger */}
           <button
-            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            className="desktop-only-btn"
-            title={isSidebarCollapsed ? 'Expand' : 'Collapse'}
+            type="button"
+            onClick={() => {
+              setIsSidebarOpenMobile(false);
+              setShowGlobalSearch(true);
+            }}
+            className="lab-sidebar-search-btn"
+            title="Search workspace"
             style={{
-              background: 'transparent',
-              border: '1px solid var(--lab-sidebar-border)',
-              borderRadius: '8px',
-              width: '26px',
-              height: '26px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--lab-sidebar-muted)',
-              cursor: 'pointer'
+              justifyContent: isSidebarCollapsed ? 'center' : 'space-between',
+              padding: isSidebarCollapsed ? '8px' : '8px 11px'
             }}
           >
-            {isSidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-          </button>
-
-          <button
-            onClick={() => setIsSidebarOpenMobile(false)}
-            className="mobile-only-btn"
-            style={{ background: 'none', border: 'none', color: 'var(--lab-sidebar-muted)', cursor: 'pointer', padding: '4px' }}
-          >
-            <X size={20} />
+            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Search size={14} strokeWidth={2} />
+              {!isSidebarCollapsed && <span>Search workspace...</span>}
+            </span>
           </button>
         </div>
 
         {/* Navigation Body */}
-        <div style={{ flex: 1, padding: isSidebarCollapsed ? '14px 10px' : '18px 12px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            {navGroups.map(group => (
-              <div key={group.titleEn} style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+        <div style={{ flex: 1, padding: isSidebarCollapsed ? '14px 10px' : '16px 12px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          {navGroups.map((group, groupIdx) => {
+            const isGroupCollapsed = !isSidebarCollapsed && Boolean(collapsedGroups[group.titleEn]);
+            return (
+              <div
+                key={group.titleEn}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '3px',
+                  paddingTop: groupIdx > 0 && isSidebarCollapsed ? '10px' : 0,
+                  borderTop: groupIdx > 0 && isSidebarCollapsed ? '1px solid var(--lab-sidebar-border)' : 'none'
+                }}
+              >
                 {!isSidebarCollapsed && (
-                  <div style={{
-                    fontSize: '0.68rem',
-                    fontWeight: '700',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.06em',
-                    color: 'var(--lab-sidebar-muted)',
-                    padding: '0 10px',
-                    marginBottom: '3px'
-                  }}>
-                    {group.titleEn}
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => toggleGroup(group.titleEn)}
+                    className="lab-nav-group-header"
+                  >
+                    <span>{group.titleEn}</span>
+                    {isGroupCollapsed ? <ChevronRight size={12} /> : <ChevronDown size={12} />}
+                  </button>
                 )}
 
-                {group.items.map(item => {
+                {!isGroupCollapsed && group.items.map(item => {
                   const Icon = item.icon;
                   const active = isNavActive(item);
                   const isSuttaItem = item.to === '/lab/sutta';
@@ -448,25 +456,24 @@ export default function LabLayout() {
                             if (isSuttaItem) setIsSuttaTreeOpen(true);
                           }}
                           title={isSidebarCollapsed ? displayLabel : undefined}
+                          className={`lab-nav-item${active ? ' active' : ''}`}
                           style={{
-                            flex: 1,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px',
-                            padding: isSidebarCollapsed ? '10px 0' : '8px 12px',
+                            padding: isSidebarCollapsed ? '6px' : '6px 10px',
                             justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
-                            borderRadius: '10px',
-                            textDecoration: 'none',
-                            color: active ? 'var(--lab-sidebar-active-text)' : 'var(--lab-sidebar-text)',
-                            background: active ? 'var(--lab-sidebar-active-bg)' : 'transparent',
-                            fontWeight: active ? 600 : 500,
-                            fontSize: item.sinhalaLabel ? '0.96rem' : '0.91rem',
-                            transition: 'all 0.15s ease'
+                            fontSize: item.sinhalaLabel ? '0.94rem' : '0.88rem'
                           }}
                         >
-                          <Icon size={17} color={active ? 'var(--lab-sidebar-active-text)' : 'var(--lab-sidebar-muted)'} />
+                          <span className="lab-nav-icon-wrap">
+                            <Icon size={15} strokeWidth={1.9} />
+                          </span>
                           {!isSidebarCollapsed && (
-                            <span style={{ fontSize: item.sinhalaLabel ? '0.96rem' : '0.91rem', lineHeight: 1.3 }}>
+                            <span style={{
+                              fontSize: item.sinhalaLabel ? '0.93rem' : '0.88rem',
+                              lineHeight: 1.3,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}>
                               {displayLabel}
                             </span>
                           )}
@@ -476,24 +483,16 @@ export default function LabLayout() {
                             type="button"
                             onClick={() => setIsSuttaTreeOpen(v => !v)}
                             aria-label="Toggle Nikāya menu"
-                            style={{
-                              border: 'none',
-                              background: 'transparent',
-                              color: 'var(--lab-sidebar-muted)',
-                              cursor: 'pointer',
-                              padding: '6px',
-                              borderRadius: '6px',
-                              display: 'flex',
-                              alignItems: 'center'
-                            }}
+                            className="lab-sidebar-collapse-btn"
+                            style={{ width: '24px', height: '24px', borderRadius: '7px' }}
                           >
-                            {isSuttaTreeOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                            {isSuttaTreeOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
                           </button>
                         )}
                       </div>
 
                       {isSuttaItem && !isSidebarCollapsed && isSuttaTreeOpen && nikayas.length > 0 && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingLeft: '14px', marginTop: '3px', marginBottom: '4px' }}>
+                        <div className="lab-tree-container">
                           {renderSidebarTree(nikayas, 0)}
                         </div>
                       )}
@@ -501,13 +500,13 @@ export default function LabLayout() {
                   );
                 })}
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
 
         {/* Footer */}
         <div style={{
-          padding: isSidebarCollapsed ? '12px 8px' : '14px 14px',
+          padding: isSidebarCollapsed ? '12px 8px' : '12px 14px 14px',
           borderTop: '1px solid var(--lab-sidebar-border)',
           display: 'flex',
           flexDirection: 'column',
@@ -517,24 +516,13 @@ export default function LabLayout() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: isSidebarCollapsed ? 'center' : 'space-between',
-            gap: '8px'
+            gap: '6px'
           }}>
             <button
               onClick={toggleTheme}
               title={isDark ? 'Switch to Light' : 'Switch to Dark'}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '7px 10px',
-                borderRadius: '9px',
-                border: '1px solid var(--lab-sidebar-border)',
-                background: 'var(--lab-sidebar-subtle)',
-                color: 'var(--lab-sidebar-text)',
-                fontSize: '0.78rem',
-                fontWeight: 600,
-                cursor: 'pointer'
-              }}
+              className="lab-footer-btn"
+              style={{ flex: isSidebarCollapsed ? 'none' : 1 }}
             >
               {isDark ? <Sun size={14} color="#FBBF24" /> : <Moon size={14} />}
               {!isSidebarCollapsed && <span>{isDark ? 'Light' : 'Dark'}</span>}
@@ -543,19 +531,11 @@ export default function LabLayout() {
             {!isSidebarCollapsed && (
               <Link
                 to="/"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  fontSize: '0.78rem',
-                  color: 'var(--lab-sidebar-muted)',
-                  textDecoration: 'none',
-                  padding: '6px 8px',
-                  borderRadius: '8px'
-                }}
+                className="lab-footer-btn"
+                style={{ flex: 1, color: 'var(--lab-sidebar-muted)' }}
               >
-                <ArrowLeft size={13} />
                 <span>Main Site</span>
+                <ArrowUpRight size={13} />
               </Link>
             )}
           </div>
@@ -816,10 +796,12 @@ export default function LabLayout() {
                   }}
                 >
                   {[
+                    { to: '/lab/daily-routine?record=1', label: 'Record What I Did', icon: Sparkles },
+                    { to: '/lab/daily-routine?tab=intentions', label: 'Save Intention', icon: BookOpenText },
                     { to: '/lab/sutta', label: t(lang, 'නව සූත්‍ර සටහනක්', 'New Sutta Note'), icon: Highlighter },
                     { to: '/lab/map', label: t(lang, 'නව සිතියම් අංගයක්', 'New Map Node'), icon: Network },
                     { to: '/lab/pin-potha', label: 'New Merit Book Entry', icon: BookHeart },
-                    { to: '/lab/dedication', label: t(lang, 'දායකත්වයක් / පින් අනුමෝදනාවක්', 'New Contribution'), icon: Sparkles },
+                    { to: '/lab/dedication', label: t(lang, 'දායකත්වයක් / පින් අනුමෝදනාවක්', 'New Contribution'), icon: HeartHandshake },
                     { to: '/lab/collections', label: t(lang, 'නව අධ්‍යයන එකතුවක්', 'New Collection'), icon: FolderKanban }
                   ].map(item => {
                     const Icon = item.icon;
